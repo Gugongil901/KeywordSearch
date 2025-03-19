@@ -286,7 +286,8 @@ export class NaverDataCollector {
       // 쇼핑몰 분포 계산
       const mallCounts: Record<string, number> = {};
       for (const p of products) {
-        const mallName = p.brandName || '기타';
+        // 판매자 정보 (mall) 속성을 우선 사용, 없는 경우 브랜드명이나 기타 사용
+        const mallName = p.mall || p.brandName || '기타';
         mallCounts[mallName] = (mallCounts[mallName] || 0) + 1;
       }
       

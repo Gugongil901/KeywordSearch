@@ -130,6 +130,8 @@ export async function searchKeyword(keyword: string): Promise<KeywordSearchRespo
       image: item.image,
       category: cleanText(item.category1),
       brandName: cleanText(item.brand || item.maker || "Unknown"),
+      // Add mall information - for products in Naver Shopping
+      mall: cleanText(item.mallName || item.maker || item.brand || "Unknown"),
       reviewCount: 0, // Not available in basic API
       rank: index + 1,
       productUrl: item.link,
