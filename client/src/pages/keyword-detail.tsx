@@ -5,6 +5,7 @@ import { searchKeyword, getKeywordTrends, KeywordSearchResult } from "@/lib/nave
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ConfettiEffect, shouldTriggerConfetti } from "@/components/ui/confetti-effect";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,6 +36,7 @@ const KeywordDetail: React.FC = () => {
   const { keyword } = useParams<{ keyword: string }>();
   const decodedKeyword = decodeURIComponent(keyword || "");
   const [chartPeriod, setChartPeriod] = useState<string>("daily");
+  const [showConfetti, setShowConfetti] = useState<boolean>(false);
 
   const { data, isLoading, error } = useQuery<KeywordSearchResult>({
     queryKey: [`/api/search?query=${decodedKeyword}`],
