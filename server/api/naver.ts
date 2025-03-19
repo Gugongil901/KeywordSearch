@@ -15,7 +15,8 @@ const NAVER_AD_API_BASE = "https://api.naver.com";
 // 네이버 데이터랩 API 공식 문서의 올바른 엔드포인트 사용
 // https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
 const NAVER_DATALAB_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keywords/trends";
+// 네이버 데이터랩 쇼핑인사이트 API 공식 문서상의 정확한 엔드포인트
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keywords";
 
 // Setup axios instances
 let naverSearchClient: any;
@@ -23,6 +24,13 @@ let naverAdClient: any;
 let naverDataLabClient: any;
 
 export function setupNaverAPI() {
+  // 먼저 API 키가 올바르게 설정되었는지 확인
+  if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
+    console.error("⚠️ 네이버 API 키가 설정되지 않았습니다. 올바른 API 키를 확인해주세요.");
+    console.log("NAVER_CLIENT_ID:", NAVER_CLIENT_ID ? "설정됨" : "미설정");
+    console.log("NAVER_CLIENT_SECRET:", NAVER_CLIENT_SECRET ? "설정됨" : "미설정");
+  }
+
   // Initialize Naver Search API client
   naverSearchClient = axios.create({
     headers: {
@@ -51,7 +59,8 @@ export function setupNaverAPI() {
     }
   });
   
-  console.log("Naver API clients initialized with Client ID:", NAVER_CLIENT_ID ? "설정됨" : "설정안됨");
+  // API 초기화 상태 로그
+  console.log("네이버 API 클라이언트 초기화 완료 (ID: " + (NAVER_CLIENT_ID ? "설정됨" : "미설정") + ")");
 }
 
 // Search keywords in Naver Shopping
@@ -149,6 +158,14 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
 // 네이버 데이터랩 API를 사용하여 인기 키워드 가져오기
 export async function getDataLabKeywords(categoryId: string, period: string = "date"): Promise<string[]> {
   try {
+    // API 키가 올바르게 설정되었는지 확인
+    if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
+      console.error("⚠️ [getDataLabKeywords] 네이버 API 키가 설정되지 않았습니다.");
+      console.error(`네이버 클라이언트 ID: ${NAVER_CLIENT_ID ? "설정됨" : "미설정"}`);
+      console.error(`네이버 클라이언트 시크릿: ${NAVER_CLIENT_SECRET ? "설정됨" : "미설정"}`);
+      throw new Error("네이버 API 키가 설정되지 않았습니다");
+    }
+
     // 네이버 DataLab API 요청에 필요한 카테고리 ID 매핑
     const categoryMap: Record<string, string> = {
       all: "ALL", // 전체
@@ -176,9 +193,6 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
 
     console.log(`DataLab API 요청: 카테고리=${categoryCode}, 기간=${formatDate(startDate)}~${formatDate(endDate)}`);
 
-    // 데이터랩 API 요청 - 네이버 데이터랩 키워드 트렌드 API 문서에 맞게 수정
-    // https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#쇼핑-키워드-트렌드-조회
-    
     // 카테고리별 인기 키워드 (백업 데이터에서 가져와서 API 요청에 사용)
     const categoryKeywords = getBackupKeywords(categoryId).slice(0, 5);
     
@@ -197,32 +211,45 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
     };
     
     console.log("데이터랩 API 요청 본문:", JSON.stringify(requestBody));
+    console.log("데이터랩 API 엔드포인트:", NAVER_DATALAB_KEYWORD_API);
+    console.log("데이터랩 API 헤더:", JSON.stringify({
+      "X-Naver-Client-Id": NAVER_CLIENT_ID ? "설정됨" : "미설정",
+      "X-Naver-Client-Secret": NAVER_CLIENT_SECRET ? "설정됨" : "미설정",
+      "Content-Type": "application/json"
+    }));
     
-    // 키워드 API를 사용하도록 변경
-    const response = await naverDataLabClient.post(NAVER_DATALAB_KEYWORD_API, requestBody);
-
-    // 실제 API 호출이 성공하면 데이터 파싱
-    if (response.data && response.data.results) {
-      console.log("네이버 데이터랩 API 응답 성공:", JSON.stringify(response.data).substring(0, 200) + "...");
+    // 네이버 데이터랩 API 호출
+    try {
+      const response = await naverDataLabClient.post(NAVER_DATALAB_KEYWORD_API, requestBody);
       
-      try {
-        // API 요청에 사용한 키워드 그대로 반환 (원래 요청했던 키워드들)
-        // 이 키워드들은 실제 네이버 API로 통해 트렌드를 확인한 키워드들임
-        return categoryKeywords;
+      // 실제 API 호출이 성공하면 데이터 파싱
+      if (response.data && response.data.results) {
+        console.log("✅ 네이버 데이터랩 API 응답 성공:", JSON.stringify(response.data).substring(0, 200) + "...");
         
-        // 참고: 데이터랩 API는 키워드 트렌드를 반환하지만, 현재는 단지 우리가 요청한 키워드들이
-        // 유효한지 확인하는 용도로 사용하고 있음
-      } catch (parseError) {
-        console.error("API 응답 파싱 오류:", parseError);
-        // 파싱 오류 시 백업 키워드 사용
-        return categoryKeywords;
+        try {
+          // API 요청에 사용한 키워드 그대로 반환 (원래 요청했던 키워드들)
+          // 이 키워드들은 실제 네이버 API로 통해 트렌드를 확인한 키워드들임
+          return categoryKeywords;
+        } catch (parseError) {
+          console.error("API 응답 파싱 오류:", parseError);
+          // 파싱 오류 시 백업 키워드 사용
+          return categoryKeywords;
+        }
+      } else {
+        console.error("⚠️ 네이버 API 응답에 예상했던 results 필드가 없습니다:", JSON.stringify(response.data || {}).substring(0, 200));
+        throw new Error("API 응답 형식 오류");
       }
+    } catch (apiError: any) {
+      // API 호출 자체에 실패한 경우
+      console.error("⚠️ 네이버 데이터랩 API 호출 실패:", apiError.message);
+      console.error("응답 내용:", apiError.response?.data ? JSON.stringify(apiError.response.data).substring(0, 300) : "응답 데이터 없음");
+      console.error("응답 상태:", apiError.response?.status || "상태 코드 없음");
+      console.error("응답 헤더:", apiError.response?.headers ? JSON.stringify(apiError.response.headers) : "헤더 정보 없음");
+      
+      throw apiError; // 오류를 상위로 전파
     }
-
-    // API 응답이 없거나 예상 구조가 아닌 경우 기본 데이터 반환
-    throw new Error("DataLab API 응답 형식 오류");
   } catch (error: any) {
-    console.error("DataLab API Error:", error.message);
+    console.error("❌ DataLab API Error:", error.message);
     
     // API 호출 실패 시 백업 데이터 반환
     return getBackupKeywords(categoryId);
