@@ -102,23 +102,23 @@ export class CompetitorAnalyzer {
       // 판매자별 분석 결과
       const competitorAnalysis: CompetitorInfo[] = [];
       
-      for (const [seller, sellerProducts] of Object.entries(sellerProducts)) {
+      for (const [seller, sellerProductList] of Object.entries(sellerProducts)) {
         // 판매자 상세 정보 수집
         const sellerInfo = await this.getSellerInfo(seller);
         
         // 가격 전략 분석
-        const priceStrategy = this.analyzePriceStrategy(sellerProducts);
+        const priceStrategy = this.analyzePriceStrategy(sellerProductList);
         
         // 제품 포지셔닝 분석
-        const positioning = this.analyzeProductPositioning(sellerProducts);
+        const positioning = this.analyzeProductPositioning(sellerProductList);
         
         // 리뷰 분석
-        const reviewAnalysis = this.analyzeReviews(sellerProducts);
+        const reviewAnalysis = this.analyzeReviews(sellerProductList);
         
         competitorAnalysis.push({
           seller,
           sellerInfo,
-          productCount: sellerProducts.length,
+          productCount: sellerProductList.length,
           marketShare: 0, // 임시값, 아래에서 다시 계산
           priceStrategy,
           positioning,
