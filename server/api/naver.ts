@@ -279,16 +279,16 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
     try {
       console.log(`네이버 데이터랩 쇼핑인사이트 API 요청 (키워드: ${normalizedKeyword})`);
       
-      // 네이버 개발자 센터 문서와 자바 예제에 맞춘 요청 형식
+      // 네이버 개발자 센터 문서 기반 형식으로 수정 
+      // 카테고리별 트렌드 조회 API 포맷으로 변경
       const requestBody = {
         startDate: formatDate(startDate),
         endDate: formatDate(endDate), 
         timeUnit: period === "daily" ? "date" : "week",
         category: [{
-          name: "키워드분석",
+          name: "쇼핑",
           param: ["ALL"]  // 전체 카테고리
         }],
-        keywordGroups: keywordGroups,  // 키워드 그룹 추가
         device: "",  // 모든 기기
         gender: "",  // 모든 성별
         ages: []     // 모든 연령대
@@ -637,19 +637,22 @@ export async function getHotKeywords(category: string = "all", period: string = 
       
       // 첫 번째 시도: 키워드 API (Java 예제 형식으로 업데이트)
       try {
+        // 네이버 API 명세에 맞게 수정된 형식: 
+        // 1. category와 keywordGroups를 동시에 사용하지 않음
+        // 2. 공식 문서에 맞는 필드명 사용
         const keywordRequestBody = {
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
           timeUnit: period === "daily" ? "date" : "week",
-          category: [{
-            name: category, 
-            param: [categoryCode]
-          }],
-          keywordGroups: keywordGroups
+          category: categoryCode === "ALL" ? "" : categoryCode, // 카테고리 직접 전달
+          keyword: backupData.slice(0, 5), // 키워드 배열 (최대 5개)
+          device: "",  // 모든 기기
+          gender: "",  // 모든 성별
+          ages: []     // 모든 연령대
         };
         
         apiEndpoint = NAVER_DATALAB_KEYWORD_API;
-        console.log("1. 키워드 트렌드 API 요청:", JSON.stringify(keywordRequestBody).substring(0, 300) + "...");
+        console.log("1. 키워드 트렌드 API 요청 (수정된 형식):", JSON.stringify(keywordRequestBody).substring(0, 300) + "...");
         console.log("키워드 트렌드 API 엔드포인트:", apiEndpoint);
         
         response = await naverDataLabClient.post(apiEndpoint, keywordRequestBody);
@@ -659,11 +662,16 @@ export async function getHotKeywords(category: string = "all", period: string = 
         
         // 두 번째 시도: 통합 검색어 트렌드 API
         try {
+          // 네이버 개발자 센터 문서에 맞게 수정된 형식
+          // 참고: https://developers.naver.com/docs/serviceapi/datalab/search/search.md#통합-검색어-트렌드-조회
           const searchRequestBody = {
             startDate: formatDate(startDate),
             endDate: formatDate(endDate),
             timeUnit: period === "daily" ? "date" : "week",
-            keywordGroups: keywordGroups,
+            keywordGroups: backupData.slice(0, 5).map(kw => ({
+              groupName: kw,
+              keywords: [kw]
+            })),  // 최대 5개의 키워드 그룹
             device: "",  // 모든 기기
             ages: [],    // 모든 연령대
             gender: ""   // 모든 성별
