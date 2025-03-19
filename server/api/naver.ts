@@ -12,15 +12,20 @@ const NAVER_AD_API_SECRET_KEY = process.env.NAVER_AD_API_SECRET_KEY || "";
 const NAVER_SEARCH_API = "https://openapi.naver.com/v1/search/shop.json";
 const NAVER_AD_API_BASE = "https://api.naver.com";
 
-// 네이버 데이터랩 API 엔드포인트
-// 2025년 3월 기준 최신 문서: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
-const NAVER_DATALAB_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
+// 네이버 데이터랩 API 엔드포인트 (2025년 3월 기준 최신)
+// https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
 
-// 네이버 데이터랩 키워드 트렌드 API (공식 문서 참조)
+// 네이버 데이터랩 쇼핑인사이트 카테고리별 트렌드 조회 API
+const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
+
+// 네이버 데이터랩 쇼핑인사이트 키워드 트렌드 조회 API
 const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keywords";
 
-// 카테고리별 키워드 트렌드 API - 백업
-const NAVER_DATALAB_CATEGORY_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
+// 네이버 데이터랩 쇼핑인사이트 쇼핑인사이트 분야별 인기검색어 조회 API
+const NAVER_SHOPPING_INSIGHT_RANKS_API = "https://openapi.naver.com/v1/datalab/shopping/categories/keywords/ranks";
+
+// 네이버 데이터랩 통합검색 API (백업)
+const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
 
 // Setup axios instances
 let naverSearchClient: any;
@@ -313,14 +318,92 @@ function getBackupKeywords(category: string = "all"): string[] {
   return categoryKeywords[category] || categoryKeywords.all;
 }
 
-// Get hot/trending keywords (실제 API 또는 백업 데이터 사용)
+// 네이버 쇼핑인사이트 분야별 인기검색어 조회 API를 사용하여 실시간 인기 키워드 가져오기
 export async function getHotKeywords(category: string = "all", period: string = "daily"): Promise<string[]> {
   try {
-    // 네이버 데이터랩 API를 사용하여 실시간 인기 키워드 가져오기
+    // API 키가 올바르게 설정되었는지 확인
+    if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
+      console.error("⚠️ [getHotKeywords] 네이버 API 키가 설정되지 않았습니다.");
+      console.error(`네이버 클라이언트 ID: ${NAVER_CLIENT_ID ? "설정됨" : "미설정"}`);
+      console.error(`네이버 클라이언트 시크릿: ${NAVER_CLIENT_SECRET ? "설정됨" : "미설정"}`);
+      throw new Error("네이버 API 키가 설정되지 않았습니다");
+    }
+
+    // 네이버 DataLab API 요청에 필요한 카테고리 ID 매핑
+    const categoryMap: Record<string, string> = {
+      all: "ALL", // 전체
+      fashion: "50000000", // 패션의류
+      accessory: "50000001", // 패션잡화
+      beauty: "50000002", // 화장품/미용
+      digital: "50000003", // 디지털/가전
+      furniture: "50000004", // 가구/인테리어
+      baby: "50000005", // 출산/육아
+      food: "50000006", // 식품
+      sports: "50000007", // 스포츠/레저
+      life: "50000008", // 생활/건강
+    };
+
+    const categoryCode = categoryMap[category] || "ALL";
     const timeUnit = period === "daily" ? "date" : "week";
-    return await getDataLabKeywords(category, timeUnit);
+    
+    // API 요청 날짜 범위 설정
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - (period === "daily" ? 7 : 30)); // 일간은 7일, 주간은 30일 범위
+    
+    // 날짜 형식 - YYYY-MM-DD
+    const formatDate = (date: Date) => {
+      return date.toISOString().split('T')[0];
+    };
+
+    console.log(`쇼핑인사이트 인기검색어 API 요청: 카테고리=${categoryCode}, 기간=${formatDate(startDate)}~${formatDate(endDate)}`);
+    
+    // 쇼핑인사이트 API는 POST 방식으로 요청 본문을 전송해야 함
+    // https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#쇼핑인사이트-분야별-인기검색어-조회
+    const requestBody = {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      timeUnit: timeUnit,
+      category: categoryCode,
+      device: '',
+      gender: '',
+      ages: []
+    };
+    
+    console.log("쇼핑인사이트 인기검색어 API 요청 본문:", JSON.stringify(requestBody));
+    console.log("쇼핑인사이트 인기검색어 API 엔드포인트:", NAVER_SHOPPING_INSIGHT_RANKS_API);
+    
+    try {
+      const response = await naverDataLabClient.post(NAVER_SHOPPING_INSIGHT_RANKS_API, requestBody);
+      
+      if (response.data && response.data.results) {
+        console.log("✅ 쇼핑인사이트 인기검색어 API 응답 성공:", JSON.stringify(response.data).substring(0, 200) + "...");
+        
+        try {
+          // API 응답에서 키워드 목록 추출
+          const keywords = response.data.results.map((item: any) => item.keyword);
+          console.log("✅ 추출된 인기 키워드:", keywords);
+          return keywords;
+        } catch (parseError) {
+          console.error("API 응답 파싱 오류:", parseError);
+          // 파싱 오류 시 백업 키워드 사용
+          return getBackupKeywords(category);
+        }
+      } else {
+        console.error("⚠️ 쇼핑인사이트 API 응답에 예상했던 results 필드가 없습니다:", JSON.stringify(response.data || {}).substring(0, 200));
+        throw new Error("API 응답 형식 오류");
+      }
+    } catch (apiError: any) {
+      // API 호출 자체에 실패한 경우
+      console.error("⚠️ 쇼핑인사이트 인기검색어 API 호출 실패:", apiError.message);
+      console.error("응답 내용:", apiError.response?.data ? JSON.stringify(apiError.response.data).substring(0, 300) : "응답 데이터 없음");
+      console.error("응답 상태:", apiError.response?.status || "상태 코드 없음");
+      console.error("응답 헤더:", apiError.response?.headers ? JSON.stringify(apiError.response.headers) : "헤더 정보 없음");
+      
+      throw apiError; // 오류를 상위로 전파
+    }
   } catch (error) {
-    console.error("Error getting hot keywords:", error);
+    console.error("❌ 쇼핑인사이트 인기검색어 API 오류:", error);
     // API 호출 실패 시 백업 데이터 반환
     return getBackupKeywords(category);
   }
