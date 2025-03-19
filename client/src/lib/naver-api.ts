@@ -55,36 +55,98 @@ export interface CategoryTrend {
 }
 
 // API functions
+/**
+ * 키워드 검색 기능
+ * @param keyword - 검색할 키워드
+ * @returns 키워드 검색 결과
+ */
 export async function searchKeyword(keyword: string): Promise<KeywordSearchResult> {
-  const response = await apiRequest("GET", `/api/search?query=${encodeURIComponent(keyword)}`, undefined);
-  return await response.json();
+  try {
+    const response = await apiRequest("GET", `/api/search?query=${encodeURIComponent(keyword)}`, undefined);
+    return await response.json();
+  } catch (error) {
+    console.error("키워드 검색 실패:", error);
+    throw error;
+  }
 }
 
+/**
+ * 키워드 통계 정보 가져오기
+ * @param keyword - 검색할 키워드
+ * @returns 키워드 통계 정보
+ */
 export async function getKeywordStats(keyword: string): Promise<KeywordStats> {
-  const response = await apiRequest("GET", `/api/keyword/stats?keyword=${encodeURIComponent(keyword)}`, undefined);
-  return await response.json();
+  try {
+    const response = await apiRequest("GET", `/api/keyword/stats?keyword=${encodeURIComponent(keyword)}`, undefined);
+    return await response.json();
+  } catch (error) {
+    console.error("키워드 통계 조회 실패:", error);
+    throw error;
+  }
 }
 
+/**
+ * 키워드 트렌드 정보 가져오기 (네이버 데이터랩 API 활용)
+ * @param keyword - 검색할 키워드
+ * @param period - 기간 (daily, weekly)
+ * @returns 키워드 트렌드 정보
+ */
 export async function getKeywordTrends(keyword: string, period: string = "daily"): Promise<{ keyword: string; trends: KeywordTrend[] }> {
-  const response = await apiRequest(
-    "GET", 
-    `/api/keyword/trends?keyword=${encodeURIComponent(keyword)}&period=${period}`,
-    undefined
-  );
-  return await response.json();
+  try {
+    const response = await apiRequest(
+      "GET", 
+      `/api/keyword/trends?keyword=${encodeURIComponent(keyword)}&period=${period}`,
+      undefined
+    );
+    return await response.json();
+  } catch (error) {
+    console.error("키워드 트렌드 조회 실패:", error);
+    throw error;
+  }
 }
 
+/**
+ * 일간 인기 키워드 트렌드 가져오기 (네이버 데이터랩 API 활용)
+ * @param category - 카테고리 (all, fashion, beauty 등)
+ * @returns 일간 인기 키워드 트렌드 정보
+ */
 export async function getDailyTrends(category: string = "all"): Promise<CategoryTrend> {
-  const response = await apiRequest("GET", `/api/trends/daily?category=${category}`, undefined);
-  return await response.json();
+  try {
+    const response = await apiRequest("GET", `/api/trends/daily?category=${category}`, undefined);
+    return await response.json();
+  } catch (error) {
+    console.error("일간 트렌드 조회 실패:", error);
+    throw error;
+  }
 }
 
+/**
+ * 주간 인기 키워드 트렌드 가져오기 (네이버 데이터랩 API 활용)
+ * @param category - 카테고리 (all, fashion, beauty 등)
+ * @returns 주간 인기 키워드 트렌드 정보
+ */
 export async function getWeeklyTrends(category: string = "all"): Promise<CategoryTrend> {
-  const response = await apiRequest("GET", `/api/trends/weekly?category=${category}`, undefined);
-  return await response.json();
+  try {
+    const response = await apiRequest("GET", `/api/trends/weekly?category=${category}`, undefined);
+    return await response.json();
+  } catch (error) {
+    console.error("주간 트렌드 조회 실패:", error);
+    throw error;
+  }
 }
 
+/**
+ * 카테고리별 인기 상품 가져오기
+ * @param category - 카테고리 (all, fashion, beauty 등)
+ * @param limit - 가져올 상품 수 
+ * @returns 인기 상품 목록
+ */
 export async function getTopProducts(category: string = "all", limit: number = 10): Promise<Product[]> {
-  const response = await apiRequest("GET", `/api/products/top?category=${category}&limit=${limit}`, undefined);
-  return await response.json();
+  try {
+    const response = await apiRequest("GET", `/api/products/top?category=${category}&limit=${limit}`, undefined);
+    return await response.json();
+  } catch (error) {
+    console.error("인기 상품 조회 실패:", error);
+    throw error;
+  }
 }

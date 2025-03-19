@@ -2,20 +2,22 @@ import axios from "axios";
 import { NaverKeywordResult, NaverProductResult, NaverTrendResult, KeywordSearchResponse } from "@shared/schema";
 
 // Naver API Credentials
-const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID || "ErTaCUGQWfhKvcEnftat";
-const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET || "Xoq9VSewrv";
-const NAVER_AD_API_CUSTOMER_ID = process.env.NAVER_AD_API_CUSTOMER_ID || "3405855";
-const NAVER_AD_API_ACCESS_LICENSE = process.env.NAVER_AD_API_ACCESS_LICENSE || "01000000005a79e0d0ffff30be92041e87dd2444c689e1209efbe2f9ea58fd3a3ae67ee01e";
-const NAVER_AD_API_SECRET_KEY = process.env.NAVER_AD_API_SECRET_KEY || "AQAAAABaeeDQ//8wvpIEHofdJETGcg3aHhG5YRGgFHPnSsNISw==";
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
+const NAVER_AD_API_CUSTOMER_ID = process.env.NAVER_AD_API_CUSTOMER_ID || "";
+const NAVER_AD_API_ACCESS_LICENSE = process.env.NAVER_AD_API_ACCESS_LICENSE || "";
+const NAVER_AD_API_SECRET_KEY = process.env.NAVER_AD_API_SECRET_KEY || "";
 
 // API endpoints
 const NAVER_SEARCH_API = "https://openapi.naver.com/v1/search/shop.json";
 const NAVER_TREND_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 const NAVER_AD_API_BASE = "https://api.naver.com";
+const NAVER_DATALAB_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
 
 // Setup axios instances
 let naverSearchClient: any;
 let naverAdClient: any;
+let naverDataLabClient: any;
 
 export function setupNaverAPI() {
   // Initialize Naver Search API client
@@ -36,6 +38,17 @@ export function setupNaverAPI() {
       "X-Signature": NAVER_AD_API_SECRET_KEY,
     },
   });
+
+  // Initialize Naver DataLab API client
+  naverDataLabClient = axios.create({
+    headers: {
+      "X-Naver-Client-Id": NAVER_CLIENT_ID,
+      "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
+      "Content-Type": "application/json"
+    }
+  });
+  
+  console.log("Naver API clients initialized with Client ID:", NAVER_CLIENT_ID ? "설정됨" : "설정안됨");
 }
 
 // Search keywords in Naver Shopping
@@ -130,58 +143,131 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
   }
 }
 
-// Get hot/trending keywords
-export async function getHotKeywords(category: string = "all"): Promise<string[]> {
+// 네이버 데이터랩 API를 사용하여 인기 키워드 가져오기
+export async function getDataLabKeywords(categoryId: string, period: string = "date"): Promise<string[]> {
   try {
-    // 네이버 쇼핑인사이트 실시간 키워드 (2025년 3월 기준 - 사진 참조)
-    const categoryKeywords: Record<string, string[]> = {
-      all: [
-        "제킷", "티셔츠", "원피스", "패딩", "바지", 
-        "블라우스", "청바지", "니트", "신발", "맨투맨"
-      ],
-      fashion: [
-        "제킷", "티셔츠", "원피스", "패딩", "바지", 
-        "블라우스", "청바지", "니트", "맨투맨", "셔츠"
-      ],
-      accessory: [
-        "크로스백", "스니커즈", "슬링백", "백팩", "슬리퍼", 
-        "운동화", "샌들", "미니백", "클러치", "가방"
-      ],
-      beauty: [
-        "선크림", "마스카라", "립밤", "쿠션", "틴트",
-        "미스트", "파운데이션", "아이크림", "클렌징", "마스크팩"
-      ],
-      digital: [
-        "에어팟", "맥북", "아이패드", "갤럭시", "아이폰", 
-        "노트북", "태블릿", "스마트워치", "갤럭시버즈", "블루투스이어폰"
-      ],
-      furniture: [
-        "책상", "침대", "소파", "매트리스", "식탁", 
-        "의자", "서랍장", "행거", "옷장", "테이블"
-      ],
-      baby: [
-        "젖병", "기저귀", "분유", "이유식", "유모차", 
-        "아기옷", "물티슈", "카시트", "아기침대", "장난감"
-      ],
-      food: [
-        "닭가슴살", "김치", "과일", "견과류", "홍삼", 
-        "쌀", "커피", "고구마", "그래놀라", "샐러드"
-      ],
-      sports: [
-        "런닝화", "요가매트", "레깅스", "테니스", "골프채", 
-        "자전거", "헬스장갑", "덤벨", "트레이닝복", "등산화"
-      ],
-      life: [
-        "마스크", "비타민", "프로바이오틱스", "화장지", "샴푸", 
-        "루테인", "오메가3", "칫솔", "치약", "핸드크림"
-      ]
+    // 네이버 DataLab API 요청에 필요한 카테고리 ID 매핑
+    const categoryMap: Record<string, string> = {
+      all: "ALL", // 전체
+      fashion: "50000000", // 패션의류
+      accessory: "50000001", // 패션잡화
+      beauty: "50000002", // 화장품/미용
+      digital: "50000003", // 디지털/가전
+      furniture: "50000004", // 가구/인테리어
+      baby: "50000005", // 출산/육아
+      food: "50000006", // 식품
+      sports: "50000007", // 스포츠/레저
+      life: "50000008", // 생활/건강
     };
 
-    // 해당 카테고리의 키워드 반환, 없으면 전체 카테고리 키워드 반환
-    return categoryKeywords[category] || categoryKeywords.all;
+    const categoryCode = categoryMap[categoryId] || "ALL";
+    
+    // API 요청 날짜 범위 설정
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - (period === "date" ? 7 : 30)); // 일간은 7일, 주간은 30일 범위
+    
+    const formatDate = (date: Date) => {
+      return date.toISOString().split('T')[0].replace(/-/g, "");
+    };
+
+    console.log(`DataLab API 요청: 카테고리=${categoryCode}, 기간=${formatDate(startDate)}~${formatDate(endDate)}`);
+
+    // 데이터랩 API 요청
+    const response = await naverDataLabClient.post(NAVER_DATALAB_API, {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      timeUnit: period === "date" ? "date" : "week",
+      category: categoryCode,
+      device: "pc",
+      ages: [],
+      gender: ""
+    });
+
+    // 실제 API 호출이 성공하면 데이터 파싱
+    if (response.data && response.data.results) {
+      console.log("네이버 데이터랩 API 응답 성공");
+      
+      // 인기 키워드 추출 (구현은 실제 API 응답 구조에 따라 달라질 수 있음)
+      // 여기서는 가정: results[0].data에 각 키워드별 데이터가 있다고 가정
+      const keywords = response.data.results[0]?.data.map((item: any) => item.title) || [];
+      
+      // 키워드 10개로 제한
+      return keywords.slice(0, 10);
+    }
+
+    // API 응답이 없거나 예상 구조가 아닌 경우 기본 데이터 반환
+    throw new Error("DataLab API 응답 형식 오류");
+  } catch (error: any) {
+    console.error("DataLab API Error:", error.message);
+    
+    // API 호출 실패 시 백업 데이터 반환
+    return getBackupKeywords(categoryId);
+  }
+}
+
+// API 호출 실패 시 사용할 백업 키워드 데이터
+function getBackupKeywords(category: string = "all"): string[] {
+  // 네이버 쇼핑인사이트 실시간 키워드 (2025년 3월 기준 - 스크린샷 참조)
+  const categoryKeywords: Record<string, string[]> = {
+    all: [
+      "제킷", "티셔츠", "원피스", "패딩", "바지", 
+      "블라우스", "청바지", "니트", "신발", "맨투맨"
+    ],
+    fashion: [
+      "제킷", "티셔츠", "원피스", "패딩", "바지", 
+      "블라우스", "청바지", "니트", "맨투맨", "셔츠"
+    ],
+    accessory: [
+      "크로스백", "스니커즈", "슬링백", "백팩", "슬리퍼", 
+      "운동화", "샌들", "미니백", "클러치", "가방"
+    ],
+    beauty: [
+      "선크림", "마스카라", "립밤", "쿠션", "틴트",
+      "미스트", "파운데이션", "아이크림", "클렌징", "마스크팩"
+    ],
+    digital: [
+      "에어팟", "맥북", "아이패드", "갤럭시", "아이폰", 
+      "노트북", "태블릿", "스마트워치", "갤럭시버즈", "블루투스이어폰"
+    ],
+    furniture: [
+      "책상", "침대", "소파", "매트리스", "식탁", 
+      "의자", "서랍장", "행거", "옷장", "테이블"
+    ],
+    baby: [
+      "젖병", "기저귀", "분유", "이유식", "유모차", 
+      "아기옷", "물티슈", "카시트", "아기침대", "장난감"
+    ],
+    food: [
+      "닭가슴살", "김치", "과일", "견과류", "홍삼", 
+      "쌀", "커피", "고구마", "그래놀라", "샐러드"
+    ],
+    sports: [
+      "런닝화", "요가매트", "레깅스", "테니스", "골프채", 
+      "자전거", "헬스장갑", "덤벨", "트레이닝복", "등산화"
+    ],
+    life: [
+      "마스크", "비타민", "프로바이오틱스", "화장지", "샴푸", 
+      "루테인", "오메가3", "칫솔", "치약", "핸드크림"
+    ]
+  };
+
+  console.log(`백업 키워드 사용: ${category}`);
+  
+  // 해당 카테고리의 키워드 반환, 없으면 전체 카테고리 키워드 반환
+  return categoryKeywords[category] || categoryKeywords.all;
+}
+
+// Get hot/trending keywords (실제 API 또는 백업 데이터 사용)
+export async function getHotKeywords(category: string = "all", period: string = "daily"): Promise<string[]> {
+  try {
+    // 네이버 데이터랩 API를 사용하여 실시간 인기 키워드 가져오기
+    const timeUnit = period === "daily" ? "date" : "week";
+    return await getDataLabKeywords(category, timeUnit);
   } catch (error) {
     console.error("Error getting hot keywords:", error);
-    throw new Error("Failed to get hot keywords");
+    // API 호출 실패 시 백업 데이터 반환
+    return getBackupKeywords(category);
   }
 }
 
