@@ -58,7 +58,17 @@ const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period }) => {
   };
 
   const handleKeywordClick = (keyword: string) => {
-    window.open(`https://search.shopping.naver.com/search/all?query=${encodeURIComponent(keyword)}`, '_blank');
+    // 인코딩 이슈 방지를 위한 처리
+    try {
+      // 이미 인코딩된 문자열인지 확인하여 중복 인코딩 방지
+      const decodedKeyword = decodeURIComponent(keyword);
+      // 다시 인코딩하여 안전하게 URL에 포함
+      const encodedKeyword = encodeURIComponent(decodedKeyword);
+      window.open(`https://search.shopping.naver.com/search/all?query=${encodedKeyword}`, '_blank');
+    } catch (e) {
+      // 디코딩에 실패한 경우 (이미 유효한 문자열) 원본 사용
+      window.open(`https://search.shopping.naver.com/search/all?query=${encodeURIComponent(keyword)}`, '_blank');
+    }
   };
 
   const formatDate = () => {
