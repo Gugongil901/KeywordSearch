@@ -10,6 +10,7 @@ import Home from "@/pages/home";
 import KeywordDetail from "@/pages/keyword-detail";
 import KeywordSearch from "@/pages/keyword-search";
 import TrackRanking from "@/pages/track-ranking";
+import KeywordInsights from "@/pages/keyword-insights";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/keyword/:keyword" component={KeywordDetail} />
       <Route path="/keyword" component={KeywordSearch} />
+      <Route path="/insights" component={KeywordInsights} />
       <Route path="/tracking" component={TrackRanking} />
       <Route component={NotFound} />
     </Switch>

@@ -5,13 +5,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
-import SearchBar from './SearchBar';
-import SummaryPanel from './SummaryPanel';
-import CompetitionAnalysis from './CompetitionAnalysis';
-import GrowthAnalysis from './GrowthAnalysis';
-import ProfitAnalysis from './ProfitAnalysis';
-import RelatedKeywords from './RelatedKeywords';
-import TopProducts from './TopProducts';
+import SearchBar from '@/components/dashboard/SearchBar';
+import SummaryPanel from '@/components/dashboard/SummaryPanel';
+import CompetitionAnalysis from '@/components/dashboard/CompetitionAnalysis';
+import GrowthAnalysis from '@/components/dashboard/GrowthAnalysis';
+import ProfitAnalysis from '@/components/dashboard/ProfitAnalysis';
+import RelatedKeywords from '@/components/dashboard/RelatedKeywords';
+import TopProducts from '@/components/dashboard/TopProducts';
 
 // Shadcn UI 컴포넌트들
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
