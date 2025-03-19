@@ -138,25 +138,45 @@ export async function searchKeyword(keyword: string): Promise<KeywordSearchRespo
     // Mock some trend data since we don't have real trend API access
     const mockTrends = generateMockTrendData(keyword);
 
-    // Generate keyword stats
+    // Generate keyword stats from product data
     const stats = calculateKeywordStats(products);
 
     // Get related keywords (인코딩 정규화 적용)
     const relatedKeywords = await getRelatedKeywords(keyword);
     const cleanedRelatedKeywords = relatedKeywords.map(kw => cleanText(kw));
 
+    // 네이버 키워드 결과 객체 생성
+    const keywordResultObj: NaverKeywordResult = {
+      keyword: cleanText(keyword),
+      searchCount: stats.estimatedSearchCount ? stats.estimatedSearchCount : 5000, // 가능한 경우 추정 검색량 사용
+      pcSearchRatio: 40, // 대략적인 PC 검색 비율
+      mobileSearchRatio: 60, // 대략적인 모바일 검색 비율
+      competitionIndex: 0, // 초기값, 아래서 계산됨
+      relatedKeywords: cleanedRelatedKeywords
+    };
+
+    // 알고리즘 모듈을 사용하여 경쟁 지수 계산
+    keywordResultObj.competitionIndex = metrics.calculateCompetitionIndex(
+      keywordResultObj.searchCount, 
+      searchResponse.data.total
+    );
+
+    // 실거래 상품 비율과 해외 상품 비율 계산
+    const realProductRatio = metrics.calculateRealProductRatio(products);
+    const foreignProductRatio = metrics.calculateForeignProductRatio(products);
+    
     return {
-      keyword: cleanText(keyword), // 키워드 자체도 정규화
-      searchCount: Math.floor(Math.random() * 50000) + 5000, // Mock data
-      pcSearchRatio: Math.floor(Math.random() * 40) + 20,
-      mobileSearchRatio: Math.floor(Math.random() * 40) + 40,
+      keyword: keywordResultObj.keyword,
+      searchCount: keywordResultObj.searchCount, 
+      pcSearchRatio: keywordResultObj.pcSearchRatio,
+      mobileSearchRatio: keywordResultObj.mobileSearchRatio,
       productCount: searchResponse.data.total,
       averagePrice: stats.averagePrice,
       totalSales: stats.totalSales,
       totalSalesCount: stats.totalSalesCount,
-      competitionIndex: Math.floor(Math.random() * 10) / 10 + 1, // Mock data between 1.0-2.0
-      realProductRatio: Math.floor(Math.random() * 30) + 50, // Mock data
-      foreignProductRatio: Math.floor(Math.random() * 20) + 5, // Mock data
+      competitionIndex: keywordResultObj.competitionIndex,
+      realProductRatio: realProductRatio,
+      foreignProductRatio: foreignProductRatio,
       products,
       relatedKeywords: cleanedRelatedKeywords,
       trends: mockTrends,
@@ -1079,20 +1099,34 @@ function calculateKeywordStats(products: NaverProductResult[]) {
     return {
       averagePrice: 0,
       totalSales: 0,
-      totalSalesCount: 0
+      totalSalesCount: 0,
+      estimatedSearchCount: 5000 // 기본값
     };
   }
 
+  // 평균 가격 계산
   const totalPrice = products.reduce((sum, product) => sum + product.price, 0);
   const averagePrice = Math.floor(totalPrice / products.length);
   
-  // Estimate sales based on rank and price (just for mock data)
+  // 검색량 추정 - 상품 개수와 리뷰 수 기반
+  // 실제로는 네이버 API에서 가져와야 하나, 예시로 구현
+  const totalReviews = products.reduce((sum, product) => sum + product.reviewCount, 0);
+  const estimatedSearchCount = Math.max(5000, 
+    Math.floor(products.length * 50 + totalReviews * 2)
+  );
+  
+  // 매출 추정 - 랭킹과 가격 기반 알고리즘
   let totalSales = 0;
   let totalSalesCount = 0;
   
   products.forEach(product => {
-    // Inverse relationship with rank - higher ranks (lower numbers) sell more
-    const estimatedSalesCount = Math.floor((1000 / (product.rank + 5)) * (Math.random() * 0.5 + 0.75));
+    // 랭킹이 높을수록(숫자가 낮을수록) 더 많이 판매
+    // 리뷰 수가 많을수록 더 많이 판매됨을 고려한 알고리즘
+    const reviewFactor = Math.sqrt(product.reviewCount + 1); // 리뷰 개수의 제곱근을 사용하여 스케일링
+    const rankFactor = Math.pow(0.9, product.rank); // 지수적으로 감소하는 랭크 영향력
+    
+    // 판매량 계산식: 기본 판매량 * 리뷰 요소 * 랭크 요소
+    const estimatedSalesCount = Math.floor(100 * reviewFactor * rankFactor);
     const estimatedSales = estimatedSalesCount * product.price;
     
     totalSalesCount += estimatedSalesCount;
@@ -1105,7 +1139,8 @@ function calculateKeywordStats(products: NaverProductResult[]) {
   return {
     averagePrice,
     totalSales,
-    totalSalesCount
+    totalSalesCount,
+    estimatedSearchCount
   };
 }
 
