@@ -1,5 +1,6 @@
 import axios from "axios";
 import { NaverKeywordResult, NaverProductResult, NaverTrendResult, KeywordSearchResponse } from "@shared/schema";
+import * as metrics from "./metrics";
 
 // Naver API Credentials
 const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
