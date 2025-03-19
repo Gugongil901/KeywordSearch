@@ -21,10 +21,9 @@ const NAVER_AD_API_BASE = "https://api.naver.com";
 const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
 
 // 쇼핑인사이트 키워드 트렌드 조회 API (카테고리별 키워드 트렌드)
-// 참고: 이 엔드포인트는 실제로 존재하지 않는 것으로 확인됨 (404 에러), 대신 통합검색어 트렌드 API를 사용
-// 원래 존재했던 API일 수 있으나 더 이상 공개되지 않거나 URL이 변경되었을 수 있음
-// 여기서는 참조용으로만 유지, 실제 호출에서는 건너뜀
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords/ratio";
+// 공식 URL: https://openapi.naver.com/v1/datalab/shopping/category/keywords
+// 이전에 잘못된 URL을 사용하여 404 에러가 발생했음
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 
 // 네이버 통합검색어 트렌드 API
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
@@ -644,7 +643,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
       // 첫 번째 시도: 키워드 API (Java 예제 형식으로 업데이트)
       try {
         // 네이버 API 문서에 맞게 완전히 수정
-        // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#쇼핑인사이트-키워드-트렌드-비율-조회
+        // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#쇼핑인사이트-카테고리별-키워드-트렌드-조회
         const keywordRequestBody = {
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
