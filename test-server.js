@@ -1,7 +1,7 @@
 import express from 'express';
 
 const app = express();
-const port = 3000;
+const port = parseInt(process.env.PORT || '3000', 10); // 환경 변수에서 포트 가져오기
 
 app.get('/', (req, res) => {
   res.send(`

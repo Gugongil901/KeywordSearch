@@ -64,10 +64,17 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = 5000;
+  // Replit 환경에서 포트 설정 로직 개선
+  // .replit 파일에 따르면 서버가 5000 포트에서 실행되어야 함
+  // 포트 매핑: 5000 -> 80, 3000 -> 3000
+  // 워크플로우에서 waitForPort = 5000으로 설정되어 있어 5000으로 사용
+  const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
+  
+  // 디버그 로그 추가
+  console.log(`Replit ID: ${process.env.REPL_ID || 'undefined'}`);
+  console.log(`Replit SLUG: ${process.env.REPL_SLUG || 'undefined'}`);
+  console.log(`환경 변수 PORT: ${process.env.PORT || 'undefined'}`);
+  console.log(`사용할 포트: ${port} (Replit 환경: ${process.env.REPL_ID ? '예' : '아니오'})`);
   server.listen({
     port,
     host: "0.0.0.0",
@@ -77,6 +84,7 @@ app.use((req, res, next) => {
     log(`외부 접속 URL: http://0.0.0.0:${port}`);
     // 접속 테스트용 로그 추가
     log(`======================================`);
+    log(`Replit 환경 확인: ${process.env.REPL_ID ? 'Replit에서 실행 중' : '로컬에서 실행 중'}`);
     log(`웹 브라우저에서 접속하려면: http://localhost:${port}`);
     log(`API 테스트: http://localhost:${port}/api/system/status`);
     log(`======================================`);

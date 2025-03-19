@@ -32,6 +32,11 @@ function App() {
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         <main className="flex-1">
+          <div className="p-4 m-4 bg-blue-100 rounded-md border-2 border-blue-500">
+            <h2 className="text-xl font-bold">Replit 접속 테스트</h2>
+            <p>이 메시지가 보이면 React 앱이 정상적으로 로드되었습니다!</p>
+            <p className="text-gray-600 mt-2">현재 시간: {new Date().toLocaleString()}</p>
+          </div>
           <TestComponent />
           <Router />
         </main>

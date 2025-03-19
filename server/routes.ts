@@ -12,6 +12,85 @@ import apiRouter from "./api/routes/api-router";
 import mlRoutes from "./api/routes/ml-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // 기본 라우트 - 간단한 HTML 응답 추가 (테스트용)
+  app.get('/hello', (_req, res) => {
+    res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>키워드 스카우터 - 테스트 페이지</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; margin: 0; padding: 40px; background: #f5f5f5; }
+          .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+          h1 { color: #3b82f6; }
+          .status { background: #dbeafe; padding: 10px; border-radius: 4px; margin: 20px 0; }
+          .debug { background: #fee2e2; padding: 10px; border-radius: 4px; margin: 20px 0; }
+          .info { background: #e0f2fe; padding: 10px; border-radius: 4px; margin: 10px 0; }
+          button { padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; }
+          button:hover { background: #2563eb; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>키워드 스카우터 테스트 페이지</h1>
+          <div class="status">서버 상태: 정상 작동 중</div>
+          <p>현재 시간: ${new Date().toLocaleString()}</p>
+          <p>이 페이지가 표시되면 서버가 제대로 작동 중입니다.</p>
+          
+          <div class="debug">
+            <h2>서버 환경 정보</h2>
+            <p>Replit ID: ${process.env.REPL_ID || '없음'}</p>
+            <p>Replit SLUG: ${process.env.REPL_SLUG || '없음'}</p>
+            <p>포트: 5000 (외부 포트: 80)</p>
+            <p>Node 버전: ${process.version}</p>
+          </div>
+          
+          <div class="info">
+            <h2>API 테스트</h2>
+            <p>상태 확인: <a href="/api/health" target="_blank">/api/health</a></p>
+            <p>시스템 상태: <a href="/api/system/status" target="_blank">/api/system/status</a></p>
+            <p>검색 테스트: <a href="/api/search?keyword=나이키" target="_blank">/api/search?keyword=나이키</a></p>
+          </div>
+          
+          <p><a href="/">메인 페이지로 이동</a></p>
+        </div>
+        
+        <script>
+          // 페이지 로드 확인
+          console.log('테스트 페이지가 로드되었습니다.');
+          
+          // 기본 API 테스트
+          fetch('/api/health')
+            .then(response => response.json())
+            .then(data => {
+              console.log('API 상태:', data);
+              document.querySelector('.status').innerHTML += '<p>API 상태: ' + JSON.stringify(data) + '</p>';
+            })
+            .catch(error => {
+              console.error('API 오류:', error);
+              document.querySelector('.status').innerHTML += '<p style="color: red;">API 오류: ' + error.message + '</p>';
+            });
+        </script>
+      </body>
+      </html>
+    `);
+  });
+  
+  // 추가 테스트 API - JSON 응답 (CORS 테스트용)
+  app.get('/test-api', (_req, res) => {
+    res.json({
+      status: "ok",
+      message: "테스트 API가 정상적으로 작동 중입니다.",
+      timestamp: new Date().toISOString(),
+      serverInfo: {
+        environment: process.env.NODE_ENV || 'development',
+        replitId: process.env.REPL_ID || 'local'
+      }
+    });
+  });
+  
   // Initialize Naver APIs
   setupNaverAPI();
   
