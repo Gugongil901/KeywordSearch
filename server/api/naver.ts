@@ -209,6 +209,9 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
       throw new Error("네이버 API 키가 설정되지 않았습니다");
     }
 
+    // 인코딩/디코딩 확인
+    console.log(`getKeywordTrends 함수 내부: 키워드=${keyword}, 기간=${period}`);
+
     const endDate = new Date();
     const startDate = new Date();
     
@@ -224,6 +227,14 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
       return date.toISOString().split('T')[0];
     };
     
+    // 키워드 트렌드 API용 키워드 그룹 생성
+    const keywordGroups = [
+      {
+        groupName: keyword,
+        keywords: [keyword]
+      }
+    ];
+    
     // 먼저 자바 예제 형식으로 데이터랩 API 시도 (POST 방식)
     try {
       console.log(`네이버 데이터랩 쇼핑인사이트 API 요청 (키워드: ${keyword})`);
@@ -237,6 +248,7 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
           name: "키워드분석",
           param: ["ALL"]  // 전체 카테고리
         }],
+        keywordGroups: keywordGroups,  // 키워드 그룹 추가
         device: "",  // 모든 기기
         gender: "",  // 모든 성별
         ages: []     // 모든 연령대
@@ -557,13 +569,16 @@ export async function getHotKeywords(category: string = "all", period: string = 
       let apiEndpoint;
       let requestSucceeded = false;
       
-      // 첫 번째 시도: 키워드 API
+      // 첫 번째 시도: 키워드 API (Java 예제 형식으로 업데이트)
       try {
         const keywordRequestBody = {
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
           timeUnit: period === "daily" ? "date" : "week",
-          category: categoryCode,
+          category: [{
+            name: category, 
+            param: [categoryCode]
+          }],
           keywordGroups: keywordGroups
         };
         
@@ -583,9 +598,9 @@ export async function getHotKeywords(category: string = "all", period: string = 
             endDate: formatDate(endDate),
             timeUnit: period === "daily" ? "date" : "week",
             keywordGroups: keywordGroups,
-            device: "pc",
-            ages: [],
-            gender: ""
+            device: "",  // 모든 기기
+            ages: [],    // 모든 연령대
+            gender: ""   // 모든 성별
           };
           
           apiEndpoint = NAVER_DATALAB_SEARCH_API;
