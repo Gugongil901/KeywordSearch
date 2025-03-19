@@ -25,6 +25,9 @@ const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shoppin
 // 이전에 잘못된 URL을 사용하여 404 에러가 발생했음
 const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 
+// 쇼핑인사이트 인기검색어 API (실시간 인기 키워드)
+const NAVER_SHOPPING_INSIGHT_API = "https://openapi.naver.com/v1/datalab/shopping/categories/keywords/age";
+
 // 네이버 통합검색어 트렌드 API
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
 
@@ -640,10 +643,37 @@ export async function getHotKeywords(category: string = "all", period: string = 
       let apiEndpoint;
       let requestSucceeded = false;
       
-      // 첫 번째 시도: 키워드 API (수정된 형식)
+      // 첫 번째 시도: 쇼핑인사이트 인기검색어 API (실시간 데이터)
       try {
-        // 네이버 API 오류 메시지 기반으로 정확한 형식 사용
-        // category 필드를 문자열로 수정 (TypeError: .category -> should be string)
+        // 쇼핑인사이트 인기검색어 API 호출
+        const insightBody = {
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+          timeUnit: period === "daily" ? "date" : "week",
+          category: categoryCode,
+          device: "",
+          gender: "",
+          ages: ["10", "20", "30", "40", "50", "60"]  // 전 연령대 포함
+        };
+        
+        apiEndpoint = NAVER_SHOPPING_INSIGHT_API;
+        console.log("1. 쇼핑인사이트 인기검색어 API 요청:", JSON.stringify(insightBody).substring(0, 300) + "...");
+        console.log("쇼핑인사이트 인기검색어 API 엔드포인트:", apiEndpoint);
+        
+        response = await naverDataLabClient.post(apiEndpoint, insightBody);
+        requestSucceeded = true;
+        
+        // 응답이 유효한지 확인
+        if (response.data && response.data.results && response.data.results.length > 0) {
+          // 인기 키워드 추출
+          const keywordList = response.data.results[0].data.map((item: any) => item.title);
+          if (keywordList.length > 0) {
+            console.log("✅ 쇼핑인사이트 API에서 실시간 인기검색어 추출 성공:", keywordList.slice(0, 5).join(", ") + "...");
+            return keywordList.slice(0, 10); // 상위 10개 키워드 반환
+          }
+        }
+        
+        // 데이터가 없거나 형식이 맞지 않으면 키워드 트렌드 API 시도
         const keywordBody = {
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
@@ -656,7 +686,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
         };
         
         apiEndpoint = NAVER_DATALAB_KEYWORD_API;
-        console.log("1. 키워드 트렌드 API 요청 (수정된 형식):", JSON.stringify(keywordBody).substring(0, 300) + "...");
+        console.log("1-2. 키워드 트렌드 API 요청 (수정된 형식):", JSON.stringify(keywordBody).substring(0, 300) + "...");
         console.log("키워드 트렌드 API 엔드포인트:", apiEndpoint);
         
         response = await naverDataLabClient.post(apiEndpoint, keywordBody);
