@@ -43,7 +43,7 @@ const naverClient = axios.create({
   headers: {
     "X-Naver-Client-Id": NAVER_CLIENT_ID,
     "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
-    "Content-Type": "application/json"
+    "Content-Type": "application/json; charset=utf-8"
   },
   timeout: 10000
 });

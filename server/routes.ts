@@ -405,6 +405,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("모든 네이버 API 엔드포인트 테스트 시작");
       const result = await testAllNaverAPIs();
+      
+      // UTF-8로 명시적 인코딩 설정
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.json({
         message: "API 테스트 완료",
         result
@@ -420,6 +423,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("기본 네이버 API 동작 확인 시작");
       const result = await testBasicNaverAPIs();
+      
+      // UTF-8로 명시적 인코딩 설정
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
       res.json({
         message: "API 동작 확인 완료",
         success: result

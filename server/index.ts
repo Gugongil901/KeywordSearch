@@ -6,6 +6,14 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// 모든 응답에 대해 UTF-8 인코딩 설정
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api')) {
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  }
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
