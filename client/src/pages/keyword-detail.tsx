@@ -1,508 +1,659 @@
-import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
+import { useQuery } from '@tanstack/react-query';
 import { 
-  CategoryTrend, 
-  KeywordSearchResult, 
-  Product,
-  searchKeyword,
+  searchKeyword, 
+  getKeywordAnalysis,
+  KeywordSearchResult,
+  KeywordAnalysis,
+  KeywordTrend,
   getKeywordTrends
 } from '@/lib/naver-api';
 import { useToast } from '@/hooks/use-toast';
-import { ConfettiEffect } from '@/components/ui/confetti-effect';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer, 
-  BarChart, 
-  Bar,
-  Legend
-} from 'recharts';
-
-// 아이콘 임포트
-import { 
-  ArrowUp, 
-  ArrowDown, 
-  ArrowRight, 
-  TrendingUp, 
-  ShoppingBag, 
-  Search, 
-  LineChart as LineChartIcon,
-  PieChart,
-  BarChart2,
-  Activity,
-  Percent
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  ArrowRight,
+  Info,
+  TrendingUp,
+  BarChart3,
+  ShoppingCart,
+  DollarSign,
+  LineChart,
+  Percent,
+  CircleAlert,
+  CircleCheck,
+  ChevronsLeft,
+  ChevronsRight,
+  HelpCircle
 } from 'lucide-react';
 
-const formatNumber = (num: number) => {
-  return new Intl.NumberFormat('ko-KR').format(num);
-};
-
-const formatCurrency = (num: number) => {
-  return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(num).replace('₩', '');
-};
-
-const getChangeColor = (value: number) => {
-  if (value > 0) return 'text-red-500';
-  if (value < 0) return 'text-blue-500';
-  return 'text-gray-500';
-};
-
-const getChangeIcon = (value: number) => {
-  if (value > 0) return <ArrowUp className="inline mr-1" size={16} />;
-  if (value < 0) return <ArrowDown className="inline mr-1" size={16} />;
-  return <ArrowRight className="inline mr-1" size={16} />;
-};
-
-const getChangePercent = (value: number) => {
-  const absValue = Math.abs(value);
-  return `${absValue.toFixed(1)}%`;
-};
-
-// 경쟁강도에 따른 색상 판단
-const getCompetitionColor = (value: number) => {
-  if (value > 80) return 'text-red-500';
-  if (value > 60) return 'text-orange-500';
-  if (value > 40) return 'text-yellow-500';
-  if (value > 20) return 'text-green-500';
-  return 'text-blue-500';
-};
-
-// 경쟁강도에 따른 텍스트 판단
-const getCompetitionText = (value: number) => {
-  if (value > 80) return '매우 높음';
-  if (value > 60) return '높음';
-  if (value > 40) return '보통';
-  if (value > 20) return '낮음';
-  return '매우 낮음';
-};
-
 export default function KeywordDetailPage() {
-  const [location] = useLocation();
+  const [, setLocation] = useLocation();
+  const [searchTerm, setSearchTerm] = useState('');
   const { toast } = useToast();
-  const [keyword, setKeyword] = useState<string>('');
-  const [showConfetti, setShowConfetti] = useState(false);
   
-  // URL에서 키워드 파라미터 추출
+  // URL에서 키워드 파라미터 가져오기
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const keywordParam = searchParams.get('keyword');
-    if (keywordParam) {
-      setKeyword(keywordParam);
+    const path = window.location.pathname;
+    const keyword = path.substring(path.lastIndexOf('/') + 1);
+    
+    if (keyword) {
+      const decodedKeyword = decodeURIComponent(keyword);
+      setSearchTerm(decodedKeyword);
     }
-  }, [location]);
-
-  // 키워드 검색 결과 조회
+  }, []);
+  
+  // 키워드 검색 결과 쿼리
   const { 
     data: keywordData, 
-    isLoading: isKeywordLoading,
-    error: keywordError 
+    isLoading: isKeywordLoading 
   } = useQuery({
-    queryKey: ['/api/search', keyword],
+    queryKey: ['/api/search', searchTerm],
     queryFn: async () => {
-      if (!keyword) return null;
-      return await searchKeyword(keyword);
+      if (!searchTerm) return null;
+      return await searchKeyword(searchTerm);
     },
-    enabled: !!keyword
+    enabled: !!searchTerm
   });
-
-  // 키워드 트렌드 데이터 조회 (일간)
+  
+  // 키워드 분석 데이터 쿼리 (검색광고 API)
+  const { 
+    data: adData, 
+    isLoading: isAdDataLoading 
+  } = useQuery({
+    queryKey: ['/api/keyword/analysis', searchTerm],
+    queryFn: async () => {
+      if (!searchTerm) return null;
+      try {
+        return await getKeywordAnalysis(searchTerm);
+      } catch (error) {
+        console.error('광고 데이터 로딩 실패:', error);
+        return null;
+      }
+    },
+    enabled: !!searchTerm
+  });
+  
+  // 키워드 트렌드 데이터 쿼리
   const { 
     data: trendData, 
-    isLoading: isTrendLoading 
+    isLoading: isTrendDataLoading 
   } = useQuery({
-    queryKey: ['/api/keyword/trends', keyword, 'daily'],
+    queryKey: ['/api/keyword/trends', searchTerm],
     queryFn: async () => {
-      if (!keyword) return null;
-      return await getKeywordTrends(keyword, 'daily');
+      if (!searchTerm) return null;
+      try {
+        return await getKeywordTrends(searchTerm, 'daily');
+      } catch (error) {
+        console.error('트렌드 데이터 로딩 실패:', error);
+        return null;
+      }
     },
-    enabled: !!keyword
+    enabled: !!searchTerm
   });
   
-  // 키워드 트렌드 데이터 조회 (주간)
-  const { 
-    data: weeklyTrendData, 
-    isLoading: isWeeklyTrendLoading 
-  } = useQuery({
-    queryKey: ['/api/keyword/trends', keyword, 'weekly'],
-    queryFn: async () => {
-      if (!keyword) return null;
-      return await getKeywordTrends(keyword, 'weekly');
-    },
-    enabled: !!keyword
-  });
-
-  // 검색 데이터 로딩에 따른 컨페티 효과 표시
-  useEffect(() => {
-    if (keywordData && keywordData.searchCount > 10000) {
-      setShowConfetti(true);
-      
-      // 3초 후 컨페티 효과 종료
-      const timer = setTimeout(() => {
-        setShowConfetti(false);
-      }, 3000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [keywordData]);
+  // 로딩 상태 확인
+  const isLoading = isKeywordLoading || isAdDataLoading || isTrendDataLoading;
   
-  // 에러 처리
-  useEffect(() => {
-    if (keywordError) {
-      toast({
-        title: "검색 오류",
-        description: "키워드 검색 중 오류가 발생했습니다. 다시 시도해주세요.",
-        variant: "destructive"
-      });
+  // 숫자 포맷팅 함수
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('ko-KR').format(num);
+  };
+  
+  // 가격 포맷팅 함수
+  const formatCurrency = (num: number) => {
+    return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(num).replace('₩', '');
+  };
+  
+  // 경쟁도 표시 텍스트
+  const getCompetitionText = (value: number) => {
+    if (value > 75) return '매우 높음';
+    if (value > 50) return '높음';
+    if (value > 30) return '보통';
+    if (value > 15) return '낮음';
+    return '매우 낮음';
+  };
+  
+  // 경쟁도 색상
+  const getCompetitionColor = (value: number) => {
+    if (value > 75) return 'text-red-500';
+    if (value > 50) return 'text-orange-500';
+    if (value > 30) return 'text-yellow-500';
+    if (value > 15) return 'text-green-500';
+    return 'text-blue-500';
+  };
+  
+  // 경쟁도 배지 색상
+  const getCompetitionBadgeColor = (value: number) => {
+    if (value > 75) return 'bg-red-100 text-red-800';
+    if (value > 50) return 'bg-orange-100 text-orange-800';
+    if (value > 30) return 'bg-yellow-100 text-yellow-800';
+    if (value > 15) return 'bg-green-100 text-green-800';
+    return 'bg-blue-100 text-blue-800';
+  };
+  
+  // 지표 상태에 따른 배지 색상
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case '매우높음':
+      case '매우좋음':
+        return 'bg-blue-100 text-blue-800';
+      case '높음':
+      case '좋음':
+        return 'bg-green-100 text-green-800';
+      case '보통':
+        return 'bg-yellow-100 text-yellow-800';
+      case '낮음':
+      case '나쁨':
+        return 'bg-orange-100 text-orange-800';
+      case '매우낮음':
+      case '매우나쁨':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
-  }, [keywordError, toast]);
-
-  // 차트 데이터 포맷팅 (일간)
-  const dailyChartData = trendData?.trends.map(item => ({
-    date: item.date.substring(5), // MM-DD 형식으로 변환
-    검색량: item.count
-  })) || [];
-
-  // 차트 데이터 포맷팅 (주간)
-  const weeklyChartData = weeklyTrendData?.trends.map(item => ({
-    date: item.date.substring(5), // MM-DD 형식으로 변환
-    검색량: item.count
-  })) || [];
-
-  // 경쟁사 제품 목록
-  const competitorProducts = keywordData?.products || [];
-
-  if (isKeywordLoading) {
+  };
+  
+  // 숫자 변화 표시 (상승/하락)
+  const renderTrend = (value: number, type: 'positive' | 'negative' = 'positive') => {
+    const isPositive = value > 0;
+    const color = type === 'positive' 
+      ? (isPositive ? 'text-green-500' : 'text-red-500')
+      : (isPositive ? 'text-red-500' : 'text-green-500');
+      
     return (
-      <div className="container mx-auto py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">키워드 분석 중...</h1>
-          <p className="text-gray-500">'{keyword}' 키워드에 대한 상세 정보를 불러오는 중입니다.</p>
-          <div className="flex justify-center mt-4">
-            <Progress className="w-64" value={70} />
+      <span className={`flex items-center ${color}`}>
+        {isPositive ? 
+          <ArrowUpRight className="w-4 h-4 mr-1" /> : 
+          <ArrowDownRight className="w-4 h-4 mr-1" />
+        }
+        {Math.abs(value)}%
+      </span>
+    );
+  };
+  
+  // 로딩 중 스켈레톤 컴포넌트
+  const LoadingSkeleton = () => (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row gap-4">
+        <Skeleton className="h-32 w-32" />
+        <div className="flex-1 space-y-2">
+          <Skeleton className="h-10 w-3/4" />
+          <Skeleton className="h-6 w-1/2" />
+          <div className="flex gap-2 mt-2">
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-8 w-20" />
           </div>
         </div>
       </div>
-    );
-  }
-
-  if (!keywordData && !isKeywordLoading) {
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+        <Skeleton className="h-28 w-full" />
+      </div>
+      
+      <Skeleton className="h-64 w-full" />
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Skeleton className="h-72 w-full" />
+        <Skeleton className="h-72 w-full" />
+      </div>
+    </div>
+  );
+  
+  // 데이터가 없는 경우
+  if (!isLoading && (!keywordData || !adData)) {
     return (
       <div className="container mx-auto py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">키워드를 찾을 수 없습니다</h1>
-          <p className="text-gray-500">검색할 키워드를 입력하세요.</p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>데이터를 찾을 수 없습니다</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>'{searchTerm}' 키워드에 대한 분석 데이터를 찾을 수 없습니다.</p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => setLocation('/')}
+            >
+              <ChevronsLeft className="mr-2 h-4 w-4" />
+              홈으로 돌아가기
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
-
-  // 가상의 지표값 계산 (실제 API 응답에 따라 조정 필요)
-  const pcRatio = keywordData?.pcSearchRatio || 0;
-  const mobileRatio = keywordData?.mobileSearchRatio || 0;
-  const competitionIndex = keywordData?.competitionIndex || 0;
-  const averagePrice = keywordData?.averagePrice || 0;
-  const totalSales = keywordData?.totalSales || 0;
-  const totalSalesCount = keywordData?.totalSalesCount || 0;
   
-  // 월 검색량
-  const monthlySearchVolume = keywordData?.searchCount || 0;
-  
-  // 임의의 변동률 - 실제로는 이전 데이터와 비교하여 계산해야 함
-  const randomChange = () => (Math.random() - 0.5) * 20;
-  const searchVolumeChange = randomChange();
-  const conversionRateChange = randomChange();
-  const competitionIndexChange = randomChange();
-  const priceChange = randomChange();
-
   return (
     <div className="container mx-auto py-6">
-      {/* 컨페티 효과 */}
-      <ConfettiEffect 
-        trigger={showConfetti} 
-        duration={3000}
-        particleCount={150}
-        spread={180}
-      />
-      
-      {/* 키워드 헤더 */}
-      <div className="flex items-center mb-6">
-        <h1 className="text-3xl font-bold mr-3">{keyword}</h1>
-        <Badge variant="outline" className="text-sm bg-primary/10">
-          {keywordData?.productCount 
-            ? `관련 상품 ${formatNumber(keywordData.productCount)}개` 
-            : '데이터 분석 중'}
-        </Badge>
+      {/* 상단 네비게이션 */}
+      <div className="flex justify-between items-center mb-6">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => window.history.back()}
+        >
+          <ChevronsLeft className="mr-2 h-4 w-4" />
+          뒤로 가기
+        </Button>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="sm">
+            다른 키워드 검색
+          </Button>
+          <Button size="sm">
+            트렌드 분석
+          </Button>
+        </div>
       </div>
       
-      {/* 주요 지표 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center">
-              <Search className="mr-2" size={16} />
-              월 검색량
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(monthlySearchVolume)}
+      {isLoading ? (
+        <LoadingSkeleton />
+      ) : keywordData && adData ? (
+        <>
+          {/* 키워드 기본 정보 */}
+          <div className="mb-8 flex items-start">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h1 className="text-3xl font-bold">{keywordData.keyword}</h1>
+                <Badge 
+                  className={getCompetitionBadgeColor(keywordData.competitionIndex)}
+                >
+                  {getCompetitionText(keywordData.competitionIndex)}
+                </Badge>
+              </div>
+              <div className="text-muted-foreground mb-4 flex items-center gap-2">
+                실시간 &gt; 건강식품 &gt; 영양제 &gt; <span className="font-medium">{keywordData.keyword} (100%)</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {keywordData.relatedKeywords.slice(0, 5).map((kw, i) => (
+                  <Badge variant="outline" key={i}>{kw}</Badge>
+                ))}
+                {keywordData.relatedKeywords.length > 5 && (
+                  <Badge variant="outline">+{keywordData.relatedKeywords.length - 5}개</Badge>
+                )}
+              </div>
             </div>
-            <div className={`text-sm mt-1 ${getChangeColor(searchVolumeChange)}`}>
-              {getChangeIcon(searchVolumeChange)}
-              {getChangePercent(searchVolumeChange)} 전월 대비
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center">
-              <ShoppingBag className="mr-2" size={16} />
-              평균 판매가
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(averagePrice)}원
-            </div>
-            <div className={`text-sm mt-1 ${getChangeColor(priceChange)}`}>
-              {getChangeIcon(priceChange)}
-              {getChangePercent(priceChange)} 전월 대비
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center">
-              <Activity className="mr-2" size={16} />
-              총 판매액
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(totalSales)}원
-            </div>
-            <div className="text-sm mt-1 text-gray-500">
-              판매량: {formatNumber(totalSalesCount)}개
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground flex items-center">
-              <TrendingUp className="mr-2" size={16} />
-              경쟁 강도
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${getCompetitionColor(competitionIndex)}`}>
-              {getCompetitionText(competitionIndex)}
-            </div>
-            <div className="text-sm mt-1 text-gray-500">
-              지수: {competitionIndex.toFixed(1)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* 상세 분석 데이터 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* 왼쪽 열: 상품 정보 및 라이벌 */}
-        <div className="lg:col-span-1">
-          {/* 상품 이미지 */}
-          {competitorProducts.length > 0 && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-lg">대표 상품</CardTitle>
-                <CardDescription>검색 결과 상위 상품</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex justify-center mb-4">
-                  <img 
-                    src={competitorProducts[0]?.image} 
-                    alt={competitorProducts[0]?.title} 
-                    className="max-h-48 object-contain"
-                  />
-                </div>
-                <h3 className="font-medium truncate">{competitorProducts[0]?.title}</h3>
+          </div>
+          
+          {/* 키워드 통계 요약 - 첫 번째 줄 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-2 text-sm text-muted-foreground">상품수</div>
+                <div className="text-2xl font-bold">{formatNumber(keywordData.productCount)} 개</div>
                 <div className="flex justify-between mt-2">
-                  <span className="text-muted-foreground">{competitorProducts[0]?.brandName || '일반 브랜드'}</span>
-                  <span className="font-semibold">{formatCurrency(competitorProducts[0]?.price)}원</span>
+                  <div className="text-sm text-muted-foreground">월 평균 가격</div>
+                  <div className="text-sm font-medium">{formatCurrency(keywordData.averagePrice)} 원</div>
                 </div>
               </CardContent>
             </Card>
-          )}
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-2 text-sm text-muted-foreground">Top 40</div>
+                <div className="text-2xl font-bold">6개월 매출</div>
+                <div className="flex justify-between mt-2">
+                  <div className="text-sm">12 억원</div>
+                  <div className="text-sm">6개월 판매량 27,257 개</div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-2 text-sm text-muted-foreground">Top 80</div>
+                <div className="text-2xl font-bold">6개월 매출</div>
+                <div className="flex justify-between mt-2">
+                  <div className="text-sm">122 억원</div>
+                  <div className="text-sm">6개월 판매량 252,905 개</div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <div className="mb-2 text-sm text-muted-foreground">연관 키워드</div>
+                <div className="grid grid-cols-2 gap-1">
+                  <div>
+                    <div className="text-sm text-muted-foreground">검색수</div>
+                    <div className="text-base font-medium">480</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">상품수</div>
+                    <div className="text-base font-medium">1,085</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">출시일평균</div>
+                    <div className="text-base font-medium">320</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">정가상품평균</div>
+                    <div className="text-base font-medium">1,260</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           
-          {/* 디바이스 비율 */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg">디바이스 비율</CardTitle>
-              <CardDescription>PC와 모바일 검색 비율</CardDescription>
+          {/* 주요 지표 카드 */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            {/* 1. 종합 섹션 */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-green-500">
+                  <LineChart className="w-5 h-5 mr-2" />
+                  종합
+                </CardTitle>
+                <CardDescription>시장 총괄지표</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm">경쟁강도</span>
+                      <span className="text-sm bg-green-100 text-green-800 px-2 rounded-full">낮음</span>
+                    </div>
+                    <div className="text-2xl font-bold">3.23</div>
+                    <div className="text-xs text-muted-foreground">
+                      상품수 {formatNumber(keywordData.productCount)}개<br />
+                      월 검색수 {formatNumber(keywordData.searchCount)}회
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-2 pt-2">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs">실거래상품 비율</span>
+                      </div>
+                      <div className="text-lg font-bold text-green-500">68%</div>
+                      <Badge className="bg-green-100 text-green-800 font-normal">좋음</Badge>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs">정품상품 비율</span>
+                      </div>
+                      <div className="text-lg font-bold text-orange-500">70%</div>
+                      <Badge className="bg-orange-100 text-orange-800 font-normal">보통</Badge>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs">해외상품 비율</span>
+                      </div>
+                      <div className="text-lg font-bold text-blue-500">3%</div>
+                      <Badge className="bg-blue-100 text-blue-800 font-normal">매우낮음</Badge>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-xs">1년 내 제시 비율</span>
+                    </div>
+                    <div className="text-lg font-bold text-orange-500">25%</div>
+                    <Badge className="bg-orange-100 text-orange-800 font-normal">보통</Badge>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      1개월 내 6개월 8%
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* 2. 나쁨 섹션 */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-yellow-500">
+                  <DollarSign className="w-5 h-5 mr-2" />
+                  나쁨
+                </CardTitle>
+                <CardDescription>광고 효율지표</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">광고클릭률</span>
+                      </div>
+                      <div className="text-2xl font-bold">1.19%</div>
+                      <Badge className="bg-yellow-100 text-yellow-800 font-normal">보통</Badge>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        PC 0.35%<br />
+                        MOBILE 1.41%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">클릭경쟁도</span>
+                      </div>
+                      <div className="text-2xl font-bold">290.85</div>
+                      <Badge className="bg-orange-100 text-orange-800 font-normal">나쁨</Badge>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        상품수 {formatNumber(keywordData.productCount)}개<br />
+                        검색수 850회
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">키워드비 광고비</span>
+                      </div>
+                      <div className="text-2xl font-bold">0.158</div>
+                      <Badge className="bg-orange-100 text-orange-800 font-normal">나쁨</Badge>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        광고비 6,232원<br />
+                        클릭수 39,375회
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">클릭대비 광고비</span>
+                      </div>
+                      <div className="text-2xl font-bold">7.33</div>
+                      <Badge className="bg-orange-100 text-orange-800 font-normal">나쁨</Badge>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        광고비 6,232원<br />
+                        클릭수 850회
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* 3. 아주좋음 섹션 */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="flex items-center text-blue-500">
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  아주좋음
+                </CardTitle>
+                <CardDescription>구매 성장지표</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">구매 경쟁강도</span>
+                      </div>
+                      <div className="text-2xl font-bold">0.50</div>
+                      <Badge className="bg-blue-100 text-blue-800 font-normal">매우좋음</Badge>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        구매 상품수 38,340개<br />
+                        월 검색수 {formatNumber(keywordData.searchCount)}회
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">로켓상품 비율</span>
+                      </div>
+                      <div className="text-2xl font-bold">52.78%</div>
+                      <Badge className="bg-yellow-100 text-yellow-800 font-normal">보통</Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">제한상품 비율</span>
+                      </div>
+                      <div className="text-2xl font-bold">9.72%</div>
+                      <Badge className="bg-blue-100 text-blue-800 font-normal">매우좋음</Badge>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm">광고 권장가</span>
+                      </div>
+                      <div className="text-2xl font-bold">29,827원</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm">광고 입찰</span>
+                    </div>
+                    <div className="text-2xl font-bold">20,162원</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* 소팔성 섹션 */}
+          <Card className="mb-8">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-green-500">
+                <Percent className="w-5 h-5 mr-2" />
+                소팔성
+              </CardTitle>
+              <CardDescription>키워드 판매 점수</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span>PC</span>
-                    <span>{pcRatio.toFixed(1)}%</span>
+                  <div className="flex justify-between mb-2">
+                    <span>색상</span>
+                    <span className="font-medium">1위</span>
                   </div>
-                  <Progress value={pcRatio} />
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="px-3 py-0.5">소형</Badge>
+                    <Badge variant="outline" className="px-3 py-0.5">빨사과</Badge>
+                    <Badge variant="outline" className="px-3 py-0.5">블랙</Badge>
+                  </div>
                 </div>
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span>모바일</span>
-                    <span>{mobileRatio.toFixed(1)}%</span>
+                  <div className="flex justify-between mb-2">
+                    <span>특징</span>
+                    <span className="font-medium">1위</span>
                   </div>
-                  <Progress value={mobileRatio} />
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant="outline" className="px-3 py-0.5">소형</Badge>
+                    <Badge variant="outline" className="px-3 py-0.5">블루라이트</Badge>
+                    <Badge variant="outline" className="px-3 py-0.5">카로티노이드</Badge>
+                    <Badge variant="outline" className="px-3 py-0.5">이뇨작용</Badge>
+                    <Badge variant="outline" className="px-3 py-0.5">창문형</Badge>
+                    <Badge variant="outline" className="px-3 py-0.5">홀줄무늬</Badge>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          {/* 연관 키워드 */}
-          <Card>
+          {/* 상품 분석 및 추천 상품 */}
+          <div className="mb-6">
+            <Tabs defaultValue="products">
+              <TabsList className="mb-4">
+                <TabsTrigger value="products">
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  인기 상품 분석
+                </TabsTrigger>
+                <TabsTrigger value="recommendations">
+                  <TrendingUp className="mr-2 h-4 w-4" />
+                  추천 상품
+                </TabsTrigger>
+                <TabsTrigger value="competitors">
+                  <ShoppingCart className="mr-2 h-4 w-4" />
+                  경쟁 브랜드
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="products">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {keywordData.products.slice(0, 6).map((product) => (
+                    <Card key={product.productId} className="overflow-hidden">
+                      <div className="aspect-square w-full overflow-hidden flex items-center justify-center bg-gray-50">
+                        <img 
+                          src={product.image} 
+                          alt={product.title} 
+                          className="h-full w-auto object-contain"
+                        />
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="line-clamp-2 text-sm h-10">{product.title}</h3>
+                        <div className="flex justify-between mt-2">
+                          <span className="text-sm text-muted-foreground">{product.brandName || '일반 브랜드'}</span>
+                          <span className="font-medium">{formatCurrency(product.price)}원</span>
+                        </div>
+                        <div className="flex justify-between mt-1">
+                          <span className="text-xs text-muted-foreground">리뷰 {formatNumber(product.reviewCount)}개</span>
+                          <span className="text-xs text-muted-foreground">순위 {product.rank}위</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="recommendations">
+                <Card>
+                  <CardContent className="p-6">
+                    <p>추천 상품 목록이 준비되지 않았습니다.</p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="competitors">
+                <Card>
+                  <CardContent className="p-6">
+                    <p>경쟁 브랜드 분석이 준비되지 않았습니다.</p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+          
+          {/* 연관 키워드 리스트 */}
+          <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-lg">연관 키워드</CardTitle>
-              <CardDescription>자주 함께 검색되는 키워드</CardDescription>
+              <CardTitle>연관 키워드</CardTitle>
+              <CardDescription>이 키워드와 함께 많이 검색되는 키워드</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-2">
-                {keywordData?.relatedKeywords?.map((relatedKeyword, index) => (
-                  <Badge key={index} variant="secondary">
-                    {relatedKeyword}
-                  </Badge>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {keywordData.relatedKeywords.slice(0, 16).map((keyword, idx) => (
+                  <div key={idx} className="group flex justify-between items-center p-2 hover:bg-muted rounded cursor-pointer">
+                    <span>{keyword}</span>
+                    <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-        </div>
-        
-        {/* 중앙과 오른쪽 열: 차트 및 통계 */}
-        <div className="lg:col-span-2">
-          {/* 트렌드 차트 */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="text-lg">검색 트렌드</CardTitle>
-              <CardDescription>기간별 검색량 추이</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="daily">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="daily">일간</TabsTrigger>
-                  <TabsTrigger value="weekly">주간</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="daily" className="h-[300px]">
-                  {isTrendLoading ? (
-                    <div className="h-full flex items-center justify-center">
-                      <p>트렌드 데이터 로딩 중...</p>
-                    </div>
-                  ) : dailyChartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={dailyChartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Line
-                          type="monotone"
-                          dataKey="검색량"
-                          stroke="#4f46e5"
-                          strokeWidth={2}
-                          dot={{ r: 4 }}
-                          activeDot={{ r: 6 }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-full flex items-center justify-center">
-                      <p>일간 트렌드 데이터가 없습니다.</p>
-                    </div>
-                  )}
-                </TabsContent>
-                
-                <TabsContent value="weekly" className="h-[300px]">
-                  {isWeeklyTrendLoading ? (
-                    <div className="h-full flex items-center justify-center">
-                      <p>트렌드 데이터 로딩 중...</p>
-                    </div>
-                  ) : weeklyChartData.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={weeklyChartData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="date" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="검색량" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-full flex items-center justify-center">
-                      <p>주간 트렌드 데이터가 없습니다.</p>
-                    </div>
-                  )}
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-          
-          {/* 경쟁사 상품 목록 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">경쟁 상품 분석</CardTitle>
-              <CardDescription>검색 결과 상위 상품 목록</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr>
-                      <th className="text-left pb-2">순위</th>
-                      <th className="text-left pb-2">상품명</th>
-                      <th className="text-left pb-2">브랜드</th>
-                      <th className="text-right pb-2">가격</th>
-                      <th className="text-right pb-2">리뷰</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {competitorProducts.slice(0, 5).map((product, index) => (
-                      <tr key={product.productId} className="border-t">
-                        <td className="py-3 pr-4">{index + 1}</td>
-                        <td className="py-3 pr-4 max-w-xs truncate">
-                          {product.title}
-                        </td>
-                        <td className="py-3 pr-4">
-                          {product.brandName || '일반 브랜드'}
-                        </td>
-                        <td className="py-3 pr-4 text-right">
-                          {formatCurrency(product.price)}원
-                        </td>
-                        <td className="py-3 text-right">
-                          {product.reviewCount > 0 
-                            ? formatNumber(product.reviewCount) 
-                            : '-'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+        </>
+      ) : null}
     </div>
   );
 }
