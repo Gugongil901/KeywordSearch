@@ -1,13 +1,17 @@
 import axios from "axios";
 
-const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID || "ErTaCUGQWfhKvcEnftat";
-const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET || "Xoq9VSewrv";
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
+
+if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
+  console.error("네이버 API 키가 설정되지 않았습니다. Secrets에서 API 키를 설정해주세요.");
+}
 
 // Shopping Insight API
 export async function searchShoppingInsight(keyword: string) {
   try {
     const url = "https://openapi.naver.com/v1/datalab/shopping/categories";
-    
+
     const response = await axios.post(
       url,
       {
@@ -29,14 +33,14 @@ export async function searchShoppingInsight(keyword: string) {
         }
       }
     );
-    
+
     return response.data;
   } catch (error) {
     console.error("Error in searchShoppingInsight:", error);
     if (axios.isAxiosError(error) && error.response) {
       console.error("API response error:", error.response.data);
     }
-    throw new Error("Failed to fetch shopping insight");
+    throw new Error("Failed to fetch shopping insight data");
   }
 }
 
