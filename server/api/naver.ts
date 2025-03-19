@@ -15,21 +15,16 @@ const NAVER_AD_API_BASE = "https://api.naver.com";
 // 네이버 데이터랩 API 엔드포인트 (2025년 3월 기준)
 // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
 
-// 네이버 API 엔드포인트 - 네이버 개발자 센터 문서 기반 엔드포인트
+// 네이버 API 엔드포인트 - 네이버 개발자 센터 공식 문서 기반 엔드포인트
 
 // 쇼핑인사이트 분야별 트렌드 조회 API (동작 확인됨)
 const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
 
-// 쇼핑인사이트 키워드 트렌드 조회 API
+// 쇼핑인사이트 키워드 트렌드 조회 API (카테고리별 키워드 트렌드)
+// 2023년 API 공식 문서: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
 const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 
-// 쇼핑인사이트 분야별 인기 검색어 조회 API 
-const NAVER_SHOPPING_INSIGHT_RANKS_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
-
-// 쇼핑인사이트 기기별 트렌드 조회 API
-const NAVER_DATALAB_KEYWORD_DEVICE_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords/device";
-
-// 네이버 통합검색어 트렌드 API (백업)
+// 네이버 통합검색어 트렌드 API
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
 
 // Setup axios instances
@@ -565,6 +560,15 @@ export async function getHotKeywords(category: string = "all", period: string = 
       console.error(`네이버 클라이언트 시크릿: ${NAVER_CLIENT_SECRET ? "설정됨" : "미설정"}`);
       throw new Error("네이버 API 키가 설정되지 않았습니다");
     }
+    
+    console.log(`네이버 API 인증 정보: 클라이언트 ID=${NAVER_CLIENT_ID ? "설정됨" : "미설정"}, 시크릿=${NAVER_CLIENT_SECRET ? "설정됨" : "미설정"}`);
+    
+    // 요청 헤더 로깅 (디버깅용)
+    console.log("요청 헤더:", JSON.stringify({
+      "X-Naver-Client-Id": "***",
+      "X-Naver-Client-Secret": "***", 
+      "Content-Type": "application/json"
+    }));
 
     // 네이버 DataLab API 요청에 필요한 카테고리 ID 매핑
     const categoryMap: Record<string, string> = {
