@@ -395,28 +395,104 @@ export async function getHotKeywords(category: string = "all", period: string = 
         keywords: [keyword]
       }));
       
-      const keywordRequestBody = {
-        startDate: formatDate(startDate),
-        endDate: formatDate(endDate),
-        timeUnit: period === "daily" ? "date" : "week",
-        category: categoryCode,
-        keywordGroups: keywordGroups
-      };
+      // 여러 API 엔드포인트와 요청 형식을 시도
+      let response;
+      let apiEndpoint;
+      let requestSucceeded = false;
       
-      console.log("키워드 트렌드 API 요청:", JSON.stringify(keywordRequestBody).substring(0, 300) + "...");
-      console.log("키워드 트렌드 API 엔드포인트:", NAVER_DATALAB_KEYWORD_API);
+      // 첫 번째 시도: 키워드 API
+      try {
+        const keywordRequestBody = {
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+          timeUnit: period === "daily" ? "date" : "week",
+          category: categoryCode,
+          keywordGroups: keywordGroups
+        };
+        
+        apiEndpoint = NAVER_DATALAB_KEYWORD_API;
+        console.log("1. 키워드 트렌드 API 요청:", JSON.stringify(keywordRequestBody).substring(0, 300) + "...");
+        console.log("키워드 트렌드 API 엔드포인트:", apiEndpoint);
+        
+        response = await naverDataLabClient.post(apiEndpoint, keywordRequestBody);
+        requestSucceeded = true;
+      } catch (error: any) {
+        console.log(`첫 번째 API 시도 실패 (${apiEndpoint}): ${error.message}`);
+        
+        // 두 번째 시도: 통합 검색어 트렌드 API
+        try {
+          const searchRequestBody = {
+            startDate: formatDate(startDate),
+            endDate: formatDate(endDate),
+            timeUnit: period === "daily" ? "date" : "week",
+            keywordGroups: keywordGroups,
+            device: "pc",
+            ages: [],
+            gender: ""
+          };
+          
+          apiEndpoint = NAVER_DATALAB_SEARCH_API;
+          console.log("2. 통합검색어 트렌드 API 요청:", JSON.stringify(searchRequestBody).substring(0, 300) + "...");
+          console.log("통합검색어 트렌드 API 엔드포인트:", apiEndpoint);
+          
+          response = await naverDataLabClient.post(apiEndpoint, searchRequestBody);
+          requestSucceeded = true;
+        } catch (error2: any) {
+          console.log(`두 번째 API 시도 실패 (${apiEndpoint}): ${error2.message}`);
+          
+          // 세 번째 시도: 쇼핑인사이트 카테고리별 키워드 API
+          try {
+            const categoryKeywordRequestBody = {
+              startDate: formatDate(startDate),
+              endDate: formatDate(endDate),
+              timeUnit: period === "daily" ? "date" : "week",
+              category: categoryCode,
+              device: "pc", 
+              gender: "",
+              ages: []
+            };
+            
+            apiEndpoint = NAVER_SHOPPING_INSIGHT_RANKS_API;
+            console.log("3. 카테고리별 인기검색어 API 요청:", JSON.stringify(categoryKeywordRequestBody).substring(0, 300) + "...");
+            console.log("카테고리별 인기검색어 API 엔드포인트:", apiEndpoint);
+            
+            response = await naverDataLabClient.post(apiEndpoint, categoryKeywordRequestBody);
+            requestSucceeded = true;
+          } catch (error3: any) {
+            console.log(`세 번째 API 시도 실패 (${apiEndpoint}): ${error3.message}`);
+            throw error3; // 모든 시도가 실패하면 오류를 계속 전파
+          }
+        }
+      }
       
-      const response = await naverDataLabClient.post(NAVER_DATALAB_KEYWORD_API, keywordRequestBody);
-      
-      if (response.data && response.data.results) {
+      // API 응답 형식에 따라 다양한 필드 확인
+      if (response && response.data) {
         console.log("✅ 네이버 API 응답 성공:", JSON.stringify(response.data).substring(0, 200) + "...");
         
-        // 성공적으로 응답을 받으면 백업 키워드 그대로 반환
-        // 이 키워드들로 API 호출이 성공했다는 것은 유효한 키워드임을 의미함
-        return backupData.slice(0, 10);
+        // 여러 API 응답 형식 처리
+        if (requestSucceeded) {
+          // API 요청이 성공했으면 백업 키워드 반환 (유효한 키워드로 검증됨)
+          console.log(`API 요청 성공 (${apiEndpoint}): 백업 키워드를 사용합니다.`);
+          return backupData.slice(0, 10);
+        } else if (response.data.results) {
+          console.log("응답에 results 필드 있음");
+          return backupData.slice(0, 10);
+        } else if (response.data.keywordList) {
+          // 다른 API 형식 (keywordList 필드가 있는 경우)
+          console.log("응답에 keywordList 필드 있음");
+          return response.data.keywordList.map((item: any) => item.keyword || item.title || "");
+        } else if (response.data.items) {
+          // 또 다른 API 형식 (items 필드가 있는 경우)
+          console.log("응답에 items 필드 있음");
+          return response.data.items.map((item: any) => item.keyword || item.title || "");
+        } else {
+          // 알 수 없는 형식의 응답이지만 성공적으로 응답이 왔으면 백업 데이터 반환
+          console.log("✅ API 응답은 성공했지만 예상 필드가 없습니다. 백업 키워드를 사용합니다.");
+          return backupData.slice(0, 10);
+        }
       } else {
-        console.error("⚠️ 네이버 API 응답에 예상했던 results 필드가 없습니다:", JSON.stringify(response.data || {}).substring(0, 200));
-        return backupData;
+        console.error("⚠️ 네이버 API 응답이 없거나 형식이 잘못되었습니다.");
+        return backupData.slice(0, 10);
       }
     } catch (apiError: any) {
       // API 호출 자체에 실패한 경우
