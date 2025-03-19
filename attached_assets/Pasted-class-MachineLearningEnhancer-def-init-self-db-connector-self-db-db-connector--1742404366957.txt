@@ -1,0 +1,157 @@
+class MachineLearningEnhancer:
+    def __init__(self, db_connector):
+        self.db = db_connector
+        self.models = {}
+        self.load_models()
+        
+    def load_models(self):
+        """사전 훈련된 모델 로드"""
+        try:
+            # 검색량 예측 모델
+            self.models['search_volume_predictor'] = joblib.load('models/search_volume_predictor.pkl')
+            
+            # 경쟁도 예측 모델
+            self.models['competition_predictor'] = joblib.load('models/competition_predictor.pkl')
+            
+            # 트렌드 분류 모델
+            self.models['trend_classifier'] = joblib.load('models/trend_classifier.pkl')
+            
+            # 상품 성공 확률 모델
+            self.models['success_probability'] = joblib.load('models/success_probability.pkl')
+        except Exception as e:
+            logging.error(f"모델 로딩 오류: {str(e)}")
+    
+    def predict_search_volume_trend(self, keyword, historical_data, months_ahead=3):
+        """고급 시계열 예측으로 검색량 트렌드 예측"""
+        if 'search_volume_predictor' not in self.models:
+            # 모델이 없으면 기본 방법으로 대체
+            return self._fallback_predict_trend(historical_data, months_ahead)
+            
+        try:
+            # 특성 추출
+            features = self._extract_time_series_features(keyword, historical_data)
+            
+            # 예측 수행
+            predictions = self.models['search_volume_predictor'].predict(features)
+            
+            # 결과 포맷팅
+            result = []
+            for i, pred in enumerate(predictions[:months_ahead]):
+                result.append({
+                    'month': i + 1,
+                    'forecast': pred,
+                    'lower': pred * 0.8,  # 간단한 신뢰구간
+                    'upper': pred * 1.2
+                })
+                
+            return result
+        except Exception as e:
+            logging.error(f"검색량 예측 오류: {str(e)}")
+            return self._fallback_predict_trend(historical_data, months_ahead)
+    
+    def predict_success_probability(self, keyword, metrics):
+        """키워드 기반 상품 성공 확률 예측"""
+        if 'success_probability' not in self.models:
+            return self._calculate_basic_success_score(metrics)
+            
+        try:
+            # 특성 추출
+            features = self._extract_keyword_features(keyword, metrics)
+            
+            # 예측 수행
+            probability = self.models['success_probability'].predict_proba([features])[0][1]  # 성공 확률
+            
+            # 성공 요인 분석
+            important_factors = self._analyze_success_factors(features, self.models['success_probability'])
+            
+            return {
+                'probability': probability,
+                'score': int(probability * 100),
+                'important_factors': important_factors
+            }
+        except Exception as e:
+            logging.error(f"성공 확률 예측 오류: {str(e)}")
+            return self._calculate_basic_success_score(metrics)
+    
+    def _extract_time_series_features(self, keyword, historical_data):
+        """시계열 데이터 특성 추출"""
+        # 기본 특성: 최근 6개월 검색량
+        recent_volumes = [data['search_volume'] for data in historical_data[-6:]]
+        
+        # 계절성 특성
+        month_indicators = [0] * 12
+        for data in historical_data[-12:]:
+            month = data['date'].month - 1  # 0-인덱스로 변환
+            month_indicators[month] = 1
+            
+        # 트렌드 특성
+        trend_slope = 0
+        if len(historical_data) >= 3:
+            x = list(range(len(historical_data)))
+            y = [data['search_volume'] for data in historical_data]
+            slope, _ = np.polyfit(x, y, 1)
+            trend_slope = slope
+            
+        # 추가 특성: 카테고리 정보
+        category_features = self._get_category_features(keyword)
+        
+        # 모든 특성 결합
+        features = recent_volumes + month_indicators + [trend_slope] + category_features
+        
+        return np.array(features).reshape(1, -1)
+    
+    def _extract_keyword_features(self, keyword, metrics):
+        """키워드 및 지표 기반 특성 추출"""
+        features = []
+        
+        # 기본 지표 특성
+        features.append(metrics['basic']['search_volume']['total'])
+        features.append(metrics['basic']['product_count'])
+        features.append(metrics['basic']['price_stats']['avg'])
+        
+        # 경쟁 지표 특성
+        features.append(metrics['competition']['competition_score'])
+        features.append(metrics['competition']['ad_ratio'])
+        features.append(metrics['competition']['brand_ratio'])
+        
+        # 성장성 지표 특성
+        features.append(metrics['growth']['growth_rates']['3month'])
+        features.append(1 if metrics['growth']['trend_direction'] == 'rising' else 0)
+        
+        # 수익성 지표 특성
+        features.append(metrics['profit']['margin_rate'])
+        features.append(metrics['profit']['margin_to_cpc_ratio'])
+        
+        # 키워드 텍스트 특성 (길이, 단어 수 등)
+        features.append(len(keyword))
+        features.append(len(keyword.split()))
+        
+        return features
+    
+    def _analyze_success_factors(self, features, model):
+        """성공 확률에 영향을 주는 주요 요인 분석"""
+        # 의사결정 트리 또는 랜덤 포레스트 모델의 경우
+        # feature_importances_ 속성 사용
+        if hasattr(model, 'feature_importances_'):
+            importances = model.feature_importances_
+            feature_names = [
+                '검색량', '상품 수', '평균 가격', '경쟁도', '광고 비율', '브랜드 비율',
+                '3개월 성장률', '상승 추세', '마진율', 'CPC 대비 마진', '키워드 길이', '단어 수'
+            ]
+            
+            # 중요도 상위 5개 요인
+            important_indices = np.argsort(importances)[-5:][::-1]
+            
+            return [
+                {'factor': feature_names[i], 'importance': float(importances[i])}
+                for i in important_indices
+            ]
+            
+        # 기본 요인 반환
+        return [
+            {'factor': '검색량', 'importance': 0.3},
+            {'factor': '경쟁도', 'importance': 0.25},
+            {'factor': '성장률', 'importance': 0.2},
+            {'factor': '마진율', 'importance': 0.15},
+            {'factor': 'CPC 대비 마진', 'importance': 0.1}
+        ]
