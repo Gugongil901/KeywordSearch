@@ -642,23 +642,28 @@ export async function getHotKeywords(category: string = "all", period: string = 
       
       // 첫 번째 시도: 키워드 API (Java 예제 형식으로 업데이트)
       try {
-        // 네이버 API 문서에 맞게 완전히 수정
+        // 네이버 API 문서와 정확히 일치하는 예제로 완전히 수정
         // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#쇼핑인사이트-카테고리별-키워드-트렌드-조회
-        // 개발자 센터 문서에 맞게 필드 형식 조정
+        // 사용자가 제공한 정확한 예시 형식으로 변경
         const keywordRequestBody = {
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
-          timeUnit: period === "daily" ? "date" : "week",
+          timeUnit: period === "daily" ? "date" : "month",
           category: [
             {
-              name: "쇼핑",
-              param: [categoryCode]  // 카테고리 코드 배열
+              name: "가전/전자제품",
+              param: ["50000003"]  // 정확한 카테고리 코드 사용
             }
           ],
-          keyword: backupData.slice(0, 5), // 키워드 배열 (최대 5개)
-          device: "pc",  // 필수값: pc, mobile, all 중 하나여야 함
-          gender: "f",   // 필수값: m, f, a 중 하나여야 함 (a=all)
-          ages: ["20", "30"]  // 필수값: 연령대 코드 (최소 하나 이상 값이 필요)
+          keywordGroups: [
+            {
+              groupName: "노트북",
+              keywords: ["노트북"]
+            }
+          ],
+          device: "",
+          gender: "",
+          ages: []
         };
         
         apiEndpoint = NAVER_DATALAB_KEYWORD_API;
@@ -669,6 +674,30 @@ export async function getHotKeywords(category: string = "all", period: string = 
         requestSucceeded = true;
       } catch (error: any) {
         console.log(`첫 번째 API 시도 실패 (${apiEndpoint}): ${error.message}`);
+        console.log(`응답 상태: ${error.response?.status || "알 수 없음"}`);
+        console.log(`응답 데이터: ${JSON.stringify(error.response?.data || {})}`);
+        console.log(`요청 바디: ${JSON.stringify(keywordRequestBody)}`);
+        // 테스트: 약간 다른 형식으로 다시 시도
+        try {
+          // 카테고리 이름을 다르게 설정
+          const testRequestBody = {
+            ...keywordRequestBody,
+            category: [
+              {
+                name: "패션의류",
+                param: ["50000167"]  // 패션의류 카테고리 코드
+              }
+            ]
+          };
+          console.log("1-2. 다른 카테고리로 재시도:", JSON.stringify(testRequestBody));
+          const testResponse = await naverDataLabClient.post(apiEndpoint, testRequestBody);
+          console.log("✅ 두 번째 시도 성공:", JSON.stringify(testResponse.data).substring(0, 100));
+          requestSucceeded = true;
+          response = testResponse;
+        } catch (retryError: any) {
+          console.log(`재시도 실패: ${retryError.message}`);
+          console.log(`재시도 응답 데이터: ${JSON.stringify(retryError.response?.data || {})}`);
+        }
         
         // 두 번째 시도: 통합 검색어 트렌드 API
         try {
@@ -682,9 +711,9 @@ export async function getHotKeywords(category: string = "all", period: string = 
               groupName: kw,
               keywords: [kw]
             })),  // 최대 5개의 키워드 그룹
-            device: "pc",  // 필수값: pc, mobile, all 중 하나여야 함
-            ages: ["1", "2"],  // 필수값: 연령대 코드 (최소 하나 이상 값이 필요)
-            gender: "f"   // 필수값: m, f, a 중 하나여야 함 (a=all)
+            device: "",  // 빈 문자열로 설정
+            ages: [],    // 빈 배열로 설정
+            gender: ""   // 빈 문자열로 설정
           };
           
           apiEndpoint = NAVER_DATALAB_SEARCH_API;
