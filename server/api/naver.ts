@@ -47,6 +47,8 @@ export function setupNaverAPI() {
     headers: {
       "X-Naver-Client-Id": NAVER_CLIENT_ID,
       "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
+      "Content-Type": "application/json; charset=utf-8",
+      "Accept": "application/json; charset=utf-8"
     },
   });
 
@@ -54,7 +56,8 @@ export function setupNaverAPI() {
   naverAdClient = axios.create({
     baseURL: NAVER_AD_API_BASE,
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json; charset=utf-8",
+      "Accept": "application/json; charset=utf-8",
       "X-API-KEY": NAVER_AD_API_ACCESS_LICENSE,
       "X-Customer": NAVER_AD_API_CUSTOMER_ID,
       "X-Signature": NAVER_AD_API_SECRET_KEY,
@@ -66,7 +69,8 @@ export function setupNaverAPI() {
     headers: {
       "X-Naver-Client-Id": NAVER_CLIENT_ID,
       "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json; charset=utf-8",
+      "Accept": "application/json; charset=utf-8"
     },
     // 타임아웃 설정 추가
     timeout: 10000
