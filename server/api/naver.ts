@@ -640,57 +640,48 @@ export async function getHotKeywords(category: string = "all", period: string = 
       let apiEndpoint;
       let requestSucceeded = false;
       
-      // 첫 번째 시도: 키워드 API (Java 예제 형식으로 업데이트)
+      // 첫 번째 시도: 키워드 API (수정된 형식)
       try {
-        // 네이버 API 문서와 정확히 일치하는 예제로 완전히 수정
-        // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#쇼핑인사이트-카테고리별-키워드-트렌드-조회
-        // 사용자가 제공한 정확한 예시 형식으로 변경
-        const keywordRequestBody = {
+        // 네이버 API 오류 메시지 기반으로 정확한 형식 사용
+        // category 필드를 문자열로 수정 (TypeError: .category -> should be string)
+        const keywordBody = {
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
           timeUnit: period === "daily" ? "date" : "month",
-          category: [
-            {
-              name: "가전/전자제품",
-              param: ["50000003"]  // 정확한 카테고리 코드 사용
-            }
-          ],
-          keywordGroups: [
-            {
-              groupName: "노트북",
-              keywords: ["노트북"]
-            }
-          ],
+          category: "50000003", // 가전/전자제품 카테고리 코드를 문자열로 전달
+          keyword: "노트북", // 키워드 직접 추가
           device: "",
           gender: "",
           ages: []
         };
         
         apiEndpoint = NAVER_DATALAB_KEYWORD_API;
-        console.log("1. 키워드 트렌드 API 요청 (수정된 형식):", JSON.stringify(keywordRequestBody).substring(0, 300) + "...");
+        console.log("1. 키워드 트렌드 API 요청 (수정된 형식):", JSON.stringify(keywordBody).substring(0, 300) + "...");
         console.log("키워드 트렌드 API 엔드포인트:", apiEndpoint);
         
-        response = await naverDataLabClient.post(apiEndpoint, keywordRequestBody);
+        response = await naverDataLabClient.post(apiEndpoint, keywordBody);
         requestSucceeded = true;
       } catch (error: any) {
         console.log(`첫 번째 API 시도 실패 (${apiEndpoint}): ${error.message}`);
         console.log(`응답 상태: ${error.response?.status || "알 수 없음"}`);
         console.log(`응답 데이터: ${JSON.stringify(error.response?.data || {})}`);
-        console.log(`요청 바디: ${JSON.stringify(keywordRequestBody)}`);
-        // 테스트: 약간 다른 형식으로 다시 시도
+        
+        // 다른 형식으로 한번 더 시도
         try {
-          // 카테고리 이름을 다르게 설정
-          const testRequestBody = {
-            ...keywordRequestBody,
-            category: [
-              {
-                name: "패션의류",
-                param: ["50000167"]  // 패션의류 카테고리 코드
-              }
-            ]
+          // 단순화된 형식으로 다시 시도 (패션의류 카테고리)
+          const retryBody = {
+            startDate: formatDate(startDate),
+            endDate: formatDate(endDate),
+            timeUnit: period === "daily" ? "date" : "month",
+            category: "50000167", // 패션의류 카테고리 코드
+            keyword: "원피스", // 키워드 직접 추가
+            device: "",
+            gender: "",
+            ages: []
           };
-          console.log("1-2. 다른 카테고리로 재시도:", JSON.stringify(testRequestBody));
-          const testResponse = await naverDataLabClient.post(apiEndpoint, testRequestBody);
+          
+          console.log("1-2. 다른 카테고리로 재시도:", JSON.stringify(retryBody).substring(0, 300));
+          const testResponse = await naverDataLabClient.post(apiEndpoint, retryBody);
           console.log("✅ 두 번째 시도 성공:", JSON.stringify(testResponse.data).substring(0, 100));
           requestSucceeded = true;
           response = testResponse;
