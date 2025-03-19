@@ -785,12 +785,40 @@ export async function getHotKeywords(category: string = "all", period: string = 
         console.log("✅ 네이버 API 응답 성공:", JSON.stringify(response.data).substring(0, 200) + "...");
         
         // 여러 API 응답 형식 처리
-        if (requestSucceeded) {
-          // API 요청이 성공했으면 백업 키워드 반환 (유효한 키워드로 검증됨)
+        if (response.data.results && apiEndpoint === NAVER_DATALAB_SEARCH_API) {
+          // 통합검색어 트렌드 API 응답 처리 (실시간 데이터)
+          console.log("통합검색어 트렌드 API 응답에서 실시간 키워드 추출");
+          try {
+            // 키워드 그룹 제목을 추출하여 실시간 데이터로 사용
+            const realTimeKeywords = response.data.results.map((result: any) => result.title);
+            
+            if (realTimeKeywords.length > 0) {
+              console.log("✅ 실시간 키워드 추출 성공:", realTimeKeywords.join(", "));
+              
+              // 백업 키워드로 부족한 수를 채움
+              if (realTimeKeywords.length < 10) {
+                const additionalKeywords = backupData
+                  .filter(kw => !realTimeKeywords.includes(kw))
+                  .slice(0, 10 - realTimeKeywords.length);
+                
+                console.log("실시간 키워드 부족, 백업 데이터로 보충:", additionalKeywords.join(", "));
+                return [...realTimeKeywords, ...additionalKeywords];
+              }
+              
+              return realTimeKeywords.slice(0, 10);
+            }
+          } catch (extractError) {
+            console.error("실시간 키워드 추출 실패:", extractError);
+          }
+          
+          console.log("실시간 키워드 추출 실패, 백업 키워드 사용");
+          return backupData.slice(0, 10);
+        } else if (requestSucceeded) {
+          // 다른 API 요청이 성공했으면 백업 키워드 반환
           console.log(`API 요청 성공 (${apiEndpoint}): 백업 키워드를 사용합니다.`);
           return backupData.slice(0, 10);
         } else if (response.data.results) {
-          console.log("응답에 results 필드 있음");
+          console.log("응답에 다른 형식의 results 필드 있음");
           return backupData.slice(0, 10);
         } else if (response.data.keywordList) {
           // 다른 API 형식 (keywordList 필드가 있는 경우)
