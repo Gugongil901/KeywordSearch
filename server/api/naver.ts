@@ -15,19 +15,19 @@ const NAVER_AD_API_BASE = "https://api.naver.com";
 // 네이버 데이터랩 API 엔드포인트 (2025년 3월 기준)
 // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
 
-// 네이버 API 엔드포인트 - 2023년 업데이트 이후 확인된 엔드포인트
+// 네이버 API 엔드포인트 - 2025년 3월 업데이트 이후 확인된 엔드포인트
 
 // 쇼핑인사이트 분야별 트렌드 조회 API
 const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/category";
 
-// 쇼핑인사이트 키워드 트렌드 조회 API (2023 이후 변경)
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keyword";
+// 쇼핑인사이트 키워드 트렌드 조회 API
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keyword/trend";
 
 // 쇼핑인사이트 분야별 인기 검색어 조회 API 
 const NAVER_SHOPPING_INSIGHT_RANKS_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 
-// 쇼핑인사이트 키워드 트렌드 조회 API
-const NAVER_DATALAB_KEYWORD_TREND_API = "https://openapi.naver.com/v1/datalab/shopping/trends";
+// 쇼핑인사이트 기간별 트렌드 조회 API
+const NAVER_DATALAB_KEYWORD_TREND_API = "https://openapi.naver.com/v1/datalab/shopping/category/keyword/period";
 
 // 네이버 통합검색어 트렌드 API (백업)
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
@@ -178,40 +178,85 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
       return date.toISOString().split('T')[0];
     };
     
-    // 여러 API 시도 - 네이버 쇼핑 검색 API (GET 방식)
+    // 먼저 데이터랩 키워드 트렌드 API 시도 (POST 방식)
     try {
-      console.log(`네이버 쇼핑 검색 API 요청 (키워드: ${keyword})`);
+      console.log(`네이버 데이터랩 키워드 트렌드 API 요청 (키워드: ${keyword})`);
       
-      const response = await naverSearchClient.get(NAVER_SEARCH_API, {
-        params: {
-          query: keyword,
-          display: 5
-        }
-      });
+      // 2025년 3월 기준 최신 네이버 API 문서에 맞춘 요청 형식
+      const requestBody = {
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate), 
+        timeUnit: period === "daily" ? "date" : "week",
+        keywordGroups: [
+          {
+            groupName: keyword,
+            keywords: [keyword]
+          }
+        ]
+      };
       
-      if (response.data && response.data.items) {
-        console.log(`✅ 네이버 쇼핑 검색 API 성공 (${keyword}): ${response.data.total}개 결과 발견`);
-        console.log(`✅ API 연결 성공 확인. 백업 트렌드 데이터 사용.`);
+      console.log("데이터랩 API 요청 본문:", JSON.stringify(requestBody));
+      console.log("데이터랩 API 엔드포인트:", NAVER_DATALAB_KEYWORD_API);
+      
+      const response = await naverDataLabClient.post(NAVER_DATALAB_KEYWORD_API, requestBody);
+      
+      if (response.data && response.data.results) {
+        console.log(`✅ 네이버 데이터랩 키워드 트렌드 API 성공 (${keyword})`);
+        console.log(`응답 데이터:`, JSON.stringify(response.data).substring(0, 200) + "...");
         
-        // API 연결이 성공했으므로 백업 데이터로 트렌드 정보 생성
-        const trendData = generateMockTrendData(keyword, period);
-        
-        // 검색 결과 데이터의 총 개수를 기반으로 트렌드 조정
-        if (response.data.total > 0) {
-          // 검색 결과가 많을수록 트렌드 점수를 높게 조정
-          const factor = Math.min(2, Math.max(0.5, response.data.total / 1000));
-          trendData.forEach(item => {
-            item.count = Math.round(item.count * factor);
-          });
+        // 실제 API 응답 데이터 파싱
+        const result = response.data.results[0];
+        if (result && result.data) {
+          const trendData = result.data.map((item: any) => ({
+            date: item.period,
+            count: item.ratio
+          }));
+          
+          return {
+            keyword,
+            trends: trendData
+          };
         }
-        
-        return {
-          keyword,
-          trends: trendData
-        };
       }
-    } catch (error) {
-      console.log(`네이버 쇼핑 검색 API 실패: ${error.message}`);
+    } catch (apiError: any) {
+      console.log(`네이버 데이터랩 API 실패: ${apiError.message}`);
+      console.log(`응답 상태: ${apiError.response?.status || '알 수 없음'}`);
+      
+      // 두 번째로 쇼핑 검색 API 시도 (GET 방식)
+      try {
+        console.log(`네이버 쇼핑 검색 API 요청 (키워드: ${keyword})`);
+        
+        const response = await naverSearchClient.get(NAVER_SEARCH_API, {
+          params: {
+            query: keyword,
+            display: 5
+          }
+        });
+        
+        if (response.data && response.data.items) {
+          console.log(`✅ 네이버 쇼핑 검색 API 성공 (${keyword}): ${response.data.total}개 결과 발견`);
+          console.log(`✅ API 연결 성공 확인. 백업 트렌드 데이터 사용.`);
+          
+          // API 연결이 성공했으므로 백업 데이터로 트렌드 정보 생성
+          const trendData = generateMockTrendData(keyword, period);
+          
+          // 검색 결과 데이터의 총 개수를 기반으로 트렌드 조정
+          if (response.data.total > 0) {
+            // 검색 결과가 많을수록 트렌드 점수를 높게 조정
+            const factor = Math.min(2, Math.max(0.5, response.data.total / 1000));
+            trendData.forEach(item => {
+              item.count = Math.round(item.count * factor);
+            });
+          }
+          
+          return {
+            keyword,
+            trends: trendData
+          };
+        }
+      } catch (searchError: any) {
+        console.log(`네이버 쇼핑 검색 API 실패: ${searchError.message}`);
+      }
     }
     
     // API 연결 실패 시 백업 데이터 사용
