@@ -12,22 +12,21 @@ const NAVER_AD_API_SECRET_KEY = process.env.NAVER_AD_API_SECRET_KEY || "";
 const NAVER_SEARCH_API = "https://openapi.naver.com/v1/search/shop.json";
 const NAVER_AD_API_BASE = "https://api.naver.com";
 
-// 네이버 데이터랩 API 엔드포인트 (2025년 3월 기준 최신)
-// https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
-
-// 네이버 데이터랩 쇼핑인사이트 API - 2023.12 기준 최신화
+// 네이버 데이터랩 API 엔드포인트 (2025년 3월 기준)
 // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
 
-// 네이버 데이터랩 쇼핑인사이트 카테고리별 트렌드 조회 API
-const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/category";
+// 2023년 9월 업데이트된 네이버 데이터랩 API 엔드포인트
 
-// 네이버 데이터랩 쇼핑인사이트 키워드 트렌드 조회 API
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keyword";
+// 쇼핑인사이트 쇼핑 분야 트렌드 조회 API
+const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
 
-// 네이버 데이터랩 쇼핑인사이트 분야별 인기검색어 조회 API
-const NAVER_SHOPPING_INSIGHT_RANKS_API = "https://openapi.naver.com/v1/datalab/shopping/category/keyword/age/gender";
+// 쇼핑인사이트 쇼핑 키워드 트렌드 조회 API
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keywords";
 
-// 네이버 데이터랩 통합검색 API (백업)
+// 쇼핑인사이트 분야별 인기 검색어 조회 API (지역별/성별/연령별)
+const NAVER_SHOPPING_INSIGHT_RANKS_API = "https://openapi.naver.com/v1/datalab/shopping/categories/keywords/ranks";
+
+// 네이버 통합검색어 트렌드 API (백업)
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
 
 // Setup axios instances
@@ -68,7 +67,9 @@ export function setupNaverAPI() {
       "X-Naver-Client-Id": NAVER_CLIENT_ID,
       "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
       "Content-Type": "application/json"
-    }
+    },
+    // 타임아웃 설정 추가
+    timeout: 10000
   });
   
   // API 초기화 상태 로그

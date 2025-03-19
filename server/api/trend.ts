@@ -66,8 +66,12 @@ function getChangeStatus(keyword: string, period: "daily" | "weekly"): "up" | "d
 // Get daily trends
 export async function getDailyTrends(category: string = "all"): Promise<CategoryTrendResponse> {
   try {
-    // 일간 트렌드용 키워드 가져오기
+    // 일간 트렌드용 키워드 가져오기 (최신 네이버 API 사용)
     const hotKeywords = await getHotKeywords(category, "daily");
+    
+    if (!hotKeywords || hotKeywords.length === 0) {
+      throw new Error("No keywords found for daily trends");
+    }
     
     // 키워드에 메타데이터 추가 (순위, 변화 상태)
     const keywordsWithMeta = hotKeywords.map((keyword, index) => {
@@ -81,22 +85,34 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
     // 상품 정보 가져오기
     const topProducts = await getTopSellingProducts(category, 7);
     
+    console.log(`✅ 일간 트렌드 반환 성공: 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
+    
     return {
       category,
       keywords: keywordsWithMeta,
       products: topProducts
     };
   } catch (error) {
-    console.error("Error getting daily trends:", error);
-    throw new Error("Failed to get daily trends");
+    console.error("❌ 일간 트렌드 조회 실패:", error);
+    
+    // 오류 발생 시에도 클라이언트에 빈 응답 대신 기본 정보라도 반환
+    return {
+      category,
+      keywords: [],
+      products: []
+    };
   }
 }
 
 // Get weekly trends
 export async function getWeeklyTrends(category: string = "all"): Promise<CategoryTrendResponse> {
   try {
-    // 주간 트렌드용 키워드 가져오기
+    // 주간 트렌드용 키워드 가져오기 (최신 네이버 API 사용)
     const hotKeywords = await getHotKeywords(category, "weekly");
+    
+    if (!hotKeywords || hotKeywords.length === 0) {
+      throw new Error("No keywords found for weekly trends");
+    }
     
     // 키워드에 메타데이터 추가 (순위, 변화 상태)
     const keywordsWithMeta = hotKeywords.map((keyword, index) => {
@@ -110,13 +126,21 @@ export async function getWeeklyTrends(category: string = "all"): Promise<Categor
     // 상품 정보 가져오기
     const topProducts = await getTopSellingProducts(category, 7);
     
+    console.log(`✅ 주간 트렌드 반환 성공: 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
+    
     return {
       category,
       keywords: keywordsWithMeta,
       products: topProducts
     };
   } catch (error) {
-    console.error("Error getting weekly trends:", error);
-    throw new Error("Failed to get weekly trends");
+    console.error("❌ 주간 트렌드 조회 실패:", error);
+    
+    // 오류 발생 시에도 클라이언트에 빈 응답 대신 기본 정보라도 반환
+    return {
+      category,
+      keywords: [],
+      products: []
+    };
   }
 }

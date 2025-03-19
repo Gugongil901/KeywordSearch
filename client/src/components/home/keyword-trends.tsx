@@ -20,17 +20,18 @@ const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period }) => {
     refetchOnWindowFocus: false,
   });
 
-  const keywords: KeywordTrend[] = data?.keywords || [
+  // 서버에서 반환된 데이터가 없거나 키워드가 없을 때 기본값 사용
+  const keywords: KeywordTrend[] = data && data.keywords ? data.keywords : [
     { keyword: "제킷", rank: 1, change: "same" },
     { keyword: "티셔츠", rank: 2, change: "up" },
-    { keyword: "닭가슴살", rank: 3, change: "up" },
-    { keyword: "당근", rank: 4, change: "up" },
-    { keyword: "스투시", rank: 5, change: "up" },
-    { keyword: "나이키", rank: 6, change: "same" },
-    { keyword: "쭈꾸미", rank: 7, change: "up" },
-    { keyword: "나이키운동화", rank: 8, change: "up" },
-    { keyword: "호카", rank: 9, change: "up" },
-    { keyword: "꼬망세", rank: 10, change: "down" },
+    { keyword: "원피스", rank: 3, change: "up" },
+    { keyword: "패딩", rank: 4, change: "down" },
+    { keyword: "바지", rank: 5, change: "up" },
+    { keyword: "블라우스", rank: 6, change: "up" },
+    { keyword: "청바지", rank: 7, change: "down" },
+    { keyword: "니트", rank: 8, change: "same" },
+    { keyword: "신발", rank: 9, change: "up" },
+    { keyword: "맨투맨", rank: 10, change: "up" },
   ];
 
   const getChangeIcon = (change: string) => {
