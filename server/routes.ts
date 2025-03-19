@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { setupNaverAPI, getKeywordStats, searchKeyword, getKeywordTrends, getHotKeywords, getTopSellingProducts, testCategoryAPI } from "./api/naver";
 import { searchShoppingInsight, searchTrend } from "./api/search";
 import { getDailyTrends, getWeeklyTrends } from "./api/trend";
+import { testAllNaverAPIs, testBasicNaverAPIs } from "./api/naver-api-test";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Naver API
@@ -396,6 +397,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Category API test error:", error);
       res.status(500).json({ message: "Error testing category API" });
+    }
+  });
+  
+  // Test all Naver APIs
+  app.get("/api/test/all-apis", async (_req, res) => {
+    try {
+      console.log("모든 네이버 API 엔드포인트 테스트 시작");
+      const result = await testAllNaverAPIs();
+      res.json({
+        message: "API 테스트 완료",
+        result
+      });
+    } catch (error) {
+      console.error("API 테스트 실패:", error);
+      res.status(500).json({ message: "Error testing all APIs", details: error });
+    }
+  });
+  
+  // Test basic Naver APIs functionality
+  app.get("/api/test/basic-apis", async (_req, res) => {
+    try {
+      console.log("기본 네이버 API 동작 확인 시작");
+      const result = await testBasicNaverAPIs();
+      res.json({
+        message: "API 동작 확인 완료",
+        success: result
+      });
+    } catch (error) {
+      console.error("API 동작 확인 실패:", error);
+      res.status(500).json({ message: "Error testing basic APIs", details: error });
     }
   });
 
