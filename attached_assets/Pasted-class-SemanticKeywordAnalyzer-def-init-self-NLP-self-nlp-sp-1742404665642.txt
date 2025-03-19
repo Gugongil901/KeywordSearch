@@ -1,0 +1,129 @@
+class SemanticKeywordAnalyzer:
+    def __init__(self):
+        # 한국어 NLP 모델 로드
+        self.nlp = spacy.load('ko_core_news_lg')
+        self.word2vec = KeyedVectors.load('models/ko_word2vec.kv')
+        
+    def analyze_keyword_meaning(self, keyword):
+        """키워드의 의미적 분석"""
+        # 형태소 분석 및 품사 태깅
+        doc = self.nlp(keyword)
+        
+        # 명사 추출
+        nouns = [token.text for token in doc if token.pos_ == 'NOUN']
+        
+        # 의미 카테고리 분류
+        categories = self._classify_semantic_categories(keyword, nouns)
+        
+        # 키워드 의도 분석 (정보 탐색, 구매 의도 등)
+        intent = self._analyze_search_intent(keyword)
+        
+        # 키워드 감성 분석
+        sentiment = self._analyze_sentiment(keyword)
+        
+        return {
+            'keyword': keyword,
+            'nouns': nouns,
+            'categories': categories,
+            'intent': intent,
+            'sentiment': sentiment
+        }
+    
+    def find_semantic_related_keywords(self, keyword, top_n=20):
+        """의미적으로 관련된 키워드 찾기"""
+        # 키워드 토크나이징
+        tokenized = self.nlp(keyword)
+        
+        # 벡터 표현
+        try:
+            keyword_vector = np.mean([token.vector for token in tokenized if token.has_vector], axis=0)
+        except:
+            # 벡터가 없는 경우 Word2Vec 모델 시도
+            try:
+                tokens = [token.text for token in tokenized]
+                filtered_tokens = [t for t in tokens if t in self.word2vec.key_to_index]
+                if filtered_tokens:
+                    keyword_vector = np.mean([self.word2vec[t] for t in filtered_tokens], axis=0)
+                else:
+                    return []
+            except:
+                return []
+        
+        # 의미적 유사 키워드 후보 목록
+        candidates = []
+        
+        # 데이터베이스에서 키워드 목록 가져오기
+        all_keywords = self.db.get_all_keywords(limit=10000)
+        
+        for kw in all_keywords:
+            try:
+                # 유사도 계산
+                kw_doc = self.nlp(kw)
+                kw_vector = np.mean([token.vector for token in kw_doc if token.has_vector], axis=0)
+                similarity = cosine_similarity([keyword_vector], [kw_vector])[0][0]
+                
+                if similarity > 0.6:  # 유사도 임계값
+                    candidates.append({
+                        'keyword': kw,
+                        'similarity': float(similarity)
+                    })
+            except:
+                continue
+                
+        # 유사도 기준 상위 n개 반환
+        candidates.sort(key=lambda x: x['similarity'], reverse=True)
+        return candidates[:top_n]
+    
+    def identify_market_segments(self, keyword, related_keywords):
+        """키워드 기반 시장 세그먼트 식별"""
+        # 모든 키워드 통합
+        all_keywords = [keyword] + [kw['keyword'] for kw in related_keywords]
+        
+        # 각 키워드의 벡터 표현
+        vectors = []
+        valid_keywords = []
+        
+        for kw in all_keywords:
+            try:
+                doc = self.nlp(kw)
+                vec = np.mean([token.vector for token in doc if token.has_vector], axis=0)
+                vectors.append(vec)
+                valid_keywords.append(kw)
+            except:
+                continue
+                
+        if not vectors:
+            return []
+            
+        # 클러스터링 (K-means)
+        n_clusters = min(5, len(vectors))  # 최대 5개 세그먼트
+        kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+        clusters = kmeans.fit_predict(vectors)
+        
+        # 세그먼트별 키워드 그룹화
+        segments = {}
+        for i, cluster_id in enumerate(clusters):
+            if cluster_id not in segments:
+                segments[cluster_id] = []
+            segments[cluster_id].append(valid_keywords[i])
+            
+        # 각 세그먼트에 대표 레이블 부여
+        labeled_segments = []
+        for cluster_id, keywords in segments.items():
+            # 가장 높은 빈도의 명사 추출
+            all_nouns = []
+            for kw in keywords:
+                doc = self.nlp(kw)
+                nouns = [token.text for token in doc if token.pos_ == 'NOUN']
+                all_nouns.extend(nouns)
+                
+            noun_counter = Counter(all_nouns)
+            top_nouns = [noun for noun, _ in noun_counter.most_common(3)]
+            
+            labeled_segments.append({
+                'id': int(cluster_id),
+                'label': ' '.join(top_nouns),
+                'keywords': keywords
+            })
+            
+        return labeled_segments

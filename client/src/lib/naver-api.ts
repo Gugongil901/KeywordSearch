@@ -10,6 +10,32 @@ export interface KeywordStats {
   relatedKeywords: string[];
 }
 
+// ML 관련 인터페이스
+export interface SearchVolumeForecast {
+  month: number;
+  forecast: number;
+  lower: number;
+  upper: number;
+}
+
+export interface SuccessProbability {
+  probability: number;
+  score: number;
+  important_factors: Array<{
+    factor: string;
+    importance: number;
+  }>;
+}
+
+export interface MLAnalysisResult {
+  keyword: string;
+  ml_analysis: {
+    search_forecast: SearchVolumeForecast[];
+    success_probability: SuccessProbability;
+  };
+  timestamp: string;
+}
+
 // 네이버 검색광고 API 관련 인터페이스
 export interface KeywordInsight {
   keyword: string;
@@ -244,6 +270,53 @@ export async function getKeywordAnalysis(keyword: string): Promise<KeywordAnalys
     return await response.json();
   } catch (error) {
     console.error("키워드 분석 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 검색량 예측 - 머신러닝 기반
+ * @param keyword - 예측할 키워드
+ * @returns 검색량 예측 결과
+ */
+export async function getSearchVolumeForecast(keyword: string): Promise<SearchVolumeForecast[]> {
+  try {
+    const response = await apiRequest("GET", `/api/ml/search-forecast/${encodeURIComponent(keyword)}`, undefined);
+    const data = await response.json();
+    return data.forecast;
+  } catch (error) {
+    console.error("검색량 예측 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 성공 확률 예측 - 머신러닝 기반
+ * @param keyword - 예측할 키워드
+ * @returns 성공 확률 예측 결과
+ */
+export async function getSuccessProbability(keyword: string): Promise<SuccessProbability> {
+  try {
+    const response = await apiRequest("GET", `/api/ml/success-probability/${encodeURIComponent(keyword)}`, undefined);
+    const data = await response.json();
+    return data.probability;
+  } catch (error) {
+    console.error("성공 확률 예측 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 종합 머신러닝 분석 - 모든 ML 예측 통합
+ * @param keyword - 분석할 키워드
+ * @returns 종합 머신러닝 분석 결과
+ */
+export async function getMLAnalysis(keyword: string): Promise<MLAnalysisResult> {
+  try {
+    const response = await apiRequest("GET", `/api/ml/analyze/${encodeURIComponent(keyword)}`, undefined);
+    return await response.json();
+  } catch (error) {
+    console.error("ML 분석 조회 실패:", error);
     throw error;
   }
 }

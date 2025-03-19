@@ -7,8 +7,12 @@
 import { Router, Request, Response } from 'express';
 import { getKeywordAnalysisSystem } from '../system/keyword-analysis-system';
 import { logger } from '../../utils/logger';
+import mlRouter from './ml-routes';
 
 const router = Router();
+
+// 머신러닝 관련 라우터 마운트
+router.use('/ml', mlRouter);
 // 진행 중인 배경 작업 관리
 const backgroundTasks: Record<string, any> = {};
 
@@ -23,7 +27,10 @@ router.get('/', (_req: Request, res: Response) => {
       '/keywords/{keyword}',
       '/tasks/{taskId}',
       '/categories/{categoryId}',
-      '/related-keywords/{keyword}'
+      '/related-keywords/{keyword}',
+      '/ml/search-forecast/{keyword}',
+      '/ml/success-probability/{keyword}',
+      '/ml/analyze/{keyword}'
     ]
   });
 });
