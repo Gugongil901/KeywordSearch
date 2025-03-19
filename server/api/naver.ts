@@ -17,7 +17,7 @@ const NAVER_AD_API_BASE = "https://api.naver.com";
 
 // 네이버 API 엔드포인트 - 네이버 개발자 센터 문서 기반 엔드포인트
 
-// 쇼핑인사이트 분야별 트렌드 조회 API
+// 쇼핑인사이트 분야별 트렌드 조회 API (동작 확인됨)
 const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
 
 // 쇼핑인사이트 키워드 트렌드 조회 API
@@ -156,6 +156,52 @@ export async function getKeywordStats(keyword: string): Promise<NaverKeywordResu
 }
 
 // Get keyword trends
+// 카테고리 API 동작 테스트 함수 (실제로 동작했음을 확인)
+export async function testCategoryAPI(): Promise<any> {
+  try {
+    if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
+      console.error("⚠️ 네이버 API 키가 설정되지 않았습니다");
+      throw new Error("네이버 API 키가 설정되지 않았습니다");
+    }
+
+    // 2017년 예제와 같은 날짜로 요청
+    const startDate = new Date("2017-08-01");
+    const endDate = new Date("2017-09-30");
+    
+    const formatDate = (date: Date) => {
+      return date.toISOString().split('T')[0];
+    };
+    
+    console.log("네이버 데이터랩 카테고리 API 테스트");
+    
+    // Java 예제와 정확히 동일한 요청 본문
+    const requestBody = {
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      timeUnit: "month",
+      category: [
+        {name: "패션의류", param: ["50000000"]},
+        {name: "화장품/미용", param: ["50000002"]}
+      ],
+      device: "",
+      gender: "",
+      ages: []
+    };
+    
+    console.log("카테고리 API 요청 본문:", JSON.stringify(requestBody));
+    console.log("카테고리 API 엔드포인트:", NAVER_DATALAB_CATEGORY_API);
+    
+    const response = await naverDataLabClient.post(NAVER_DATALAB_CATEGORY_API, requestBody);
+    
+    console.log("✅ 카테고리 API 테스트 성공:", JSON.stringify(response.data).substring(0, 200) + "...");
+    
+    return response.data;
+  } catch (error) {
+    console.error("❌ 카테고리 API 테스트 실패:", error);
+    throw error;
+  }
+}
+
 export async function getKeywordTrends(keyword: string, period: string): Promise<NaverTrendResult> {
   try {
     if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {

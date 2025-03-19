@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupNaverAPI, getKeywordStats, searchKeyword, getKeywordTrends, getHotKeywords, getTopSellingProducts } from "./api/naver";
+import { setupNaverAPI, getKeywordStats, searchKeyword, getKeywordTrends, getHotKeywords, getTopSellingProducts, testCategoryAPI } from "./api/naver";
 import { searchShoppingInsight, searchTrend } from "./api/search";
 import { getDailyTrends, getWeeklyTrends } from "./api/trend";
 
@@ -138,6 +138,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Search trend error:", error);
       res.status(500).json({ message: "Error fetching search trend" });
+    }
+  });
+
+  // Test Naver Category API
+  app.get("/api/test/category", async (_req, res) => {
+    try {
+      console.log("카테고리 API 테스트 엔드포인트 호출");
+      const result = await testCategoryAPI();
+      res.json(result);
+    } catch (error) {
+      console.error("Category API test error:", error);
+      res.status(500).json({ message: "Error testing category API" });
     }
   });
 
