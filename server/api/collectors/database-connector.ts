@@ -5,17 +5,25 @@
 
 import { logger } from '../../utils/logger';
 
-// 현재는 인메모리 저장소를 사용하지만 추후 실제 DB로 대체 가능합니다.
+/**
+ * 데이터베이스 커넥터 클래스 (싱글톤 패턴)
+ */
 export class DatabaseConnector {
   private static instance: DatabaseConnector;
   private keywordData: Map<string, any>;
   
-  constructor() {
+  /**
+   * 생성자 (private으로 외부에서 직접 인스턴스화 방지)
+   */
+  private constructor() {
     this.keywordData = new Map<string, any>();
     logger.info('데이터베이스 커넥터 초기화 완료');
   }
   
-  // 싱글톤 인스턴스 접근
+  /**
+   * 싱글톤 인스턴스 가져오기
+   * @returns DatabaseConnector 인스턴스
+   */
   public static getInstance(): DatabaseConnector {
     if (!DatabaseConnector.instance) {
       DatabaseConnector.instance = new DatabaseConnector();
@@ -30,22 +38,15 @@ export class DatabaseConnector {
    */
   public saveKeywordData(keyword: string, data: any): void {
     try {
-      // 키워드 정규화 (소문자, 공백 제거)
-      const normalizedKeyword = keyword.toLowerCase().trim();
+      const key = keyword.toLowerCase().trim();
       
-      // 기존 데이터 가져오기
-      const existingData = this.keywordData.get(normalizedKeyword) || {};
-      
-      // 타임스탬프 추가
-      const timestamp = new Date();
-      const dataWithTimestamp = {
-        ...data,
-        lastUpdated: timestamp.toISOString(),
-        createdAt: existingData.createdAt || timestamp.toISOString()
-      };
-      
-      // 데이터 저장
-      this.keywordData.set(normalizedKeyword, dataWithTimestamp);
+      // 기존 데이터가 있으면 병합, 없으면 새로 저장
+      const existingData = this.keywordData.get(key);
+      if (existingData) {
+        this.keywordData.set(key, { ...existingData, ...data, lastUpdated: new Date().toISOString() });
+      } else {
+        this.keywordData.set(key, { ...data, lastUpdated: new Date().toISOString() });
+      }
       
       logger.info(`[${keyword}] 데이터 저장 완료`);
     } catch (error) {
@@ -60,8 +61,13 @@ export class DatabaseConnector {
    * @returns 저장된 데이터
    */
   public getKeywordData(keyword: string): any {
-    const normalizedKeyword = keyword.toLowerCase().trim();
-    return this.keywordData.get(normalizedKeyword) || null;
+    try {
+      const key = keyword.toLowerCase().trim();
+      return this.keywordData.get(key);
+    } catch (error) {
+      logger.error(`[${keyword}] 데이터 조회 오류: ${error}`);
+      return null;
+    }
   }
   
   /**
@@ -78,8 +84,21 @@ export class DatabaseConnector {
    * @returns 삭제 성공 여부
    */
   public deleteKeywordData(keyword: string): boolean {
-    const normalizedKeyword = keyword.toLowerCase().trim();
-    return this.keywordData.delete(normalizedKeyword);
+    try {
+      const key = keyword.toLowerCase().trim();
+      const result = this.keywordData.delete(key);
+      
+      if (result) {
+        logger.info(`[${keyword}] 데이터 삭제 완료`);
+      } else {
+        logger.warn(`[${keyword}] 삭제할 데이터가 없습니다`);
+      }
+      
+      return result;
+    } catch (error) {
+      logger.error(`[${keyword}] 데이터 삭제 오류: ${error}`);
+      return false;
+    }
   }
   
   /**
@@ -88,17 +107,100 @@ export class DatabaseConnector {
    * @returns 최근 업데이트된 키워드 목록
    */
   public getRecentKeywords(limit: number = 10): Array<{keyword: string, lastUpdated: string}> {
-    const keywords = Array.from(this.keywordData.entries())
-      .map(([keyword, data]) => ({
-        keyword,
-        lastUpdated: data.lastUpdated
-      }))
-      .sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
-      .slice(0, limit);
+    try {
+      const keywords = Array.from(this.keywordData.entries())
+        .map(([keyword, data]) => ({
+          keyword,
+          lastUpdated: data.lastUpdated || new Date(0).toISOString()
+        }))
+        .sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
+        .slice(0, limit);
       
-    return keywords;
+      return keywords;
+    } catch (error) {
+      logger.error(`최근 키워드 조회 오류: ${error}`);
+      return [];
+    }
+  }
+  
+  /**
+   * 연관 키워드 조회
+   * @param keyword 기준 키워드
+   * @param limit 조회할 키워드 수
+   * @returns 연관 키워드 목록
+   */
+  public getRelatedKeywords(keyword: string, limit: number = 5): Array<{keyword: string, competitionScore: number}> {
+    try {
+      const keywordData = this.getKeywordData(keyword);
+      if (!keywordData) return [];
+      
+      // API 응답에서 연관 키워드 추출
+      const relatedKeywords = keywordData.apiData?.trendData?.relatedKeywords || 
+                              keywordData.apiData?.shoppingData?.relKeyword?.[0]?.relKeywords || 
+                              [];
+      
+      // 데이터베이스에 있는 연관 키워드만 필터링
+      const result = [];
+      for (const relKeyword of relatedKeywords) {
+        if (typeof relKeyword === 'string') {
+          const relData = this.getKeywordData(relKeyword);
+          if (relData?.metrics?.competition?.competitionScore !== undefined) {
+            result.push({
+              keyword: relKeyword,
+              competitionScore: relData.metrics.competition.competitionScore
+            });
+          } else {
+            // 기본 경쟁도 점수 (실제 데이터 없는 경우)
+            result.push({
+              keyword: relKeyword,
+              competitionScore: 50
+            });
+          }
+        }
+      }
+      
+      return result.slice(0, limit);
+    } catch (error) {
+      logger.error(`[${keyword}] 연관 키워드 조회 오류: ${error}`);
+      return [];
+    }
+  }
+  
+  /**
+   * 카테고리별 평균 가격 조회
+   * @param category 카테고리 
+   * @returns 평균 가격
+   */
+  public getCategoryAvgPrice(category: string = 'default'): number {
+    // 카테고리별 기본 평균 가격 (실제 구현에서는 DB에서 계산 필요)
+    const categoryPrices: Record<string, number> = {
+      'fashion': 45000,
+      'beauty': 35000,
+      'electronics': 250000,
+      'furniture': 150000,
+      'food': 25000,
+      'default': 50000
+    };
+    
+    return categoryPrices[category] || categoryPrices['default'];
+  }
+  
+  /**
+   * 카테고리별 평균 리뷰 수 조회
+   * @param category 카테고리
+   * @returns 평균 리뷰 수
+   */
+  public getCategoryAvgReviews(category: string = 'default'): number {
+    // 카테고리별 기본 평균 리뷰 수 (실제 구현에서는 DB에서 계산 필요)
+    const categoryReviews: Record<string, number> = {
+      'fashion': 75,
+      'beauty': 120,
+      'electronics': 200,
+      'furniture': 50,
+      'food': 90,
+      'default': 100
+    };
+    
+    return categoryReviews[category] || categoryReviews['default'];
   }
 }
-
-// 커넥터 인스턴스 생성 및 내보내기
-export const dbConnector = DatabaseConnector.getInstance();

@@ -6,6 +6,7 @@ import { searchShoppingInsight, searchTrend } from "./api/search";
 import { getDailyTrends, getWeeklyTrends } from "./api/trend";
 import { testAllNaverAPIs, testBasicNaverAPIs } from "./api/naver-api-test";
 import { initNaverAdAPI, getKeywordAnalysis, getKeywordInsights, getKeywordBidRecommendation } from "./api/naver-ad";
+import keywordRoutes from "./api/routes/keyword-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Naver APIs
@@ -18,6 +19,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   } catch (error) {
     console.error("네이버 검색광고 API 초기화 실패:", error);
   }
+
+  // Register advanced keyword analysis routes
+  app.use('/api/keyword-analysis', keywordRoutes);
 
   // API routes
   app.get("/api/health", (_req, res) => {

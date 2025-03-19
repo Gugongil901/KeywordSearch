@@ -234,7 +234,7 @@ export class KeywordMetricsCalculator {
       
       // 상위 10개 상품 중 브랜드/일반 판매자 비율
       const products = shoppingResults.products || [];
-      const brandCount = products.filter(p => this.isBrandSeller(p.mall || '')).length;
+      const brandCount = products.filter((p: any) => this.isBrandSeller(p.mall || '')).length;
       const brandRatio = products.length > 0 ? brandCount / products.length : 0;
       
       // 전체 상품 수 대비 리뷰 수 비율
@@ -418,10 +418,10 @@ export class KeywordMetricsCalculator {
   /**
    * 계절성 지표 계산 (계절 변동, 주기성 등)
    */
-  private calculateSeasonalityMetrics(keyword: string, rawData: any): SeasonalityMetrics {
+  private async calculateSeasonalityMetrics(keyword: string, rawData: any): Promise<SeasonalityMetrics> {
     try {
       // 과거 24개월 데이터 조회
-      const historicalData = this.getHistoricalData(keyword, 24);
+      const historicalData = await this.getHistoricalData(keyword, 24);
       
       // 시계열 분해로 계절성 파악
       const seasonalComponents = this.decomposeTimeSeries(historicalData);

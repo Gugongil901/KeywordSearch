@@ -1,0 +1,139 @@
+class KeywordAnalysisSystem:
+    def __init__(self, config=None):
+        """종합 키워드 분석 시스템 초기화"""
+        # 설정 파일 로드
+        self.config = config or self._load_default_config()
+        
+        # 데이터베이스 연결
+        self.db = DatabaseConnector(self.config['database'])
+        
+        # 데이터 수집 시스템
+        self.data_collector = NaverDataCollector(self.config['api_keys'])
+        
+        # 지표 계산 시스템
+        self.metrics_calculator = KeywordMetricsCalculator(self.data_collector, self.db)
+        
+        # 시각화 시스템
+        self.visualization_system = KeywordVisualizationSystem(self.metrics_calculator, self.db)
+        
+        # 경쟁사 분석 시스템
+        self.competitor_analyzer = CompetitorAnalyzer(self.data_collector, self.db)
+        
+        # 시장 분석 시스템
+        self.market_analyzer = MarketAnalyzer(self.data_collector, self.metrics_calculator, self.db)
+        
+        # 프론트엔드 통합 시스템
+        self.frontend_system = FrontendIntegrationSystem(
+            self.db, self.metrics_calculator, self.visualization_system
+        )
+        
+    def _load_default_config(self):
+        """기본 설정 로드"""
+        return {
+            'database': {
+                'host': 'localhost',
+                'port': 3306,
+                'user': 'root',
+                'password': '',
+                'database': 'keyword_analysis'
+            },
+            'api_keys': {
+                'naver_client_id': '',
+                'naver_client_secret': '',
+                'naver_ad_api_key': ''
+            },
+            'crawling': {
+                'delay': 3,
+                'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36'
+            },
+            'cache': {
+                'enabled': True,
+                'ttl': 3600  # 1시간
+            }
+        }
+        
+    async def analyze_keyword(self, keyword):
+        """키워드 종합 분석 실행"""
+        # 1. 데이터 수집
+        raw_data = await self.data_collector.collect_all_data(keyword)
+        
+        # 2. 지표 계산
+        metrics = await self.metrics_calculator.calculate_all_metrics(keyword)
+        
+        # 3. 경쟁사 분석
+        competitors = await self.competitor_analyzer.analyze_competitors(keyword)
+        
+        # 4. 관련 키워드 분석
+        related_keywords = await self._analyze_related_keywords(keyword)
+        
+        # 5. 리포트 생성
+        report = self.visualization_system.generate_keyword_report(keyword, metrics)
+        
+        # 6. 대시보드 데이터 생성
+        dashboard_data = self.frontend_system.generate_dashboard_data(keyword)
+        
+        # 결과 통합
+        result = {
+            'keyword': keyword,
+            'metrics': metrics,
+            'competitors': competitors,
+            'related_keywords': related_keywords,
+            'report': report,
+            'dashboard': dashboard_data
+        }
+        
+        # 데이터베이스에 결과 저장
+        self.db.save_keyword_analysis(keyword, result)
+        
+        return result
+        
+    async def analyze_category(self, category_id):
+        """카테고리 종합 분석 실행"""
+        return await self.market_analyzer.analyze_category_market(category_id)
+        
+    async def _analyze_related_keywords(self, keyword):
+        """연관 키워드 분석"""
+        # 연관 키워드 수집
+        related_keywords = await self.data_collector.collect_related_keywords(keyword)
+        
+        # 각 연관 키워드 간단 분석
+        analyzed_keywords = []
+        for related in related_keywords[:10]:  # 상위 10개만 분석
+            related_keyword = related['keyword']
+            
+            # 기존 분석 데이터가 있는지 확인
+            existing_analysis = self.db.get_keyword_analysis(related_keyword)
+            
+            if existing_analysis and self._is_analysis_fresh(existing_analysis):
+                # 신선한 데이터가 있으면 재사용
+                analyzed_keywords.append({
+                    'keyword': related_keyword,
+                    'search_volume': existing_analysis['metrics']['basic']['search_volume']['total'],
+                    'competition_score': existing_analysis['metrics']['competition']['competition_score'],
+                    'growth_score': existing_analysis['metrics']['growth']['growth_score'],
+                    'profit_score': existing_analysis['metrics']['profit']['profit_score'],
+                    'overall_score': existing_analysis['metrics']['overall_score']['score']
+                })
+            else:
+                # 간단 분석만 수행
+                simplified_metrics = await self.metrics_calculator.calculate_simplified_metrics(related_keyword)
+                analyzed_keywords.append({
+                    'keyword': related_keyword,
+                    'search_volume': simplified_metrics['search_volume'],
+                    'competition_score': simplified_metrics['competition_score'],
+                    'growth_score': simplified_metrics['growth_score'],
+                    'profit_score': simplified_metrics['profit_score'],
+                    'overall_score': simplified_metrics['overall_score']
+                })
+                
+        return analyzed_keywords
+        
+    def _is_analysis_fresh(self, analysis):
+        """분석 데이터가 신선한지 확인 (7일 이내)"""
+        if not analysis or 'updated_at' not in analysis:
+            return False
+            
+        updated_at = datetime.fromisoformat(analysis['updated_at'])
+        now = datetime.now()
+        
+        return (now - updated_at).days < 7
