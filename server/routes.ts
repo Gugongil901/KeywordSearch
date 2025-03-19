@@ -5,10 +5,19 @@ import { setupNaverAPI, getKeywordStats, searchKeyword, getKeywordTrends, getHot
 import { searchShoppingInsight, searchTrend } from "./api/search";
 import { getDailyTrends, getWeeklyTrends } from "./api/trend";
 import { testAllNaverAPIs, testBasicNaverAPIs } from "./api/naver-api-test";
+import { initNaverAdAPI, getKeywordAnalysis, getKeywordInsights, getKeywordBidRecommendation } from "./api/naver-ad";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Initialize Naver API
+  // Initialize Naver APIs
   setupNaverAPI();
+  
+  // Initialize Naver Ad API (검색광고 API)
+  try {
+    initNaverAdAPI();
+    console.log("네이버 검색광고 API 초기화 완료");
+  } catch (error) {
+    console.error("네이버 검색광고 API 초기화 실패:", error);
+  }
 
   // API routes
   app.get("/api/health", (_req, res) => {
@@ -449,6 +458,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("API 동작 확인 실패:", error);
       res.status(500).json({ message: "Error testing basic APIs", details: error });
+    }
+  });
+  
+  // 네이버 검색광고 API - 연관 키워드 조회
+  app.get("/api/keyword/related", async (req, res) => {
+    try {
+      const { keyword } = req.query;
+      if (!keyword || typeof keyword !== "string") {
+        return res.status(400).json({ message: "Keyword parameter is required" });
+      }
+      
+      // URL 인코딩 처리
+      let processedKeyword;
+      
+      try {
+        processedKeyword = decodeURIComponent(keyword);
+      } catch (e) {
+        console.error("키워드 디코딩 중 오류 발생, 원본 사용:", e);
+        processedKeyword = keyword;
+      }
+      
+      console.log(`연관 키워드 요청: "${processedKeyword}"`);
+      
+      const result = await getKeywordInsights(processedKeyword);
+      
+      // UTF-8로 명시적 인코딩 설정
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.json(result);
+    } catch (error) {
+      console.error("연관 키워드 조회 실패:", error);
+      res.status(500).json({ message: "Error fetching related keywords" });
+    }
+  });
+  
+  // 네이버 검색광고 API - 키워드 입찰가 추천
+  app.get("/api/keyword/bids", async (req, res) => {
+    try {
+      const { keyword } = req.query;
+      if (!keyword || typeof keyword !== "string") {
+        return res.status(400).json({ message: "Keyword parameter is required" });
+      }
+      
+      // URL 인코딩 처리
+      let processedKeyword;
+      
+      try {
+        processedKeyword = decodeURIComponent(keyword);
+      } catch (e) {
+        console.error("키워드 디코딩 중 오류 발생, 원본 사용:", e);
+        processedKeyword = keyword;
+      }
+      
+      console.log(`입찰가 추천 요청: "${processedKeyword}"`);
+      
+      const result = await getKeywordBidRecommendation(processedKeyword);
+      
+      // UTF-8로 명시적 인코딩 설정
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.json(result);
+    } catch (error) {
+      console.error("입찰가 추천 조회 실패:", error);
+      res.status(500).json({ message: "Error fetching bid recommendations" });
+    }
+  });
+  
+  // 네이버 검색광고 API - 키워드 전체 분석
+  app.get("/api/keyword/analysis", async (req, res) => {
+    try {
+      const { keyword } = req.query;
+      if (!keyword || typeof keyword !== "string") {
+        return res.status(400).json({ message: "Keyword parameter is required" });
+      }
+      
+      // URL 인코딩 처리
+      let processedKeyword;
+      
+      try {
+        processedKeyword = decodeURIComponent(keyword);
+      } catch (e) {
+        console.error("키워드 디코딩 중 오류 발생, 원본 사용:", e);
+        processedKeyword = keyword;
+      }
+      
+      console.log(`키워드 분석 요청: "${processedKeyword}"`);
+      
+      const result = await getKeywordAnalysis(processedKeyword);
+      
+      // UTF-8로 명시적 인코딩 설정
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.json(result);
+    } catch (error) {
+      console.error("키워드 분석 조회 실패:", error);
+      res.status(500).json({ message: "Error fetching keyword analysis" });
     }
   });
 
