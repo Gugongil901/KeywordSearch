@@ -15,19 +15,19 @@ const NAVER_AD_API_BASE = "https://api.naver.com";
 // 네이버 데이터랩 API 엔드포인트 (2025년 3월 기준)
 // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
 
-// 네이버 API 엔드포인트 - 2025년 3월 업데이트 이후 확인된 엔드포인트
+// 네이버 API 엔드포인트 - 네이버 개발자 센터 문서 기반 엔드포인트
 
 // 쇼핑인사이트 분야별 트렌드 조회 API
-const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/category";
+const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
 
 // 쇼핑인사이트 키워드 트렌드 조회 API
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keyword/trend";
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 
 // 쇼핑인사이트 분야별 인기 검색어 조회 API 
 const NAVER_SHOPPING_INSIGHT_RANKS_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 
-// 쇼핑인사이트 기간별 트렌드 조회 API
-const NAVER_DATALAB_KEYWORD_TREND_API = "https://openapi.naver.com/v1/datalab/shopping/category/keyword/period";
+// 쇼핑인사이트 기기별 트렌드 조회 API
+const NAVER_DATALAB_KEYWORD_DEVICE_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords/device";
 
 // 네이버 통합검색어 트렌드 API (백업)
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
@@ -182,11 +182,12 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
     try {
       console.log(`네이버 데이터랩 키워드 트렌드 API 요청 (키워드: ${keyword})`);
       
-      // 2025년 3월 기준 최신 네이버 API 문서에 맞춘 요청 형식
+      // 네이버 개발자 센터 문서에 맞춘 요청 형식 (쇼핑인사이트 키워드별 트렌드 조회)
       const requestBody = {
         startDate: formatDate(startDate),
         endDate: formatDate(endDate), 
         timeUnit: period === "daily" ? "date" : "week",
+        category: "ALL", // 모든 카테고리 검색
         keywordGroups: [
           {
             groupName: keyword,
