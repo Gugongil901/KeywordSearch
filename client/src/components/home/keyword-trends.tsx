@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface KeywordTrend {
   keyword: string;
@@ -9,14 +10,20 @@ interface KeywordTrend {
 }
 
 const KeywordTrends: React.FC = () => {
+  const [period, setPeriod] = useState<"daily" | "weekly">("daily");
   const [category, setCategory] = useState<string>("all");
 
-  const { data, isLoading, error } = useQuery({
+  const { data: dailyData, isLoading: isDailyLoading } = useQuery({
     queryKey: [`/api/trends/daily?category=${category}`],
     refetchOnWindowFocus: false,
   });
 
-  const keywords: KeywordTrend[] = data?.keywords || [
+  const { data: weeklyData, isLoading: isWeeklyLoading } = useQuery({
+    queryKey: [`/api/trends/weekly?category=${category}`],
+    refetchOnWindowFocus: false,
+  });
+
+  const dailyKeywords: KeywordTrend[] = dailyData?.keywords || [
     { keyword: "파로", rank: 1, change: "same" },
     { keyword: "코스", rank: 2, change: "up" },
     { keyword: "닭가슴살", rank: 3, change: "up" },
@@ -27,6 +34,19 @@ const KeywordTrends: React.FC = () => {
     { keyword: "나이키운동화", rank: 8, change: "up" },
     { keyword: "호카", rank: 9, change: "up" },
     { keyword: "꼬망세", rank: 10, change: "down" },
+  ];
+
+  const weeklyKeywords: KeywordTrend[] = weeklyData?.keywords || [
+    { keyword: "명품가방", rank: 1, change: "same" },
+    { keyword: "아이폰15", rank: 2, change: "up" },
+    { keyword: "에어팟", rank: 3, change: "up" },
+    { keyword: "여성원피스", rank: 4, change: "down" },
+    { keyword: "운동화", rank: 5, change: "up" },
+    { keyword: "다이슨", rank: 6, change: "down" },
+    { keyword: "노트북", rank: 7, change: "same" },
+    { keyword: "가을자켓", rank: 8, change: "up" },
+    { keyword: "비타민", rank: 9, change: "up" },
+    { keyword: "캠핑용품", rank: 10, change: "up" },
   ];
 
   const getChangeIcon = (change: string) => {
@@ -50,6 +70,10 @@ const KeywordTrends: React.FC = () => {
           </span>
         );
     }
+  };
+
+  const handleKeywordClick = (keyword: string) => {
+    window.open(`https://search.shopping.naver.com/search/all?query=${encodeURIComponent(keyword)}`, '_blank');
   };
 
   return (
@@ -77,17 +101,47 @@ const KeywordTrends: React.FC = () => {
           </svg>
           키워드 Best
         </h2>
-        <span className="text-xs text-gray-500">네이버쇼핑에서 많이 검색된 키워드입니다.</span>
+        <span className="text-xs text-gray-500">네이버쇼핑인사이트 인기키워드</span>
       </div>
-      <ul className="space-y-1">
-        {keywords.map((keyword, index) => (
-          <li key={index} className="flex items-center py-2 border-b border-gray-100">
-            <span className="w-8 text-center font-semibold text-primary">{keyword.rank}</span>
-            <span className="flex-grow">{keyword.keyword}</span>
-            {getChangeIcon(keyword.change)}
-          </li>
-        ))}
-      </ul>
+
+      <Tabs defaultValue="daily" onValueChange={(value) => setPeriod(value as "daily" | "weekly")}>
+        <TabsList className="mb-4 grid w-full grid-cols-2">
+          <TabsTrigger value="daily">일간 트렌드</TabsTrigger>
+          <TabsTrigger value="weekly">주간 트렌드</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="daily">
+          <ul className="space-y-1">
+            {dailyKeywords.map((keyword, index) => (
+              <li 
+                key={index} 
+                className="flex items-center py-2 border-b border-gray-100 cursor-pointer hover:bg-gray-50"
+                onClick={() => handleKeywordClick(keyword.keyword)}
+              >
+                <span className="w-8 text-center font-semibold text-primary">{keyword.rank}</span>
+                <span className="flex-grow">{keyword.keyword}</span>
+                {getChangeIcon(keyword.change)}
+              </li>
+            ))}
+          </ul>
+        </TabsContent>
+        
+        <TabsContent value="weekly">
+          <ul className="space-y-1">
+            {weeklyKeywords.map((keyword, index) => (
+              <li 
+                key={index} 
+                className="flex items-center py-2 border-b border-gray-100 cursor-pointer hover:bg-gray-50"
+                onClick={() => handleKeywordClick(keyword.keyword)}
+              >
+                <span className="w-8 text-center font-semibold text-primary">{keyword.rank}</span>
+                <span className="flex-grow">{keyword.keyword}</span>
+                {getChangeIcon(keyword.change)}
+              </li>
+            ))}
+          </ul>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

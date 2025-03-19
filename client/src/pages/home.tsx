@@ -1,7 +1,7 @@
 import React from "react";
 import HeroSearch from "@/components/home/hero-search";
 import KeywordTrends from "@/components/home/keyword-trends";
-import SalesRanking from "@/components/home/sales-ranking";
+import CategoryKeywords from "@/components/home/sales-ranking";
 import KeywordAnalysis from "@/components/home/keyword-analysis";
 import ProductRanking from "@/components/home/product-ranking";
 import HelpSection from "@/components/home/help-section";
@@ -16,7 +16,7 @@ const Home: React.FC = () => {
       <section className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <KeywordTrends />
-          <SalesRanking />
+          <CategoryKeywords />
         </div>
       </section>
 

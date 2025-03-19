@@ -133,15 +133,53 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
 // Get hot/trending keywords
 export async function getHotKeywords(category: string = "all"): Promise<string[]> {
   try {
-    // Mock data for hot keywords based on category
-    const allHotKeywords = [
-      "파로", "코스", "닭가슴살", "당근", "스투시", 
-      "파로효소", "쭈꾸미", "나이키운동화", "호카", "꼬망세",
-      "여름옷", "선크림", "가디건", "휴대폰케이스", "노트북"
-    ];
+    // 카테고리별 키워드 목록 (네이버 쇼핑인사이트 기반)
+    const categoryKeywords: Record<string, string[]> = {
+      all: [
+        "파로", "코스", "닭가슴살", "당근", "스투시", 
+        "파로효소", "쭈꾸미", "나이키운동화", "호카", "꼬망세",
+        "여름옷", "선크림", "가디건", "휴대폰케이스", "노트북"
+      ],
+      fashion: [
+        "스투시", "겨울 코트", "패딩", "니트", "데님", 
+        "겨울옷", "울코트", "캐시미어", "머플러", "후드티"
+      ],
+      accessory: [
+        "비니", "귀걸이", "목걸이", "겨울 양말", "가죽장갑",
+        "목도리", "크로스백", "숄더백", "귀마개", "손목시계"
+      ],
+      beauty: [
+        "립밤", "파운데이션", "마스카라", "토너", "선크림",
+        "에센스", "핸드크림", "마스크팩", "클렌징폼", "바디로션"
+      ],
+      digital: [
+        "아이폰15", "에어팟", "갤럭시", "노트북", "블루투스 이어폰",
+        "아이패드", "맥북", "공기청정기", "전기히터", "가습기"
+      ],
+      furniture: [
+        "침대", "소파", "책상", "이케아", "커튼",
+        "원목테이블", "식탁", "수납장", "행거", "매트리스"
+      ],
+      baby: [
+        "분유", "물티슈", "기저귀", "이유식", "아기옷",
+        "젖병", "아기이불", "유모차", "카시트", "아기띠"
+      ],
+      food: [
+        "닭가슴살", "김치", "삼겹살", "고구마", "사과",
+        "과일", "견과류", "쌀", "홍삼", "간식"
+      ],
+      sports: [
+        "런닝화", "홈트레이닝", "요가매트", "덤벨", "헬스장갑",
+        "운동화", "골프채", "자전거", "등산화", "스키복"
+      ],
+      life: [
+        "비타민", "종이컵", "마스크", "화장지", "생수",
+        "프로바이오틱스", "루테인", "오메가3", "칫솔", "샴푸"
+      ]
+    };
 
-    // Filter or modify based on category if needed
-    return allHotKeywords.slice(0, 10);
+    // 해당 카테고리의 키워드 반환, 없으면 전체 카테고리 키워드 반환
+    return categoryKeywords[category] || categoryKeywords.all;
   } catch (error) {
     console.error("Error getting hot keywords:", error);
     throw new Error("Failed to get hot keywords");
