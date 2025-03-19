@@ -8,6 +8,7 @@ import { testAllNaverAPIs, testBasicNaverAPIs } from "./api/naver-api-test";
 import { initNaverAdAPI, getKeywordAnalysis, getKeywordInsights, getKeywordBidRecommendation } from "./api/naver-ad";
 import keywordRoutes from "./api/routes/keyword-routes";
 import systemRoutes from "./api/routes/system-routes";
+import apiRouter from "./api/routes/api-router";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Naver APIs
@@ -26,6 +27,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register integrated keyword analysis system routes
   app.use('/api/system', systemRoutes);
+  
+  // Register new FastAPI-like API router
+  app.use('/api/v1', apiRouter);
 
   // API routes
   app.get("/api/health", (_req, res) => {

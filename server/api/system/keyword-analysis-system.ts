@@ -44,7 +44,8 @@ interface KeywordAnalysisConfig {
  */
 export class KeywordAnalysisSystem {
   private config: KeywordAnalysisConfig;
-  private db: DatabaseConnector;
+  // API 라우터에서 DB 접근이 필요하여 public으로 변경
+  public db: DatabaseConnector;
   private dataCollector: NaverDataCollector;
   private metricsCalculator: KeywordMetricsCalculator;
   private visualizationSystem: KeywordVisualizationSystem;
@@ -269,7 +270,7 @@ export class KeywordAnalysisSystem {
    * @param analysis 분석 데이터
    * @returns 신선 여부
    */
-  private isAnalysisFresh(analysis: any): boolean {
+  public isAnalysisFresh(analysis: any): boolean {
     if (!analysis || !analysis.timestamp) {
       return false;
     }
@@ -288,7 +289,7 @@ export class KeywordAnalysisSystem {
    * @param baseKeyword 기준 키워드
    * @returns 샘플 연관 키워드 목록
    */
-  private generateSampleRelatedKeywords(baseKeyword: string): any[] {
+  public generateSampleRelatedKeywords(baseKeyword: string): any[] {
     const relatedTerms = [
       '가격', '후기', '추천', '할인', '세일',
       '매장', '온라인', '정품', '특가', '신상'

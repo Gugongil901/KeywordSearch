@@ -1,0 +1,217 @@
+from fastapi import FastAPI, BackgroundTasks, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
+import asyncio
+import logging
+
+app = FastAPI(title="네이버 키워드 분석 API", version="1.0.0")
+
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 프로덕션에서는 구체적인 도메인으로 제한
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 로깅 설정
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("app.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger("keyword_api")
+
+# 분석 시스템 초기화
+analysis_system = KeywordAnalysisSystem()
+
+# 배경 작업 큐
+background_tasks = {}
+
+@app.get("/")
+async def root():
+    return {"message": "네이버 키워드 분석 API에 오신 것을 환영합니다"}
+
+@app.get("/keywords/{keyword}")
+async def get_keyword_analysis(keyword: str, refresh: bool = False):
+    """키워드 분석 결과 조회"""
+    # 분석 작업 중인지 확인
+    if keyword in background_tasks and background_tasks[keyword]['status'] == 'processing':
+        return {
+            "keyword": keyword,
+            "status": "processing",
+            "message": "분석이 진행 중입니다. 잠시 후 다시 시도해주세요."
+        }
+        
+    # 기존 분석 데이터 확인
+    existing_analysis = analysis_system.db.get_keyword_analysis(keyword)
+    
+    # 신선한 데이터가 있고, 강제 갱신이 아니면 기존 데이터 반환
+    if existing_analysis and analysis_system._is_analysis_fresh(existing_analysis) and not refresh:
+        return {
+            "keyword": keyword,
+            "status": "completed",
+            "data": existing_analysis
+        }
+        
+    # 배경에서 분석 작업 시작
+    task_id = f"{keyword}_{int(datetime.now().timestamp())}"
+    background_tasks[keyword] = {
+        'status': 'processing',
+        'task_id': task_id,
+        'started_at': datetime.now().isoformat()
+    }
+    
+    # 배경 작업으로 분석 실행
+    asyncio.create_task(process_keyword_analysis(keyword, task_id))
+    
+    return {
+        "keyword": keyword,
+        "status": "processing",
+        "message": "분석이 시작되었습니다. 잠시 후 다시 조회해주세요.",
+        "task_id": task_id
+    }
+
+@app.get("/tasks/{task_id}")
+async def get_task_status(task_id: str):
+    """분석 작업 상태 조회"""
+    # 모든 작업에서 task_id 검색
+    for keyword, task in background_tasks.items():
+        if task['task_id'] == task_id:
+            return {
+                "task_id": task_id,
+                "keyword": keyword,
+                "status": task['status'],
+                "started_at": task['started_at'],
+                "completed_at": task.get('completed_at')
+            }
+            
+    raise HTTPException(status_code=404, detail=f"작업 ID {task_id}를 찾을 수 없습니다.")
+
+@app.get("/categories/{category_id}")
+async def get_category_analysis(category_id: str, refresh: bool = False):
+    """카테고리 분석 결과 조회"""
+    # 기존 분석 데이터 확인
+    existing_analysis = analysis_system.db.get_category_analysis(category_id)
+    
+    # 신선한 데이터가 있고, 강제 갱신이 아니면 기존 데이터 반환
+    if existing_analysis and analysis_system._is_analysis_fresh(existing_analysis) and not refresh:
+        return {
+            "category_id": category_id,
+            "status": "completed",
+            "data": existing_analysis
+        }
+        
+    # 배경에서 분석 작업 시작
+    task_id = f"category_{category_id}_{int(datetime.now().timestamp())}"
+    background_tasks[f"category_{category_id}"] = {
+        'status': 'processing',
+        'task_id': task_id,
+        'started_at': datetime.now().isoformat()
+    }
+    
+    # 배경 작업으로 분석 실행
+    asyncio.create_task(process_category_analysis(category_id, task_id))
+    
+    return {
+        "category_id": category_id,
+        "status": "processing",
+        "message": "카테고리 분석이 시작되었습니다. 잠시 후 다시 조회해주세요.",
+        "task_id": task_id
+    }
+
+@app.get("/related-keywords/{keyword}")
+async def get_related_keywords(keyword: str, limit: int = 10):
+    """연관 키워드 조회"""
+    related_keywords = analysis_system.db.get_related_keywords(keyword, limit=limit)
+    
+    if not related_keywords:
+        # 연관 키워드 분석
+        related_keywords = await analysis_system._analyze_related_keywords(keyword)
+        
+    return {
+        "keyword": keyword,
+        "related_keywords": related_keywords[:limit]
+    }
+
+async def process_keyword_analysis(keyword, task_id):
+    """배경 작업으로 키워드 분석 처리"""
+    try:
+        logger.info(f"키워드 분석 시작: {keyword} (작업 ID: {task_id})")
+        
+        # 키워드 분석 실행
+        result = await analysis_system.analyze_keyword(keyword)
+        
+        # 작업 상태 업데이트
+        background_tasks[keyword] = {
+            'status': 'completed',
+            'task_id': task_id,
+            'started_at': background_tasks[keyword]['started_at'],
+            'completed_at': datetime.now().isoformat()
+        }
+        
+        logger.info(f"키워드 분석 완료: {keyword} (작업 ID: {task_id})")
+        
+        # 5분 후 작업 정보 정리
+        asyncio.create_task(cleanup_task(keyword, 300))
+        
+    except Exception as e:
+        logger.error(f"키워드 분석 오류: {keyword} - {str(e)}")
+        
+        # 작업 상태 업데이트
+        background_tasks[keyword] = {
+            'status': 'failed',
+            'task_id': task_id,
+            'started_at': background_tasks[keyword]['started_at'],
+            'completed_at': datetime.now().isoformat(),
+            'error': str(e)
+        }
+        
+        # 5분 후 작업 정보 정리
+        asyncio.create_task(cleanup_task(keyword, 300))
+
+async def process_category_analysis(category_id, task_id):
+    """배경 작업으로 카테고리 분석 처리"""
+    try:
+        logger.info(f"카테고리 분석 시작: {category_id} (작업 ID: {task_id})")
+        
+        # 카테고리 분석 실행
+        result = await analysis_system.analyze_category(category_id)
+        
+        # 작업 상태 업데이트
+        background_tasks[f"category_{category_id}"] = {
+            'status': 'completed',
+            'task_id': task_id,
+            'started_at': background_tasks[f"category_{category_id}"]['started_at'],
+            'completed_at': datetime.now().isoformat()
+        }
+        
+        logger.info(f"카테고리 분석 완료: {category_id} (작업 ID: {task_id})")
+        
+        # 5분 후 작업 정보 정리
+        asyncio.create_task(cleanup_task(f"category_{category_id}", 300))
+        
+    except Exception as e:
+        logger.error(f"카테고리 분석 오류: {category_id} - {str(e)}")
+        
+        # 작업 상태 업데이트
+        background_tasks[f"category_{category_id}"] = {
+            'status': 'failed',
+            'task_id': task_id,
+            'started_at': background_tasks[f"category_{category_id}"]['started_at'],
+            'completed_at': datetime.now().isoformat(),
+            'error': str(e)
+        }
+        
+        # 5분 후 작업 정보 정리
+        asyncio.create_task(cleanup_task(f"category_{category_id}", 300))
+
+async def cleanup_task(key, delay_seconds):
+    """일정 시간 후 작업 정보 정리"""
+    await asyncio.sleep(delay_seconds)
+    if key in background_tasks:
+        del background_tasks[key]
+        logger.info(f"작업 정보 정리 완료: {key}")
