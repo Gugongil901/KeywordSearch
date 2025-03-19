@@ -54,18 +54,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Keyword parameter is required" });
       }
 
-      // URL 디코딩 처리
-      const decodedKeyword = decodeURIComponent(keyword);
-      console.log(`키워드 트렌드 요청: ${decodedKeyword} (원본: ${keyword}), 기간: ${period || "daily"}`);
+      // 요청이 이미 인코딩되어 있을 가능성이 있으므로 우선 디코딩
+      // UTF-8로 디코딩 후 바로 재인코딩
+      let processedKeyword = keyword;
+      try {
+        // 이미 디코딩된 상태라면 그대로 사용
+        processedKeyword = decodeURIComponent(keyword);
+      } catch (e) {
+        // 디코딩 중 오류가 발생하면 원본 사용
+        console.log("키워드 디코딩 중 오류 발생, 원본 사용:", e);
+        processedKeyword = keyword;
+      }
+
+      console.log(`키워드 트렌드 요청: "${processedKeyword}" (원본: "${keyword}"), 기간: ${period || "daily"}`);
       
       const periodStr = typeof period === "string" ? period : "daily";
-      const result = await getKeywordTrends(decodedKeyword, periodStr);
+      const result = await getKeywordTrends(processedKeyword, periodStr);
       
-      // 응답 전에 한번 더 확인
-      if (result.keyword !== decodedKeyword) {
-        console.log(`키워드 불일치 수정: ${result.keyword} → ${decodedKeyword}`);
-        result.keyword = decodedKeyword;
-      }
+      // 응답 전에 키워드 수정
+      result.keyword = processedKeyword; 
       
       res.json(result);
     } catch (error) {
