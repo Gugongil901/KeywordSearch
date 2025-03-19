@@ -53,11 +53,11 @@ const CategoryKeywords: React.FC<CategoryKeywordsProps> = ({ period }) => {
           { keyword: "제킷", rank: 5, change: "down" },
         ],
         fashion: [
-          { keyword: "운동화", rank: 1, change: "same" },
-          { keyword: "단화", rank: 2, change: "up" },
-          { keyword: "슬리퍼백", rank: 3, change: "up" },
-          { keyword: "스니커즈", rank: 4, change: "same" },
-          { keyword: "토트백", rank: 5, change: "down" },
+          { keyword: "제킷", rank: 1, change: "same" },
+          { keyword: "티셔츠", rank: 2, change: "up" },
+          { keyword: "원피스", rank: 3, change: "up" },
+          { keyword: "티셔츠", rank: 4, change: "down" },
+          { keyword: "제킷", rank: 5, change: "down" },
         ],
         digital: [
           { keyword: "후대폰케이스", rank: 1, change: "same" },
