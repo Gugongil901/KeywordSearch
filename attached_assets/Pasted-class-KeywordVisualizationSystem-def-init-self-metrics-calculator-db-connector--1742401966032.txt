@@ -1,0 +1,324 @@
+class KeywordVisualizationSystem:
+    def __init__(self, metrics_calculator, db_connector):
+        self.metrics_calculator = metrics_calculator
+        self.db = db_connector
+        
+    def generate_keyword_report(self, keyword, metrics=None):
+        """키워드 분석 리포트 생성"""
+        if metrics is None:
+            # 데이터베이스에서 기존 지표 조회
+            metrics = self.db.get_keyword_metrics(keyword)
+            
+            if not metrics:
+                # 지표가 없으면 계산
+                metrics = self.metrics_calculator.calculate_all_metrics(keyword)
+        
+        # 리포트 데이터 구성
+        report = {
+            'keyword': keyword,
+            'generated_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'summary': self._generate_summary(keyword, metrics),
+            'charts': self._generate_charts(keyword, metrics),
+            'insights': self._generate_insights(keyword, metrics),
+            'recommendations': self._generate_recommendations(keyword, metrics)
+        }
+        
+        return report
+    
+    def _generate_summary(self, keyword, metrics):
+        """키워드 분석 요약 생성"""
+        basic = metrics.get('basic', {})
+        competition = metrics.get('competition', {})
+        growth = metrics.get('growth', {})
+        profit = metrics.get('profit', {})
+        overall = metrics.get('overall_score', {})
+        
+        return {
+            'keyword': keyword,
+            'search_volume': {
+                'total': basic.get('search_volume', {}).get('total', 0),
+                'pc': basic.get('search_volume', {}).get('pc', 0),
+                'mobile': basic.get('search_volume', {}).get('mobile', 0)
+            },
+            'product_count': basic.get('product_count', 0),
+            'competition_level': competition.get('difficulty_level', 'unknown'),
+            'growth_trend': growth.get('trend_direction', 'stable'),
+            'profit_potential': profit.get('profitability_level', 'unknown'),
+            'overall_score': overall.get('score', 0),
+            'overall_grade': overall.get('grade', 'unknown')
+        }
+    
+    def _generate_charts(self, keyword, metrics):
+        """차트 데이터 생성"""
+        charts = {}
+        
+        # 1. 검색량 트렌드 차트
+        historical_data = self.db.get_historical_data(keyword, months=12)
+        charts['search_volume_trend'] = self._prepare_trend_chart_data(historical_data)
+        
+        # 2. 경쟁 분석 레이더 차트
+        competition = metrics.get('competition', {})
+        charts['competition_radar'] = {
+            'labels': ['광고 비율', '브랜드 비율', '입찰가', '상품 수', '리뷰 비율'],
+            'data': [
+                competition.get('ad_ratio', 0) * 100,
+                competition.get('brand_ratio', 0) * 100,
+                min(100, competition.get('bid_price', 0) / 100),  # 입찰가 정규화
+                min(100, competition.get('market_concentration', 0) / 100),  # 시장 집중도 정규화
+                competition.get('review_ratio', 0) * 10  # 리뷰 비율 정규화
+            ]
+        }
+        
+        # 3. 성장성 예측 차트
+        growth = metrics.get('growth', {})
+        charts['growth_forecast'] = {
+            'labels': [f'Month {i+1}' for i in range(3)],  # 3개월 예측
+            'data': {
+                'forecast': [forecast['forecast'] for forecast in growth.get('forecast', [])],
+                'lower': [forecast['lower'] for forecast in growth.get('forecast', [])],
+                'upper': [forecast['upper'] for forecast in growth.get('forecast', [])]
+            }
+        }
+        
+        # 4. 가격 분포 히스토그램
+        price_stats = metrics.get('basic', {}).get('price_stats', {})
+        if price_stats:
+            # 가격 구간별 상품 수 분포 데이터 (필요시 크롤링 추가 필요)
+            # 여기서는 예시 데이터 사용
+            charts['price_distribution'] = {
+                'labels': ['~1만원', '1~3만원', '3~5만원', '5~10만원', '10만원~'],
+                'data': [20, 35, 25, 15, 5]  # 예시 데이터
+            }
+        
+        # 5. 종합 점수 게이지 차트
+        overall = metrics.get('overall_score', {})
+        category_scores = overall.get('category_scores', {})
+        charts['overall_score'] = {
+            'score': overall.get('score', 0),
+            'category_scores': [
+                {'name': '성장성', 'score': category_scores.get('growth', 0)},
+                {'name': '경쟁도', 'score': 100 - category_scores.get('competition', 0)},  # 경쟁도는 낮을수록 좋음
+                {'name': '수익성', 'score': category_scores.get('profit', 0)},
+                {'name': '마케팅 효율', 'score': category_scores.get('marketing', 0)},
+                {'name': '계절성', 'score': category_scores.get('seasonality', 0)}
+            ]
+        }
+        
+        return charts
+    
+    def _prepare_trend_chart_data(self, historical_data):
+        """트렌드 차트 데이터 준비"""
+        if not historical_data:
+            # 예시 데이터 반환
+            return {
+                'labels': [f'Month {i+1}' for i in range(12)],
+                'data': [0] * 12
+            }
+            
+        labels = [data['date'].strftime('%Y-%m') for data in historical_data]
+        data = [data['search_volume'] for data in historical_data]
+        
+        return {
+            'labels': labels,
+            'data': data
+        }
+    
+    def _generate_insights(self, keyword, metrics):
+        """키워드 분석 인사이트 생성"""
+        insights = []
+        
+        # 1. 검색량 관련 인사이트
+        basic = metrics.get('basic', {})
+        search_volume = basic.get('search_volume', {}).get('total', 0)
+        mobile_ratio = basic.get('search_volume', {}).get('mobile', 0) / search_volume if search_volume else 0
+        
+        if search_volume > 10000:
+            insights.append({
+                'type': 'volume',
+                'title': '높은 검색량',
+                'description': f"'{keyword}'는 월 {search_volume:,}회의 높은 검색량을 보이는 인기 키워드입니다."
+            })
+        
+        if mobile_ratio > 0.7:
+            insights.append({
+                'type': 'device',
+                'title': '모바일 중심 키워드',
+                'description': f"'{keyword}'는 검색의 {mobile_ratio*100:.1f}%가 모바일에서 이루어지는 모바일 중심 키워드입니다."
+            })
+        
+        # 2. 경쟁 관련 인사이트
+        competition = metrics.get('competition', {})
+        competition_score = competition.get('competition_score', 50)
+        
+        if competition_score < 30:
+            insights.append({
+                'type': 'competition',
+                'title': '낮은 경쟁도',
+                'description': f"'{keyword}'는 경쟁도가 낮은 블루오션 키워드입니다. 진입 장벽이 낮습니다."
+            })
+        elif competition_score > 70:
+            insights.append({
+                'type': 'competition',
+                'title': '높은 경쟁도',
+                'description': f"'{keyword}'는 경쟁이 매우 치열한 레드오션 키워드입니다. 차별화 전략이 필요합니다."
+            })
+        
+        # 3. 성장성 관련 인사이트
+        growth = metrics.get('growth', {})
+        growth_rates = growth.get('growth_rates', {})
+        
+        if growth_rates.get('3month', 0) > 20:
+            insights.append({
+                'type': 'growth',
+                'title': '급성장 키워드',
+                'description': f"'{keyword}'는 최근 3개월간 {growth_rates.get('3month')}% 성장한 급상승 키워드입니다."
+            })
+        elif growth_rates.get('3month', 0) < -15:
+            insights.append({
+                'type': 'growth',
+                'title': '하락 추세 키워드',
+                'description': f"'{keyword}'는 최근 3개월간 {abs(growth_rates.get('3month'))}% 하락한 키워드입니다. 주의가 필요합니다."
+            })
+        
+        # 4. 수익성 관련 인사이트
+        profit = metrics.get('profit', {})
+        margin_to_cpc = profit.get('margin_to_cpc_ratio', 0)
+        
+        if margin_to_cpc > 3:
+            insights.append({
+                'type': 'profit',
+                'title': '높은 광고 수익성',
+                'description': f"'{keyword}'는 CPC 대비 마진이 {margin_to_cpc:.1f}배로 광고 효율이 매우 높은 키워드입니다."
+            })
+        
+        # 5. 계절성 관련 인사이트
+        seasonality = metrics.get('seasonality', {})
+        seasonality_strength = seasonality.get('seasonality_strength', 0)
+        
+        if seasonality_strength > 0.5:
+            peak_months = seasonality.get('peak_months', [])
+            peak_months_str = ', '.join([f"{m}월" for m in peak_months[:2]])
+            
+            insights.append({
+                'type': 'seasonality',
+                'title': '강한 계절성',
+                'description': f"'{keyword}'는 {peak_months_str} 등에 검색량이 집중되는 계절성 키워드입니다."
+            })
+        
+        return insights
+    
+    def _generate_recommendations(self, keyword, metrics):
+        """키워드 분석 기반 추천사항 생성"""
+        recommendations = []
+        
+        # 지표 데이터 추출
+        competition = metrics.get('competition', {})
+        growth = metrics.get('growth', {})
+        profit = metrics.get('profit', {})
+        basic = metrics.get('basic', {})
+        
+        competition_score = competition.get('competition_score', 50)
+        growth_rate_3m = growth.get('growth_rates', {}).get('3month', 0)
+        search_volume = basic.get('search_volume', {}).get('total', 0)
+        
+        # 1. 진입 전략 추천
+        if competition_score < 40 and growth_rate_3m > 10:
+            recommendations.append({
+                'type': 'entry',
+                'title': '적극적 진입 추천',
+                'description': '경쟁도가 낮고 성장률이 높은 유망 키워드입니다. 초기 진입자 이점을 활용하여 적극적으로 공략하는 것이 좋습니다.'
+            })
+        elif competition_score > 70 and growth_rate_3m < 5:
+            recommendations.append({
+                'type': 'entry',
+                'title': '차별화 전략 필요',
+                'description': '경쟁이 치열하고 성장이 정체된 시장입니다. 명확한 차별화 포인트 없이는 진입을 재고하세요.'
+            })
+        
+        # 2. 가격 전략 추천
+        price_stats = basic.get('price_stats', {})
+        avg_price = price_stats.get('avg', 0)
+        
+        if competition_score > 60:
+            recommendations.append({
+                'type': 'price',
+                'title': '가격 차별화 전략',
+                'description': f'경쟁이 치열한 시장입니다. 평균 가격({avg_price:,}원)보다 10-15% 낮은 가격으로 초기 진입 후 리뷰를 확보하세요.'
+            })
+        
+        # 3. 광고 전략 추천
+        margin_to_cpc = profit.get('margin_to_cpc_ratio', 0)
+        
+        if margin_to_cpc > 2.5:
+            recommendations.append({
+                'type': 'advertising',
+                'title': '광고 투자 증대 추천',
+                'description': '마진 대비 광고 비용이 효율적입니다. 검색 광고 예산을 늘려 시장점유율을 확대하세요.'
+            })
+        elif margin_to_cpc < 1.2:
+            recommendations.append({
+                'type': 'advertising',
+                'title': '광고 효율 개선 필요',
+                'description': '현재 광고 효율이 낮습니다. 키워드 최적화와 광고 소재 개선으로 클릭률(CTR)을 높이세요.'
+            })
+        
+        # 4. 상품 전략 추천
+        if search_volume > 5000 and competition_score < 50:
+            recommendations.append({
+                'type': 'product',
+                
+ def _generate_recommendations(self, keyword, metrics):
+    """키워드 분석 기반 추천사항 생성"""
+    recommendations = []
+    
+    # 지표 데이터 추출
+    competition = metrics.get('competition', {})
+    growth = metrics.get('growth', {})
+    profit = metrics.get('profit', {})
+    basic = metrics.get('basic', {})
+    
+    competition_score = competition.get('competition_score', 50)
+    growth_rate_3m = growth.get('growth_rates', {}).get('3month', 0)
+    search_volume = basic.get('search_volume', {}).get('total', 0)
+    
+    # 4. 상품 전략 추천 (이어서)
+    if search_volume > 5000 and competition_score < 50:
+        recommendations.append({
+            'type': 'product',
+            'title': '다양한 가격대 상품 구성 추천',
+            'description': '검색량이 많고 경쟁이 적은 시장입니다. 다양한 가격대의 상품 라인업으로 시장을 넓게 공략하세요.'
+        })
+    
+    # 5. 계절성 전략 추천
+    seasonality = metrics.get('seasonality', {})
+    seasonality_strength = seasonality.get('seasonality_strength', 0)
+    current_status = seasonality.get('current_season_status', '')
+    
+    if seasonality_strength > 0.4:
+        peak_months = seasonality.get('peak_months', [])
+        if current_status == 'approaching_peak':
+            recommendations.append({
+                'type': 'seasonal',
+                'title': '성수기 준비 필요',
+                'description': f'곧 성수기({", ".join([f"{m}월" for m in peak_months[:2]])})가 다가옵니다. 재고를 충분히 확보하고 프로모션을 준비하세요.'
+            })
+        elif current_status == 'in_peak':
+            recommendations.append({
+                'type': 'seasonal',
+                'title': '성수기 최대 활용',
+                'description': '현재 성수기 중입니다. 광고 예산을 최대화하고 특별 프로모션으로 판매를 극대화하세요.'
+            })
+    
+    # 6. 연관 키워드 전략
+    related_keywords = self.db.get_related_keywords(keyword, limit=5)
+    if related_keywords:
+        low_competition_related = [k for k in related_keywords if k.get('competition_score', 100) < 40]
+        if low_competition_related:
+            related_keywords_str = ', '.join([f"'{k['keyword']}'" for k in low_competition_related[:3]])
+            recommendations.append({
+                'type': 'related',
+                'title': '연관 틈새 키워드 활용',
+                'description': f'경쟁이 적은 연관 키워드 {related_keywords_str} 등을 상품 설명에 추가하여 노출을 확대하세요.'
+            })
+    
+    return recommendations[:5]  # 상위 5개만 반환

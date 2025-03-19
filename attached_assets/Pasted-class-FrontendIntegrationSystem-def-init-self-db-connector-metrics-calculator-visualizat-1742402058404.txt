@@ -1,0 +1,165 @@
+class FrontendIntegrationSystem:
+    def __init__(self, db_connector, metrics_calculator, visualization_system):
+        self.db = db_connector
+        self.metrics_calculator = metrics_calculator
+        self.visualization_system = visualization_system
+        
+    def generate_dashboard_data(self, keyword):
+        """키워드에 대한 대시보드 데이터 생성"""
+        # 키워드 지표 계산 또는 조회
+        metrics = self.db.get_keyword_metrics(keyword)
+        if not metrics:
+            metrics = self.metrics_calculator.calculate_all_metrics(keyword)
+            
+        # 대시보드 섹션별 데이터 생성
+        dashboard_data = {
+            'keyword': keyword,
+            'summary': self._generate_summary_section(keyword, metrics),
+            'competition': self._generate_competition_section(keyword, metrics),
+            'growth': self._generate_growth_section(keyword, metrics),
+            'profit': self._generate_profit_section(keyword, metrics),
+            'demographic': self._generate_demographic_section(keyword, metrics),
+            'related_keywords': self._generate_related_keywords_section(keyword),
+            'top_products': self._generate_top_products_section(keyword)
+        }
+        
+        return dashboard_data
+    
+    def _generate_summary_section(self, keyword, metrics):
+        """요약 섹션 데이터 생성"""
+        overall = metrics.get('overall_score', {})
+        basic = metrics.get('basic', {})
+        
+        return {
+            'overall_score': overall.get('score', 0),
+            'grade': overall.get('grade', 'C'),
+            'search_volume': {
+                'total': basic.get('search_volume', {}).get('total', 0),
+                'pc': basic.get('search_volume', {}).get('pc', 0),
+                'mobile': basic.get('search_volume', {}).get('mobile', 0)
+            },
+            'product_count': basic.get('product_count', 0),
+            'avg_price': basic.get('price_stats', {}).get('avg', 0),
+            'chart': self.visualization_system._prepare_trend_chart_data(
+                self.db.get_historical_data(keyword, months=12)
+            )
+        }
+    
+    def _generate_competition_section(self, keyword, metrics):
+        """경쟁 섹션 데이터 생성"""
+        competition = metrics.get('competition', {})
+        
+        # 상위 10개 경쟁사 정보
+        competitors = self.db.get_keyword_competitors(keyword, limit=10)
+        
+        return {
+            'score': competition.get('competition_score', 50),
+            'level': competition.get('difficulty_level', 'medium'),
+            'ad_ratio': competition.get('ad_ratio', 0),
+            'brand_ratio': competition.get('brand_ratio', 0),
+            'bid_price': competition.get('bid_price', 0),
+            'market_concentration': competition.get('market_concentration', 0),
+            'competitors': competitors
+        }
+    
+    def _generate_growth_section(self, keyword, metrics):
+        """성장성 섹션 데이터 생성"""
+        growth = metrics.get('growth', {})
+        
+        return {
+            'score': growth.get('growth_score', 50),
+            'trend': growth.get('trend_direction', 'stable'),
+            'growth_rates': growth.get('growth_rates', {}),
+            'forecast': growth.get('forecast', []),
+            'relative_growth': growth.get('relative_growth', 0),
+            'seasonality': metrics.get('seasonality', {})
+        }
+    
+    def _generate_profit_section(self, keyword, metrics):
+        """수익성 섹션 데이터 생성"""
+        profit = metrics.get('profit', {})
+        
+        return {
+            'score': profit.get('profit_score', 50),
+            'level': profit.get('profitability_level', 'medium'),
+            'estimated_margin': profit.get('estimated_margin', 0),
+            'margin_rate': profit.get('margin_rate', 0),
+            'margin_to_cpc_ratio': profit.get('margin_to_cpc_ratio', 0),
+            'avg_price': profit.get('avg_price', 0),
+            'price_distribution': self._get_price_distribution(keyword)
+        }
+    
+    def _generate_demographic_section(self, keyword, metrics):
+        """인구통계 섹션 데이터 생성"""
+        # 네이버 검색 API 또는 GA 데이터가 필요할 수 있음
+        # 예시 데이터 반환
+        return {
+            'gender': {'male': 45, 'female': 55},
+            'age': {
+                '10s': 5,
+                '20s': 25,
+                '30s': 35,
+                '40s': 20,
+                '50s': 10,
+                '60+': 5
+            },
+            'device': {
+                'pc': 35,
+                'mobile': 65
+            }
+        }
+    
+    def _generate_related_keywords_section(self, keyword):
+        """연관 키워드 섹션 데이터 생성"""
+        related_keywords = self.db.get_related_keywords(keyword, limit=10)
+        
+        # 없으면 API 호출 또는 크롤링으로 수집
+        if not related_keywords:
+            related_keywords = self._fetch_related_keywords(keyword)
+            
+        return related_keywords
+    
+    def _generate_top_products_section(self, keyword):
+        """상위 제품 섹션 데이터 생성"""
+        top_products = self.db.get_keyword_top_products(keyword, limit=10)
+        
+        # 없으면 크롤링으로 수집
+        if not top_products:
+            top_products = self._crawl_top_products(keyword)
+            
+        return top_products
+    
+    def _get_price_distribution(self, keyword):
+        """상품 가격 분포 데이터 조회"""
+        price_distribution = self.db.get_keyword_price_distribution(keyword)
+        
+        # 없으면 기본값 반환
+        if not price_distribution:
+            return {
+                'labels': ['~1만원', '1~3만원', '3~5만원', '5~10만원', '10만원~'],
+                'data': [20, 35, 25, 15, 5]  # 예시 데이터
+            }
+            
+        return price_distribution
+    
+    def _fetch_related_keywords(self, keyword):
+        """연관 키워드 API 호출 또는 크롤링"""
+        # 네이버 API 또는 크롤링으로 구현
+        # 여기서는 예시 데이터 반환
+        return [
+            {'keyword': f'{keyword} 추천', 'search_volume': 2500, 'competition_score': 65},
+            {'keyword': f'{keyword} 가격', 'search_volume': 1800, 'competition_score': 45},
+            {'keyword': f'{keyword} 후기', 'search_volume': 1500, 'competition_score': 40},
+            {'keyword': f'저렴한 {keyword}', 'search_volume': 1200, 'competition_score': 35},
+            {'keyword': f'인기 {keyword}', 'search_volume': 1000, 'competition_score': 60}
+        ]
+    
+    def _crawl_top_products(self, keyword):
+        """상위 제품 크롤링"""
+        # 네이버 쇼핑 크롤링으로 구현
+        # 여기서는 예시 데이터 반환
+        return [
+            {'name': f'{keyword} 제품 A', 'price': 25000, 'mall': '스토어A', 'reviews': 4250, 'rank': 1},
+            {'name': f'{keyword} 제품 B', 'price': 32000, 'mall': '스토어B', 'reviews': 3800, 'rank': 2},
+            {'name': f'{keyword} 제품 C', 'price': 28500, 'mall': '스토어C', 'reviews': 2900, 'rank': 3}
+        ]
