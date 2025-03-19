@@ -12,6 +12,7 @@ import GrowthAnalysis from '@/components/dashboard/GrowthAnalysis';
 import ProfitAnalysis from '@/components/dashboard/ProfitAnalysis';
 import RelatedKeywords from '@/components/dashboard/RelatedKeywords';
 import TopProducts from '@/components/dashboard/TopProducts';
+import MLAnalysisPanel from '@/components/dashboard/MLAnalysisPanel';
 
 // Shadcn UI 컴포넌트들
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -235,6 +236,7 @@ const KeywordDashboard: React.FC = () => {
                   <TabsTrigger value="competition">경쟁 분석</TabsTrigger>
                   <TabsTrigger value="growth">성장성 분석</TabsTrigger>
                   <TabsTrigger value="profit">수익성 분석</TabsTrigger>
+                  <TabsTrigger value="ml">ML 분석</TabsTrigger>
                   <TabsTrigger value="related">연관 키워드</TabsTrigger>
                   <TabsTrigger value="products">상위 제품</TabsTrigger>
                 </TabsList>
@@ -253,6 +255,10 @@ const KeywordDashboard: React.FC = () => {
                 
                 <TabsContent value="profit">
                   <ProfitAnalysis data={dashboardData.profit} />
+                </TabsContent>
+                
+                <TabsContent value="ml">
+                  <MLAnalysisPanel keyword={keyword} />
                 </TabsContent>
                 
                 <TabsContent value="related">

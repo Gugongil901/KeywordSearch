@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { BarChart, PieChart, LineChart } from 'recharts';
-import { Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Bar, Pie, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { Loader2, TrendingUp, TrendingDown, Zap, Target, Award, AlertTriangle } from 'lucide-react';
 import { SearchVolumeForecast, SuccessProbability, getMLAnalysis, MLAnalysisResult } from '@/lib/naver-api';
 import { ConfettiEffect } from '@/components/ui/confetti-effect';
@@ -56,7 +56,7 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
   }, [keyword, onLoad]);
 
   const renderSuccessProbability = () => {
-    if (!mlData || !mlData.ml_analysis.success_probability) return null;
+    if (!mlData || !mlData.ml_analysis?.success_probability) return null;
     
     const { score, important_factors } = mlData.ml_analysis.success_probability;
     
@@ -65,22 +65,22 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
     let scoreText = '낮음';
     let scoreIcon = <AlertTriangle className="h-5 w-5" />;
     
-    if (score >= 80) {
+    if (score && score >= 80) {
       scoreCategory = 'high';
       scoreColor = 'bg-green-600';
       scoreText = '매우 높음';
       scoreIcon = <Award className="h-5 w-5" />;
-    } else if (score >= 60) {
+    } else if (score && score >= 60) {
       scoreCategory = 'medium-high';
       scoreColor = 'bg-green-500';
       scoreText = '높음';
       scoreIcon = <TrendingUp className="h-5 w-5" />;
-    } else if (score >= 40) {
+    } else if (score && score >= 40) {
       scoreCategory = 'medium';
       scoreColor = 'bg-yellow-500';
       scoreText = '보통';
       scoreIcon = <Target className="h-5 w-5" />;
-    } else if (score >= 20) {
+    } else if (score && score >= 20) {
       scoreCategory = 'medium-low';
       scoreColor = 'bg-red-400';
       scoreText = '다소 낮음';
@@ -150,7 +150,7 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
   };
 
   const renderSearchForecast = () => {
-    if (!mlData || !mlData.ml_analysis.search_forecast) return null;
+    if (!mlData || !mlData.ml_analysis?.search_forecast) return null;
     
     const { search_forecast } = mlData.ml_analysis;
     
@@ -252,7 +252,7 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
             <CardTitle>머신러닝 분석</CardTitle>
             <CardDescription>AI 기반 키워드 미래 예측 분석</CardDescription>
           </div>
-          {mlData?.ml_analysis.success_probability.score >= 80 && (
+          {mlData?.ml_analysis?.success_probability?.score && mlData.ml_analysis.success_probability.score >= 80 && (
             <Badge className="bg-gradient-to-r from-amber-500 to-amber-700">
               <Zap className="h-4 w-4 mr-1" /> 고성능 키워드
             </Badge>
@@ -298,8 +298,3 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
 
 // 차트 색상
 const COLORS = ['#8884d8', '#82ca9d', '#FFBB28', '#FF8042', '#0088FE', '#00C49F'];
-
-// 차트를 위한 Cell 컴포넌트
-const Cell = ({ fill, ...props }: any) => {
-  return <Pie.Cell fill={fill} {...props} />;
-};
