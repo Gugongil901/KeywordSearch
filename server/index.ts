@@ -73,6 +73,12 @@ app.use((req, res, next) => {
     host: "0.0.0.0",
     reusePort: true,
   }, () => {
-    log(`serving on port ${port}`);
+    log(`서버가 시작되었습니다: http://localhost:${port}`);
+    log(`외부 접속 URL: http://0.0.0.0:${port}`);
+    // 접속 테스트용 로그 추가
+    log(`======================================`);
+    log(`웹 브라우저에서 접속하려면: http://localhost:${port}`);
+    log(`API 테스트: http://localhost:${port}/api/system/status`);
+    log(`======================================`);
   });
 })();
