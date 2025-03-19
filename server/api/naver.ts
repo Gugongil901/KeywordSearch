@@ -649,7 +649,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
           endDate: formatDate(endDate),
           timeUnit: period === "daily" ? "date" : "month",
           category: "50000003", // 가전/전자제품 카테고리 코드를 문자열로 전달
-          keyword: "노트북", // 키워드 직접 추가
+          keyword: [{ name: "노트북", param: ["노트북"] }], // 키워드를 객체 배열로 수정
           device: "",
           gender: "",
           ages: []
@@ -674,7 +674,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
             endDate: formatDate(endDate),
             timeUnit: period === "daily" ? "date" : "month",
             category: "50000167", // 패션의류 카테고리 코드
-            keyword: "원피스", // 키워드 직접 추가
+            keyword: [{ name: "원피스", param: ["원피스"] }], // 키워드를 객체 배열로 수정
             device: "",
             gender: "",
             ages: []
