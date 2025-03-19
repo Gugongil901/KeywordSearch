@@ -1,372 +1,422 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { KeywordSearchResult, searchKeyword } from "@/lib/naver-api";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { 
+  searchKeyword, 
+  getKeywordAnalysis,
+  KeywordSearchResult,
+  KeywordAnalysis,
+  KeywordInsight
+} from '@/lib/naver-api';
+import { 
+  Search, 
+  TrendingUp, 
+  BarChart3, 
+  CheckCircle, 
+  ArrowRight, 
+  ArrowUp, 
+  ArrowDown 
+} from 'lucide-react';
 
-const KeywordSearch: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [submittedSearch, setSubmittedSearch] = useState<string>("");
-  const [location, navigate] = useLocation();
-
-  const { data, isLoading, error } = useQuery<KeywordSearchResult>({
-    queryKey: [`/api/search?query=${submittedSearch}`],
-    enabled: !!submittedSearch,
-    refetchOnWindowFocus: false,
+export default function KeywordSearch() {
+  const [keyword, setKeyword] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  
+  // URL 파라미터에서 검색어 가져오기
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const queryParam = params.get('query');
+    if (queryParam) {
+      setKeyword(queryParam);
+      setSearchTerm(queryParam);
+    }
+  }, []);
+  
+  // 키워드 검색 결과
+  const { 
+    data: keywordData, 
+    isLoading: isKeywordLoading, 
+    error: keywordError
+  } = useQuery({
+    queryKey: ['/api/search', searchTerm],
+    queryFn: async () => {
+      if (!searchTerm) return null;
+      return await searchKeyword(searchTerm);
+    },
+    enabled: !!searchTerm
   });
-
+  
+  // 키워드 분석 데이터 (검색광고 API)
+  const { 
+    data: analysisData, 
+    isLoading: isAnalysisLoading 
+  } = useQuery({
+    queryKey: ['/api/keyword/analysis', searchTerm],
+    queryFn: async () => {
+      if (!searchTerm) return null;
+      try {
+        return await getKeywordAnalysis(searchTerm);
+      } catch (error) {
+        console.error("키워드 분석 데이터 로딩 실패:", error);
+        return null;
+      }
+    },
+    enabled: !!searchTerm
+  });
+  
+  // 검색어 변경 핸들러
+  const handleKeywordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setKeyword(e.target.value);
+  };
+  
+  // 검색 실행 핸들러
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (searchTerm.trim()) {
-      setSubmittedSearch(searchTerm.trim());
+    if (!keyword.trim()) {
+      toast({
+        title: "검색어를 입력하세요",
+        description: "검색할 키워드를 입력해주세요.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setSearchTerm(keyword);
+    // URL 업데이트
+    setLocation(`/keyword?query=${encodeURIComponent(keyword)}`);
+  };
+  
+  // 키워드 클릭 핸들러
+  const handleKeywordClick = (selectedKeyword: string) => {
+    setKeyword(selectedKeyword);
+    setSearchTerm(selectedKeyword);
+    setLocation(`/keyword?query=${encodeURIComponent(selectedKeyword)}`);
+  };
+  
+  // 키워드 상세 페이지로 이동
+  const goToKeywordDetail = () => {
+    if (searchTerm) {
+      setLocation(`/keyword/${encodeURIComponent(searchTerm)}`);
     }
   };
-
-  const handleKeywordClick = (keyword: string) => {
-    navigate(`/keyword/${encodeURIComponent(keyword)}`);
+  
+  // 숫자 포맷팅 함수
+  const formatNumber = (num: number) => {
+    return new Intl.NumberFormat('ko-KR').format(num);
+  };
+  
+  // 가격 포맷팅 함수
+  const formatCurrency = (num: number) => {
+    return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(num).replace('₩', '');
   };
 
-  const formatCompetitionLevel = (index: number) => {
-    if (!index) return { text: "-", color: "text-gray-500" };
-    if (index < 1.5) return { text: "아주좋음", color: "text-green-600" };
-    if (index < 2.5) return { text: "좋음", color: "text-green-600" };
-    if (index < 3.5) return { text: "보통", color: "text-yellow-500" };
-    return { text: "나쁨", color: "text-red-500" };
+  // 경쟁도 표시 텍스트
+  const getCompetitionText = (value: number) => {
+    if (value > 80) return '매우 높음';
+    if (value > 60) return '높음';
+    if (value > 40) return '보통';
+    if (value > 20) return '낮음';
+    return '매우 낮음';
   };
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-6">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-search inline-block mr-2 text-primary"
+  
+  // 경쟁도 색상
+  const getCompetitionColor = (value: number) => {
+    if (value > 80) return 'text-red-500';
+    if (value > 60) return 'text-orange-500';
+    if (value > 40) return 'text-yellow-500';
+    if (value > 20) return 'text-green-500';
+    return 'text-blue-500';
+  };
+  
+  // 키워드 통계 표시 컴포넌트
+  const KeywordStatsCard = ({ data }: { data: KeywordSearchResult }) => (
+    <Card className="mb-6">
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-xl">{data.keyword} 검색 결과</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={goToKeywordDetail}
           >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          키워드 분석
-        </h1>
-
-        <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
-          <div className="flex items-center bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="p-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-search text-gray-500"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-            </div>
-            <Input
-              type="text"
-              placeholder="분석할 키워드를 검색해보세요"
-              className="flex-grow py-3 px-2 outline-none border-none shadow-none text-gray-900"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <Button
-              type="submit"
-              className="bg-primary text-white px-5 py-3 rounded-none font-medium hover:bg-primary/90"
-            >
-              검색
-            </Button>
+            상세 분석 보기
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        </div>
+        <CardDescription>
+          월 검색량: <span className="font-bold">{formatNumber(data.searchCount)}회</span>
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="border rounded-lg p-4">
+            <div className="text-sm text-muted-foreground mb-2">상품 수</div>
+            <div className="text-2xl font-bold">{formatNumber(data.productCount)}개</div>
           </div>
+          <div className="border rounded-lg p-4">
+            <div className="text-sm text-muted-foreground mb-2">평균 가격</div>
+            <div className="text-2xl font-bold">{formatCurrency(data.averagePrice)}원</div>
+          </div>
+          <div className="border rounded-lg p-4">
+            <div className="text-sm text-muted-foreground mb-2">총 판매액</div>
+            <div className="text-2xl font-bold">{formatCurrency(data.totalSales)}원</div>
+          </div>
+          <div className="border rounded-lg p-4">
+            <div className="text-sm text-muted-foreground mb-2">경쟁 강도</div>
+            <div className={`text-2xl font-bold ${getCompetitionColor(data.competitionIndex)}`}>
+              {getCompetitionText(data.competitionIndex)}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+  
+  // 관련 키워드 표시 컴포넌트
+  const RelatedKeywordsCard = ({ data }: { data: KeywordSearchResult }) => (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-lg">관련 키워드</CardTitle>
+        <CardDescription>자주 함께 검색되는 키워드</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap gap-2">
+          {data.relatedKeywords?.slice(0, 12).map((relatedKeyword, index) => (
+            <Badge
+              key={index}
+              variant="secondary"
+              className="px-3 py-1 cursor-pointer hover:bg-secondary/80"
+              onClick={() => handleKeywordClick(relatedKeyword)}
+            >
+              {relatedKeyword}
+            </Badge>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+  
+  // 광고 인사이트 표시 컴포넌트
+  const AdInsightsCard = ({ data }: { data: KeywordAnalysis }) => (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-lg">광고 인사이트</CardTitle>
+        <CardDescription>검색광고 성과 및 경쟁 지표</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div className="border rounded-lg p-4">
+            <div className="text-sm text-muted-foreground mb-2">평균 클릭비용(CPC)</div>
+            <div className="text-xl font-bold">{formatCurrency(data.avgCpc)}원</div>
+          </div>
+          <div className="border rounded-lg p-4">
+            <div className="text-sm text-muted-foreground mb-2">광고 경쟁 지수</div>
+            <div className={`text-xl font-bold ${getCompetitionColor(data.competitionIndex)}`}>
+              {data.competitionIndex.toFixed(1)}점
+            </div>
+          </div>
+        </div>
+        
+        {data.adRecommendations && data.adRecommendations.length > 0 && (
+          <div>
+            <h4 className="font-medium mb-2">입찰가별 예상 성과</h4>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-2">입찰가</th>
+                    <th className="text-right py-2">노출수</th>
+                    <th className="text-right py-2">클릭수</th>
+                    <th className="text-right py-2">평균순위</th>
+                    <th className="text-right py-2">CTR</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.adRecommendations.slice(0, 5).map((bid, index) => (
+                    <tr key={index} className="border-b">
+                      <td className="py-2">{formatCurrency(bid.bid)}원</td>
+                      <td className="text-right py-2">{formatNumber(bid.impressions)}</td>
+                      <td className="text-right py-2">{formatNumber(bid.clicks)}</td>
+                      <td className="text-right py-2">{bid.avgPosition.toFixed(1)}</td>
+                      <td className="text-right py-2">{(bid.ctr * 100).toFixed(2)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+  
+  // 상위 상품 표시 컴포넌트
+  const TopProductsCard = ({ data }: { data: KeywordSearchResult }) => (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle className="text-lg">상위 상품</CardTitle>
+        <CardDescription>상위 노출되는 인기 상품</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {data.products.slice(0, 6).map((product) => (
+            <div 
+              key={product.productId} 
+              className="border rounded-lg p-3 hover:border-primary cursor-pointer"
+              onClick={() => window.open(product.productUrl, '_blank')}
+            >
+              <div className="aspect-square w-full overflow-hidden mb-2 flex items-center justify-center">
+                <img 
+                  src={product.image} 
+                  alt={product.title} 
+                  className="h-full w-auto object-contain"
+                />
+              </div>
+              <div className="line-clamp-2 text-sm h-10">{product.title}</div>
+              <div className="flex justify-between mt-2">
+                <span className="text-sm text-muted-foreground">{product.brandName || '일반 브랜드'}</span>
+                <span className="font-medium">{formatCurrency(product.price)}원</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+  
+  // 로딩 중 스켈레톤 컴포넌트
+  const LoadingSkeleton = () => (
+    <>
+      <div className="mb-6">
+        <Skeleton className="h-12 w-full mb-2" />
+        <Skeleton className="h-4 w-40 mb-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      </div>
+      <div className="mb-6">
+        <Skeleton className="h-8 w-40 mb-2" />
+        <Skeleton className="h-4 w-60 mb-4" />
+        <div className="flex flex-wrap gap-2">
+          {Array(8).fill(0).map((_, i) => (
+            <Skeleton key={i} className="h-8 w-20" />
+          ))}
+        </div>
+      </div>
+      <div className="mb-6">
+        <Skeleton className="h-8 w-40 mb-2" />
+        <Skeleton className="h-4 w-60 mb-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array(6).fill(0).map((_, i) => (
+            <Skeleton key={i} className="h-64 w-full" />
+          ))}
+        </div>
+      </div>
+    </>
+  );
+  
+  return (
+    <div className="container mx-auto py-6">
+      {/* 검색 폼 */}
+      <div className="mb-8">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <Input
+            type="text"
+            placeholder="검색어를 입력하세요 (예: 루테인, 다이슨, 맥북)"
+            value={keyword}
+            onChange={handleKeywordChange}
+            className="max-w-md"
+          />
+          <Button type="submit">
+            <Search className="mr-2 h-4 w-4" />
+            검색
+          </Button>
         </form>
       </div>
-
-      {isLoading && (
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <Skeleton className="h-8 w-1/3 mb-6" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[...Array(6)].map((_, i) => (
-                <Skeleton key={i} className="h-20 rounded-lg" />
-              ))}
-            </div>
-            <Skeleton className="h-8 w-1/4 mt-8 mb-4" />
-            <Skeleton className="h-48 w-full rounded-lg" />
+      
+      {/* 검색 결과 */}
+      {isKeywordLoading || isAnalysisLoading ? (
+        <LoadingSkeleton />
+      ) : keywordData ? (
+        <>
+          {/* 키워드 통계 카드 */}
+          <KeywordStatsCard data={keywordData} />
+          
+          {/* 탭 UI 컴포넌트 */}
+          <Tabs defaultValue="products" className="mb-6">
+            <TabsList className="mb-4">
+              <TabsTrigger value="products">
+                <BarChart3 className="mr-2 h-4 w-4" />
+                상품 분석
+              </TabsTrigger>
+              <TabsTrigger value="adinsights">
+                <TrendingUp className="mr-2 h-4 w-4" />
+                광고 인사이트
+              </TabsTrigger>
+              <TabsTrigger value="related">
+                <CheckCircle className="mr-2 h-4 w-4" />
+                연관 키워드
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="products">
+              <TopProductsCard data={keywordData} />
+            </TabsContent>
+            <TabsContent value="adinsights">
+              {analysisData ? (
+                <AdInsightsCard data={analysisData} />
+              ) : (
+                <Card>
+                  <CardContent className="pt-6">
+                    <p>광고 인사이트 데이터를 로드할 수 없습니다.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+            <TabsContent value="related">
+              <RelatedKeywordsCard data={keywordData} />
+            </TabsContent>
+          </Tabs>
+        </>
+      ) : searchTerm && !isKeywordLoading && keywordError ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>검색 오류</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>키워드 "{searchTerm}" 검색 중 오류가 발생했습니다. 다시 시도해주세요.</p>
           </CardContent>
         </Card>
-      )}
-
-      {error && (
-        <Card className="mb-8">
-          <CardContent className="p-6 text-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mx-auto mb-4 text-red-500"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">검색 중 오류가 발생했습니다</h2>
-            <p className="text-gray-500 mb-4">
-              키워드 검색 중에 문제가 발생했습니다. 다시 시도해 주세요.
-            </p>
+      ) : searchTerm && !isKeywordLoading ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>검색 결과 없음</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>키워드 "{searchTerm}"에 대한 검색 결과가 없습니다. 다른 키워드로 검색해보세요.</p>
           </CardContent>
         </Card>
-      )}
-
-      {data && (
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-              <span className="text-primary mr-2">'{data.keyword}'</span> 키워드 분석 결과
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">월 검색량</h3>
-                <div className="text-xl font-bold text-primary">
-                  {data.searchCount.toLocaleString()} <span className="text-sm font-normal">회</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">상품 수</h3>
-                <div className="text-xl font-bold text-primary">
-                  {data.productCount.toLocaleString()} <span className="text-sm font-normal">개</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">평균 가격</h3>
-                <div className="text-xl font-bold text-primary">
-                  {data.averagePrice.toLocaleString()} <span className="text-sm font-normal">원</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">총 매출액</h3>
-                <div className="text-xl font-bold text-primary">
-                  {data.totalSales.toLocaleString()} <span className="text-sm font-normal">만원</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">경쟁강도</h3>
-                <div className="text-xl font-bold text-primary flex items-center">
-                  {data.competitionIndex.toFixed(2)}{" "}
-                  <span className={`text-sm ml-2 ${formatCompetitionLevel(data.competitionIndex).color}`}>
-                    {formatCompetitionLevel(data.competitionIndex).text}
-                  </span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">기기별 검색 비율</h3>
-                <div className="flex">
-                  <div className="mr-4">
-                    <span className="text-xs text-gray-500">PC</span>
-                    <p className="text-lg font-bold text-primary">{data.pcSearchRatio}%</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-gray-500">모바일</span>
-                    <p className="text-lg font-bold text-primary">{data.mobileSearchRatio}%</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <Tabs defaultValue="products">
-              <TabsList className="mb-4">
-                <TabsTrigger value="products">상품 목록</TabsTrigger>
-                <TabsTrigger value="related">연관 키워드</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="products">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">판매자</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가격</th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">랭킹</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {data.products.slice(0, 10).map((product, index) => (
-                        <tr key={product.productId} className="hover:bg-gray-50">
-                          <td className="px-4 py-4 flex items-center space-x-3">
-                            <img src={product.image} alt={product.title} className="w-12 h-12 object-cover rounded" />
-                            <div className="max-w-xs">
-                              <a 
-                                href={product.productUrl} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-sm font-medium text-gray-900 hover:text-primary line-clamp-2"
-                              >
-                                {product.title}
-                              </a>
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {product.brandName}
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {product.price.toLocaleString()}원
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-sm">
-                            <span className="px-2 py-1 text-xs rounded-full bg-primary bg-opacity-10 text-primary">
-                              {product.rank}위
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="text-center mt-4">
-                  <Button 
-                    onClick={() => handleKeywordClick(data.keyword)}
-                    className="bg-primary text-white hover:bg-primary/90"
-                  >
-                    상세 분석 보기
-                  </Button>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="related">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {data.relatedKeywords.map((keyword, index) => (
-                    <div
-                      key={index}
-                      className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition cursor-pointer"
-                      onClick={() => handleKeywordClick(keyword)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-900">{keyword}</span>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-primary"
-                        >
-                          <path d="M9 18l6-6-6-6" />
-                        </svg>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      )}
-
-      {!isLoading && !data && !error && submittedSearch && (
-        <Card className="mb-8">
-          <CardContent className="p-6 text-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="mx-auto mb-4 text-yellow-500"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">검색 결과가 없습니다</h2>
-            <p className="text-gray-500 mb-4">
-              입력하신 키워드에 대한 검색 결과가 없습니다. 다른 키워드로 시도해 보세요.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-
-      {!submittedSearch && (
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="text-center py-8">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="64"
-                height="64"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="mx-auto mb-4 text-primary"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-              </svg>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
-                키워드를 검색해보세요
-              </h2>
-              <p className="text-gray-500 max-w-md mx-auto">
-                분석하고 싶은 키워드를 검색하면 해당 키워드의 검색량, 경쟁강도, 관련 상품 등의 정보를 확인할 수 있습니다.
-              </p>
-            </div>
-
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                추천 검색 키워드
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {["닭가슴살", "화장품", "에어팟", "노트북", "운동화", "다이어트", "유아용품", "스킨케어"].map(
-                  (keyword, index) => (
-                    <button
-                      key={index}
-                      onClick={() => {
-                        setSearchTerm(keyword);
-                        setSubmittedSearch(keyword);
-                      }}
-                      className="px-3 py-1 bg-gray-50 hover:bg-primary hover:text-white rounded-full text-sm text-gray-700 transition"
-                    >
-                      {keyword}
-                    </button>
-                  )
-                )}
-              </div>
-            </div>
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle>키워드 검색</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>검색어를 입력하여 키워드 분석 결과를 확인하세요.</p>
           </CardContent>
         </Card>
       )}
     </div>
   );
-};
-
-export default KeywordSearch;
+}

@@ -24,7 +24,7 @@ const HeroSearch: React.FC = () => {
 
   const handleSearch = () => {
     if (searchTerm.trim()) {
-      navigate(`/keyword/${encodeURIComponent(searchTerm.trim())}`);
+      navigate(`/keyword?query=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
 
