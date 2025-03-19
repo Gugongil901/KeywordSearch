@@ -10,14 +10,17 @@ const NAVER_AD_API_SECRET_KEY = process.env.NAVER_AD_API_SECRET_KEY || "";
 
 // API endpoints
 const NAVER_SEARCH_API = "https://openapi.naver.com/v1/search/shop.json";
-const NAVER_TREND_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 const NAVER_AD_API_BASE = "https://api.naver.com";
-// 네이버 데이터랩 API 공식 문서의 올바른 엔드포인트 사용
-// https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
+
+// 네이버 데이터랩 API 엔드포인트
+// 2025년 3월 기준 최신 문서: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
 const NAVER_DATALAB_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
-// 네이버 데이터랩 쇼핑인사이트 API 공식 문서상의 정확한 엔드포인트 (수정됨)
-// https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keyword/trend";
+
+// 네이버 데이터랩 키워드 트렌드 API (공식 문서 참조)
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keywords";
+
+// 카테고리별 키워드 트렌드 API - 백업
+const NAVER_DATALAB_CATEGORY_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 
 // Setup axios instances
 let naverSearchClient: any;
@@ -205,10 +208,11 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
       endDate: formatDate(endDate),
       timeUnit: period === "date" ? "date" : "week",
       category: categoryCode,
-      keyword: categoryKeywords.join(",").substring(0, 50), // API 제한: 최대 50자
-      device: "pc",
-      gender: "",
-      ages: []
+      // API 문서에 맞게 키워드를 각각 객체에 담아 배열로 전달
+      keywordGroups: categoryKeywords.slice(0, 5).map(keyword => ({
+        groupName: keyword,
+        keywords: [keyword]
+      }))
     };
     
     console.log("데이터랩 API 요청 본문:", JSON.stringify(requestBody));
