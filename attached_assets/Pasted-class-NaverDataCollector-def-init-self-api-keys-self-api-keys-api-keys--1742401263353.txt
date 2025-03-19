@@ -1,0 +1,173 @@
+class NaverDataCollector:
+    def __init__(self, api_keys):
+        self.api_keys = api_keys
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Safari/537.36'
+        }
+        self.db_connector = DatabaseConnector()
+        
+    async def collect_all_data(self, keyword):
+        """키워드에 대한 모든 데이터를 수집하는 통합 메서드"""
+        results = {}
+        
+        # API 데이터 수집
+        api_data = await self.collect_api_data(keyword)
+        results['api_data'] = api_data
+        
+        # 크롤링 데이터 수집
+        crawl_data = await self.collect_crawl_data(keyword)
+        results['crawl_data'] = crawl_data
+        
+        # 데이터베이스에 결과 저장
+        self.db_connector.save_keyword_data(keyword, results)
+        
+        return results
+        
+    async def collect_api_data(self, keyword):
+        """네이버 API를 통한 데이터 수집"""
+        api_results = {}
+        
+        # 데이터랩 API - 검색량 트렌드
+        try:
+            trend_data = await self.call_naver_datalab_api(keyword)
+            api_results['trend_data'] = trend_data
+        except Exception as e:
+            logger.error(f"데이터랩 API 오류: {str(e)}")
+            api_results['trend_data'] = None
+            
+        # 쇼핑 인사이트 API - 쇼핑 트렌드
+        try:
+            shopping_data = await self.call_shopping_insight_api(keyword)
+            api_results['shopping_data'] = shopping_data
+        except Exception as e:
+            logger.error(f"쇼핑 인사이트 API 오류: {str(e)}")
+            api_results['shopping_data'] = None
+            
+        # 검색광고 API - 경쟁 정보
+        try:
+            ad_data = await self.call_search_ad_api(keyword)
+            api_results['ad_data'] = ad_data
+        except Exception as e:
+            logger.error(f"검색광고 API 오류: {str(e)}")
+            api_results['ad_data'] = None
+            
+        return api_results
+        
+    async def collect_crawl_data(self, keyword):
+        """웹 크롤링을 통한 데이터 수집"""
+        crawl_results = {}
+        
+        # 네이버 쇼핑 검색 결과 크롤링
+        try:
+            shopping_results = await self.crawl_naver_shopping(keyword)
+            crawl_results['shopping_results'] = shopping_results
+        except Exception as e:
+            logger.error(f"쇼핑 크롤링 오류: {str(e)}")
+            crawl_results['shopping_results'] = None
+            
+        # 네이버 쇼핑 상품 상세 정보 크롤링
+        try:
+            product_details = await self.crawl_product_details(keyword)
+            crawl_results['product_details'] = product_details
+        except Exception as e:
+            logger.error(f"상품 상세 크롤링 오류: {str(e)}")
+            crawl_results['product_details'] = None
+            
+        # 쇼핑몰 순위 및 분포 크롤링
+        try:
+            mall_distribution = await self.crawl_mall_distribution(keyword)
+            crawl_results['mall_distribution'] = mall_distribution
+        except Exception as e:
+            logger.error(f"쇼핑몰 분포 크롤링 오류: {str(e)}")
+            crawl_results['mall_distribution'] = None
+            
+        return crawl_results
+        
+    async def crawl_naver_shopping(self, keyword):
+        """네이버 쇼핑 검색 결과 크롤링"""
+        url = f"https://search.shopping.naver.com/search/all?query={urllib.parse.quote(keyword)}"
+        
+        # Selenium으로 동적 페이지 로딩
+        driver = await self.get_selenium_driver()
+        
+        try:
+            driver.get(url)
+            await asyncio.sleep(3)  # 페이지 로딩 대기
+            
+            # 전체 상품 수 추출
+            total_products_elem = driver.find_element(By.CSS_SELECTOR, ".subFilter_num__2x0jq")
+            total_products = int(re.sub(r'[^0-9]', '', total_products_elem.text))
+            
+            # 상품 목록 추출
+            products = []
+            product_elems = driver.find_elements(By.CSS_SELECTOR, ".product_item__MDtDF")
+            
+            for elem in product_elems[:30]:  # 상위 30개 상품만 분석
+                try:
+                    # 상품명
+                    name = elem.find_element(By.CSS_SELECTOR, ".product_title__Mmw8F").text
+                    
+                    # 가격
+                    price_elem = elem.find_element(By.CSS_SELECTOR, ".price_num__S2p_v")
+                    price = int(re.sub(r'[^0-9]', '', price_elem.text))
+                    
+                    # 리뷰 수
+                    review_elem = elem.find_element(By.CSS_SELECTOR, ".product_num__1sTHb")
+                    reviews = int(re.sub(r'[^0-9]', '', review_elem.text)) if review_elem else 0
+                    
+                    # 쇼핑몰 정보
+                    mall = elem.find_element(By.CSS_SELECTOR, ".product_mall_title__O_t25").text
+                    
+                    # 광고 여부
+                    is_ad = len(elem.find_elements(By.CSS_SELECTOR, ".ad_ad_stk__gCWdE")) > 0
+                    
+                    products.append({
+                        'name': name,
+                        'price': price,
+                        'reviews': reviews,
+                        'mall': mall,
+                        'is_ad': is_ad
+                    })
+                except Exception as e:
+                    logger.error(f"상품 정보 추출 오류: {str(e)}")
+                    continue
+            
+            # 가격 분포 계산
+            prices = [p['price'] for p in products]
+            price_stats = {
+                'min': min(prices) if prices else 0,
+                'max': max(prices) if prices else 0,
+                'avg': sum(prices) / len(prices) if prices else 0,
+                'median': sorted(prices)[len(prices) // 2] if prices else 0
+            }
+            
+            # 리뷰 분포 계산
+            reviews = [p['reviews'] for p in products]
+            review_stats = {
+                'min': min(reviews) if reviews else 0,
+                'max': max(reviews) if reviews else 0,
+                'avg': sum(reviews) / len(reviews) if reviews else 0,
+                'total': sum(reviews) if reviews else 0
+            }
+            
+            # 쇼핑몰 분포 계산
+            mall_counts = {}
+            for p in products:
+                mall_name = p['mall']
+                mall_counts[mall_name] = mall_counts.get(mall_name, 0) + 1
+                
+            # 광고 비율 계산
+            ad_count = sum(1 for p in products if p['is_ad'])
+            ad_ratio = ad_count / len(products) if products else 0
+            
+            return {
+                'total_products': total_products,
+                'products': products[:10],  # 상위 10개만 저장
+                'price_stats': price_stats,
+                'review_stats': review_stats,
+                'mall_distribution': mall_counts,
+                'ad_ratio': ad_ratio
+            }
+            
+        finally:
+            driver.quit()
