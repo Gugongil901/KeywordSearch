@@ -29,31 +29,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let processedQuery;
       
       try {
-        // URL에서 받은 키워드는 이미 인코딩되어 있으므로 디코딩
-        processedQuery = decodeURIComponent(queryParam);
+        // 직접 전달된 값 사용 (디코딩 문제 방지)
+        processedQuery = queryParam;
         
-        // 자주 사용되는 한글 키워드 매핑 테이블 (깨진 인코딩 → 정상 한글)
-        const koreanKeywords: Record<string, string> = {
-          'ëì´í¤': '나이키',
-          'ìëì´ë¤ì¤': '아디다스',
-          'ê°¤ë­ì': '갤럭시',
-          'ìì´í°': '아이폰',
-          'ë´ë°ëì¤': '뉴발란스'
-        };
+        // 자주 검색되는 인기 키워드 목록 (검색어 매핑에 사용)
+        const popularKeywords = [
+          '나이키', '아디다스', '뉴발란스', '아이폰', '갤럭시',
+          '맥북', '애플워치', '샤넬', '구찌', '루이비통',
+          '다이슨', 'LG전자', '삼성전자', '스니커즈', '원피스'
+        ];
         
-        // 'ëì´í¤'와 같은 깨진 한글 문자열 탐지
+        // 키워드가 문자열이 아니거나 비어있는 경우 처리
+        if (!processedQuery || processedQuery.trim() === '') {
+          console.log('⚠️ 빈 검색어 감지, 기본 인기 키워드 사용');
+          processedQuery = '나이키'; // 기본 인기 키워드로 설정
+        }
+        
+        // 인코딩 문제 감지
         const isEncodingCorrupted = /ë|ì|í|¤|Ã«|Ã¬|Â´|Ã­|Â¤/.test(processedQuery);
+        
+        // 일반적인 URL 인코딩 문제 처리
+        if (processedQuery.includes('%')) {
+          try {
+            const decodedQuery = decodeURIComponent(processedQuery);
+            processedQuery = decodedQuery;
+            console.log(`🔄 URL 디코딩 적용: "${processedQuery}"`);
+          } catch (e) {
+            console.log(`⚠️ URL 디코딩 실패: "${processedQuery}"`);
+          }
+        }
         
         if (isEncodingCorrupted) {
           console.log(`⚠️ 인코딩이 손상된 검색어 감지: "${processedQuery}"`);
           
-          // 알려진 깨진 인코딩 매핑으로 수정
-          if (koreanKeywords[processedQuery]) {
-            const originalQuery = processedQuery;
-            processedQuery = koreanKeywords[processedQuery];
-            console.log(`✅ 검색어 자동 수정: "${originalQuery}" → "${processedQuery}"`);
-          } else {
-            // 알려진 매핑이 없는 경우 깨진 문자 제거
+          // 일반적인 인코딩 문제 (나이키 → ëì´í¤)
+          if (processedQuery === 'ëì´í¤') processedQuery = '나이키';
+          else if (processedQuery === 'ìëì´ë¤ì¤') processedQuery = '아디다스';
+          else if (processedQuery === 'ë´ë°ëì¤') processedQuery = '뉴발란스';
+          else if (processedQuery.includes('ìì´í°')) processedQuery = '아이폰';
+          else if (processedQuery.includes('ê°¤ë­ì')) processedQuery = '갤럭시';
+          else {
+            // 인기 키워드 중 가장 유사한 것 찾기
             const cleanedQuery = processedQuery.replace(/[ëìíÂ´¤Ã«Ã¬Ã­]/g, '');
             if (cleanedQuery.trim()) {
               processedQuery = cleanedQuery;
