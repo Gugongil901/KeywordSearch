@@ -1,0 +1,134 @@
+class MarketAnalyzer:
+    def __init__(self, data_collector, metrics_calculator, db_connector):
+        self.data_collector = data_collector
+        self.metrics_calculator = metrics_calculator
+        self.db = db_connector
+        
+    async def analyze_category_market(self, category_id):
+        """특정 카테고리의 시장 현황 분석"""
+        # 카테고리 관련 키워드 수집
+        keywords = await self.db.get_category_keywords(category_id)
+        
+        # 키워드별 지표 계산 및 분석
+        results = []
+        for keyword in keywords:
+            metrics = await self.metrics_calculator.calculate_all_metrics(keyword)
+            results.append({
+                'keyword': keyword,
+                'metrics': metrics
+            })
+        
+        # 카테고리 시장 분석
+        market_analysis = self._analyze_market_from_keywords(results, category_id)
+        
+        # 시장 기회 발굴
+        opportunities = self._identify_market_opportunities(results, category_id)
+        
+        # 카테고리 트렌드 분석
+        trends = await self._analyze_category_trends(category_id)
+        
+        return {
+            'category_id': category_id,
+            'market_analysis': market_analysis,
+            'opportunities': opportunities,
+            'trends': trends
+        }
+    
+    def _analyze_market_from_keywords(self, keyword_results, category_id):
+        """키워드 분석 결과로부터 시장 현황 도출"""
+        # 카테고리 평균 지표 계산
+        avg_metrics = {
+            'competition_score': 0,
+            'growth_score': 0,
+            'profit_score': 0,
+            'search_volume': 0,
+            'price': 0
+        }
+        
+        for result in keyword_results:
+            metrics = result['metrics']
+            avg_metrics['competition_score'] += metrics['competition']['competition_score']
+            avg_metrics['growth_score'] += metrics['growth']['growth_score']
+            avg_metrics['profit_score'] += metrics['profit']['profit_score']
+            avg_metrics['search_volume'] += metrics['basic']['search_volume']['total']
+            avg_metrics['price'] += metrics['profit']['avg_price']
+        
+        # 평균 계산
+        count = len(keyword_results) or 1  # 0으로 나누기 방지
+        for key in avg_metrics:
+            avg_metrics[key] = round(avg_metrics[key] / count, 2)
+        
+        # 시장 성숙도 평가
+        market_maturity = self._evaluate_market_maturity(avg_metrics, keyword_results)
+        
+        # 카테고리 집중도 계산
+        concentration = self._calculate_category_concentration(keyword_results)
+        
+        # 상위 브랜드/판매자 분석
+        top_sellers = self._analyze_top_sellers(keyword_results)
+        
+        return {
+            'avg_metrics': avg_metrics,
+            'market_maturity': market_maturity,
+            'concentration': concentration,
+            'top_sellers': top_sellers
+        }
+    
+    def _identify_market_opportunities(self, keyword_results, category_id):
+        """카테고리 내 시장 기회 발굴"""
+        opportunities = []
+        
+        for result in keyword_results:
+            metrics = result['metrics']
+            keyword = result['keyword']
+            
+            # 기회 점수 계산 (성장률 높고 경쟁도 낮은 키워드)
+            growth_score = metrics['growth']['growth_score']
+            competition_score = metrics['competition']['competition_score']
+            profit_score = metrics['profit']['profit_score']
+            
+            # 경쟁도는 낮을수록 좋으므로 역산
+            competition_inverted = 100 - competition_score
+            
+            # 가중치 적용한 기회 점수
+            opportunity_score = (growth_score * 0.5) + (competition_inverted * 0.3) + (profit_score * 0.2)
+            
+            # 기준점 이상인 키워드만 기회로 간주
+            if opportunity_score > 60:
+                opportunities.append({
+                    'keyword': keyword,
+                    'opportunity_score': round(opportunity_score, 2),
+                    'growth_score': growth_score,
+                    'competition_score': competition_score,
+                    'profit_score': profit_score,
+                    'search_volume': metrics['basic']['search_volume']['total']
+                })
+        
+        # 기회 점수순 정렬
+        opportunities.sort(key=lambda x: x['opportunity_score'], reverse=True)
+        
+        return opportunities[:10]  # 상위 10개만 반환
+    
+    async def _analyze_category_trends(self, category_id):
+        """카테고리의 시간에 따른 트렌드 분석"""
+        # 과거 12개월 카테고리 검색량 데이터 조회
+        historical_data = await self.db.get_category_historical_data(category_id, months=12)
+        
+        # 월별 검색량 추세
+        monthly_trend = self._calculate_monthly_trend(historical_data)
+        
+        # 계절성 분석
+        seasonality = self._analyze_seasonality(historical_data)
+        
+        # 연간 성장률
+        yoy_growth = self._calculate_yoy_growth(historical_data)
+        
+        # 최근 3개월 트렌드
+        recent_trend = self._calculate_recent_trend(historical_data)
+        
+        return {
+            'monthly_trend': monthly_trend,
+            'seasonality': seasonality,
+            'yoy_growth': yoy_growth,
+            'recent_trend': recent_trend
+        }
