@@ -178,28 +178,28 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
       return date.toISOString().split('T')[0];
     };
     
-    // 먼저 데이터랩 키워드 트렌드 API 시도 (POST 방식)
+    // 먼저 자바 예제 형식으로 데이터랩 API 시도 (POST 방식)
     try {
-      console.log(`네이버 데이터랩 키워드 트렌드 API 요청 (키워드: ${keyword})`);
+      console.log(`네이버 데이터랩 쇼핑인사이트 API 요청 (키워드: ${keyword})`);
       
-      // 네이버 개발자 센터 문서에 맞춘 요청 형식 (쇼핑인사이트 키워드별 트렌드 조회)
+      // 네이버 개발자 센터 문서와 자바 예제에 맞춘 요청 형식
       const requestBody = {
         startDate: formatDate(startDate),
         endDate: formatDate(endDate), 
         timeUnit: period === "daily" ? "date" : "week",
-        category: "ALL", // 모든 카테고리 검색
-        keywordGroups: [
-          {
-            groupName: keyword,
-            keywords: [keyword]
-          }
-        ]
+        category: [{
+          name: "키워드분석",
+          param: ["ALL"]  // 전체 카테고리
+        }],
+        device: "",  // 모든 기기
+        gender: "",  // 모든 성별
+        ages: []     // 모든 연령대
       };
       
       console.log("데이터랩 API 요청 본문:", JSON.stringify(requestBody));
-      console.log("데이터랩 API 엔드포인트:", NAVER_DATALAB_KEYWORD_API);
+      console.log("데이터랩 API 엔드포인트:", NAVER_DATALAB_CATEGORY_API);
       
-      const response = await naverDataLabClient.post(NAVER_DATALAB_KEYWORD_API, requestBody);
+      const response = await naverDataLabClient.post(NAVER_DATALAB_CATEGORY_API, requestBody);
       
       if (response.data && response.data.results) {
         console.log(`✅ 네이버 데이터랩 키워드 트렌드 API 성공 (${keyword})`);
@@ -320,22 +320,23 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
     // 카테고리별 인기 키워드 (백업 데이터에서 가져와서 API 요청에 사용)
     const categoryKeywords = getBackupKeywords(categoryId).slice(0, 5);
     
-    // 네이버 데이터랩 쇼핑인사이트 API 문서 형식에 맞춰 요청 본문 구성
+    // 네이버 데이터랩 쇼핑인사이트 API 문서와 Java 예제 형식에 맞춰 요청 본문 구성
     // https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#%EC%87%BC%ED%95%91%EC%9D%B8%EC%82%AC%EC%9D%B4%ED%8A%B8-%EC%B9%B4%ED%85%8C%EA%B3%A0%EB%A6%AC%EB%B3%84-%ED%82%A4%EC%9B%8C%EB%93%9C-%ED%8A%B8%EB%A0%8C%EB%93%9C-%EC%A1%B0%ED%9A%8C
     const requestBody = {
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
       timeUnit: period === "date" ? "date" : "week",
-      category: categoryCode,
-      // API 문서에 맞게 키워드를 각각 객체에 담아 배열로 전달
-      keywordGroups: categoryKeywords.slice(0, 5).map(keyword => ({
-        groupName: keyword,
-        keywords: [keyword]
-      }))
+      category: [{
+        name: categoryId,
+        param: [categoryCode]
+      }],
+      device: "",  // 모든 기기
+      gender: "",  // 모든 성별
+      ages: []     // 모든 연령대
     };
     
     console.log("데이터랩 API 요청 본문:", JSON.stringify(requestBody));
-    console.log("데이터랩 API 엔드포인트:", NAVER_DATALAB_KEYWORD_API);
+    console.log("데이터랩 API 엔드포인트:", NAVER_DATALAB_CATEGORY_API);
     console.log("데이터랩 API 헤더:", JSON.stringify({
       "X-Naver-Client-Id": NAVER_CLIENT_ID ? "설정됨" : "미설정",
       "X-Naver-Client-Secret": NAVER_CLIENT_SECRET ? "설정됨" : "미설정",
@@ -344,7 +345,7 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
     
     // 네이버 데이터랩 API 호출
     try {
-      const response = await naverDataLabClient.post(NAVER_DATALAB_KEYWORD_API, requestBody);
+      const response = await naverDataLabClient.post(NAVER_DATALAB_CATEGORY_API, requestBody);
       
       // 실제 API 호출이 성공하면 데이터 파싱
       if (response.data && response.data.results) {
@@ -473,16 +474,19 @@ export async function getHotKeywords(category: string = "all", period: string = 
 
     console.log(`쇼핑인사이트 인기검색어 API 요청: 카테고리=${categoryCode}, 기간=${formatDate(startDate)}~${formatDate(endDate)}`);
     
-    // 2023년 최신 버전 API에 맞춘 요청 본문
+    // 2023년 최신 버전 API에 Java 예제 형식으로 맞춘 요청 본문
     // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#%EC%87%BC%ED%95%91%EC%9D%B8%EC%82%AC%EC%9D%B4%ED%8A%B8-%EC%A0%90%EC%9C%A0%EC%9C%A8-%ED%82%A4%EC%9B%8C%EB%93%9C-%EC%83%81%EC%9C%84%EB%8B%A4
     const requestBody = {
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
       timeUnit: period === "daily" ? "date" : "week",
-      category: categoryCode,
-      device: "pc",
-      gender: "",
-      ages: []
+      category: [{
+        name: category,
+        param: [categoryCode]
+      }],
+      device: "",  // 모든 기기
+      gender: "",  // 모든 성별
+      ages: []     // 모든 연령대
     };
     
     console.log("쇼핑인사이트 인기검색어 API 요청 본문:", JSON.stringify(requestBody));
