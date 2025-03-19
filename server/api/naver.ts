@@ -188,8 +188,9 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - (period === "date" ? 7 : 30)); // 일간은 7일, 주간은 30일 범위
     
+    // 네이버 데이터랩 API는 'yyyy-mm-dd' 형식의 날짜를 요구합니다
     const formatDate = (date: Date) => {
-      return date.toISOString().split('T')[0].replace(/-/g, "");
+      return date.toISOString().split('T')[0]; // 'yyyy-mm-dd' 형식
     };
 
     console.log(`DataLab API 요청: 카테고리=${categoryCode}, 기간=${formatDate(startDate)}~${formatDate(endDate)}`);

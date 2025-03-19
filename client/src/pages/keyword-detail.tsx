@@ -40,8 +40,25 @@ const KeywordDetail: React.FC = () => {
 
   const { data, isLoading, error } = useQuery<KeywordSearchResult>({
     queryKey: [`/api/search?query=${decodedKeyword}`],
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: false
   });
+
+  // 데이터 로드 후 고성능 키워드 체크
+  useEffect(() => {
+    if (data) {
+      // 고성능 키워드 발견 시 축하 효과 표시
+      if (
+        data.searchCount > 20000 || // 검색량이 많거나
+        data.competitionIndex < 1.5 || // 경쟁이 낮거나
+        data.realProductRatio > 70 || // 실제 상품 비율이 높거나
+        data.totalSales > 5000 // 매출액이 높은 경우
+      ) {
+        setShowConfetti(true);
+        // 5초 후 효과 종료
+        setTimeout(() => setShowConfetti(false), 5000);
+      }
+    }
+  }, [data]);
 
   if (isLoading) {
     return (
@@ -203,6 +220,36 @@ const KeywordDetail: React.FC = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Confetti 효과 */}
+      <ConfettiEffect 
+        trigger={showConfetti} 
+        particleCount={150}
+        spread={180}
+        origin={{ x: 0.5, y: 0.3 }}
+      />
+      
+      {/* 고성능 키워드 발견 시 축하 메시지 */}
+      {showConfetti && (
+        <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-4 flex items-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mr-2"
+          >
+            <path d="m9 12 2 2 4-4" />
+            <path d="M12 3c.764.12 1.53.225 2.286.346a1.13 1.13 0 0 1 .684 1.912c-.324.315-.656.622-.964.909-.431.4-.431 1.118 0 1.352.46.252.906.504 1.354.756a1.15 1.15 0 0 1 .273 1.932c-.498.368-.695.798-.92 1.229-.353.678.388 1.452 1.106 1.32.73-.135 1.459-.27 2.194-.404a1.158 1.158 0 0 1 1.356 1.494c-.5.827-.912 1.647-1.35 2.348-.308.49-.778.91-1.338.88-.452-.025-.899-.061-1.342-.089-.71-.046-1.313.541-1.313 1.253v2.528a1.133 1.133 0 0 1-1.306 1.133c-.726-.147-1.455-.3-2.176-.435-.5-.093-.84-.511-.83-1.016v-1.463c0-.788-.778-1.35-1.485-1.085a16.446 16.446 0 0 0-1.166.56c-.423.235-.927.27-1.296-.065-.65-.59-1.296-1.188-1.944-1.786-.413-.38-.435-1.006-.129-1.421.33-.445.66-.89.99-1.333.264-.355.34-.835.015-1.16a5.223 5.223 0 0 1-.573-1.066c-.332-.95-1.46-1.08-2.04-.223-.29.43-.582.86-.87 1.293-.41.61-1.31.748-1.875.259L5.77 8.526a1.135 1.135 0 0 1-.15-1.698c.435-.508.887-1.001 1.32-1.508.383-.448 1.018-.51 1.441-.234.42.273.838.55 1.258.825.769.505 1.738-.105 1.661-.987a13.973 13.973 0 0 1-.082-1.396c.032-.563.42-1.06.982-1.136.805-.11 1.609-.219 2.414-.328.43-.059.85.145 1.066.485.161.252.31.512.47.77.368.592 1.31.642 1.765.151.193-.207.386-.414.579-.62.292-.313.748-.437 1.155-.3" />
+          </svg>
+          <span>축하합니다! 고성능 키워드를 발견했습니다! 이 키워드는 경쟁력이 있어 비즈니스에 유리할 수 있습니다.</span>
+        </div>
+      )}
+
       <div className="mb-4">
         <Link href="/" className="text-primary hover:underline flex items-center">
           <svg
