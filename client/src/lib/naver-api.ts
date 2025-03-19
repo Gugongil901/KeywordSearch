@@ -93,9 +93,23 @@ export async function getKeywordStats(keyword: string): Promise<KeywordStats> {
  */
 export async function getKeywordTrends(keyword: string, period: string = "daily"): Promise<{ keyword: string; trends: KeywordTrend[] }> {
   try {
+    // 인코딩 이슈 발생시, 여러 번 인코딩되는 경우를 방지하기 위해 
+    // 먼저 디코딩해서 순수 한글 문자열을 얻은 후 다시 인코딩
+    let processedKeyword;
+    try {
+      // 이미 인코딩된 문자열인지 확인 시도 (실패하면 원본 사용)
+      processedKeyword = decodeURIComponent(keyword);
+    } catch (e) {
+      processedKeyword = keyword;
+    }
+    
+    // 한글 키워드를 안전하게 인코딩
+    const encodedKeyword = encodeURIComponent(processedKeyword);
+    console.log(`키워드 트렌드 요청: 원본='${keyword}', 처리='${processedKeyword}', 인코딩='${encodedKeyword}'`);
+    
     const response = await apiRequest(
       "GET", 
-      `/api/keyword/trends?keyword=${encodeURIComponent(keyword)}&period=${period}`,
+      `/api/keyword/trends?keyword=${encodedKeyword}&period=${period}`,
       undefined
     );
     return await response.json();
