@@ -1,0 +1,70 @@
+// KeywordDashboard.js - 메인 대시보드 컴포넌트
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import SearchBar from './components/SearchBar';
+import SummaryPanel from './components/SummaryPanel';
+import CompetitionAnalysis from './components/CompetitionAnalysis';
+import GrowthAnalysis from './components/GrowthAnalysis';
+import ProfitAnalysis from './components/ProfitAnalysis';
+import RelatedKeywords from './components/RelatedKeywords';
+import TopProducts from './components/TopProducts';
+import LoadingSpinner from './components/LoadingSpinner';
+import ErrorAlert from './components/ErrorAlert';
+
+const API_BASE_URL = 'http://localhost:8000';
+
+const KeywordDashboard = () => {
+  const [keyword, setKeyword] = useState('');
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [pollingTask, setPollingTask] = useState(null);
+  
+  const handleSearch = async (searchKeyword) => {
+    try {
+      setKeyword(searchKeyword);
+      setLoading(true);
+      setError(null);
+      
+      // 키워드 분석 요청
+      const response = await axios.get(`${API_BASE_URL}/keywords/${searchKeyword}`);
+      
+      if (response.data.status === 'completed') {
+        // 이미 완료된 분석 결과
+        setDashboardData(response.data.data.dashboard);
+        setLoading(false);
+      } else if (response.data.status === 'processing') {
+        // 진행 중인 작업 폴링
+        const taskId = response.data.task_id;
+        startPolling(taskId);
+      }
+    } catch (err) {
+      setError('키워드 분석 중 오류가 발생했습니다.');
+      setLoading(false);
+      console.error('검색 오류:', err);
+    }
+  };
+  
+  const startPolling = (taskId) => {
+    // 이전 폴링 중지
+    if (pollingTask) {
+      clearInterval(pollingTask);
+    }
+    
+    // 새 폴링 시작 (3초 간격)
+    const intervalId = setInterval(async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/tasks/${taskId}`);
+        
+        if (response.data.status === 'completed') {
+          // 작업 완료, 결과 조회
+          const resultResponse = await axios.get(`${API_BASE_URL}/keywords/${keyword}`);
+          setDashboardData(resultResponse.data.data.dashboard);
+          setLoading(false);
+          clearInterval(intervalId);
+          setPollingTask(null);
+        } else if (response.data.status === 'failed') {
+          // 작업 실패
+          setError('키워드 분석 작업이 실패했습니다.');
+          setLoading(false);
+          clearInterval
