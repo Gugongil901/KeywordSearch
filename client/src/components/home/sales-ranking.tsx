@@ -41,13 +41,37 @@ const CategoryKeywords: React.FC<CategoryKeywordsProps> = ({ period }) => {
 
   // 카테고리별 인기 키워드
   const getKeywords = (): KeywordTrend[] => {
-    return data?.keywords || [
-      { keyword: "맥북", rank: 1, change: "same" },
-      { keyword: "아이패드", rank: 2, change: "up" },
-      { keyword: "갤럭시", rank: 3, change: "up" },
-      { keyword: "아이폰", rank: 4, change: "up" },
-      { keyword: "에어팟", rank: 5, change: "down" },
-    ];
+    // 서버에서 반환된 데이터가 없거나 키워드가 없을 때 기본값 사용
+    if (!data || typeof data !== 'object' || !('keywords' in data) || !Array.isArray(data.keywords) || data.keywords.length === 0) {
+      // 카테고리별 백업 키워드
+      const backupKeywords: Record<string, KeywordTrend[]> = {
+        all: [
+          { keyword: "제킷", rank: 1, change: "same" },
+          { keyword: "티셔츠", rank: 2, change: "up" },
+          { keyword: "원피스", rank: 3, change: "up" },
+          { keyword: "패딩", rank: 4, change: "down" },
+          { keyword: "바지", rank: 5, change: "up" },
+        ],
+        fashion: [
+          { keyword: "제킷", rank: 1, change: "same" },
+          { keyword: "티셔츠", rank: 2, change: "up" },
+          { keyword: "원피스", rank: 3, change: "up" },
+          { keyword: "패딩", rank: 4, change: "down" },
+          { keyword: "바지", rank: 5, change: "up" },
+        ],
+        digital: [
+          { keyword: "맥북", rank: 1, change: "same" },
+          { keyword: "아이패드", rank: 2, change: "up" },
+          { keyword: "갤럭시", rank: 3, change: "up" },
+          { keyword: "아이폰", rank: 4, change: "up" },
+          { keyword: "에어팟", rank: 5, change: "down" },
+        ],
+      };
+      
+      return backupKeywords[activeCategory] || backupKeywords.all;
+    }
+    
+    return data.keywords;
   };
 
   const getChangeIcon = (change: string) => {

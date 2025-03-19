@@ -15,16 +15,16 @@ const NAVER_AD_API_BASE = "https://api.naver.com";
 // 네이버 데이터랩 API 엔드포인트 (2025년 3월 기준)
 // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
 
-// 2023년 9월 업데이트된 네이버 데이터랩 API 엔드포인트
+// 네이버 API 엔드포인트 - 2023년 업데이트 이후 확인된 엔드포인트
 
-// 쇼핑인사이트 쇼핑 분야 트렌드 조회 API
-const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
+// 쇼핑인사이트 분야별 트렌드 조회 API
+const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/category";
 
-// 쇼핑인사이트 쇼핑 키워드 트렌드 조회 API
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keywords";
+// 쇼핑인사이트 키워드 트렌드 조회 API (2023 이후 변경)
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keyword";
 
-// 쇼핑인사이트 분야별 인기 검색어 조회 API (지역별/성별/연령별)
-const NAVER_SHOPPING_INSIGHT_RANKS_API = "https://openapi.naver.com/v1/datalab/shopping/categories/keywords/ranks";
+// 쇼핑인사이트 분야별 인기 검색어 조회 API 
+const NAVER_SHOPPING_INSIGHT_RANKS_API = "https://openapi.naver.com/v1/datalab/shopping/category/keyword/age/gender";
 
 // 네이버 통합검색어 트렌드 API (백업)
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";

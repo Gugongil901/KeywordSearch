@@ -21,7 +21,7 @@ const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period }) => {
   });
 
   // 서버에서 반환된 데이터가 없거나 키워드가 없을 때 기본값 사용
-  const keywords: KeywordTrend[] = data && data.keywords ? data.keywords : [
+  const keywords: KeywordTrend[] = (data && typeof data === 'object' && 'keywords' in data && Array.isArray(data.keywords)) ? data.keywords : [
     { keyword: "제킷", rank: 1, change: "same" },
     { keyword: "티셔츠", rank: 2, change: "up" },
     { keyword: "원피스", rank: 3, change: "up" },
