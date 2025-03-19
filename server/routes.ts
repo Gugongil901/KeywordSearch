@@ -9,6 +9,7 @@ import { initNaverAdAPI, getKeywordAnalysis, getKeywordInsights, getKeywordBidRe
 import keywordRoutes from "./api/routes/keyword-routes";
 import systemRoutes from "./api/routes/system-routes";
 import apiRouter from "./api/routes/api-router";
+import mlRoutes from "./api/routes/ml-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Naver APIs
@@ -27,6 +28,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register integrated keyword analysis system routes
   app.use('/api/system', systemRoutes);
+  
+  // Register machine learning API routes
+  app.use('/api/ml', mlRoutes);
   
   // Register new FastAPI-like API router
   app.use('/api/v1', apiRouter);

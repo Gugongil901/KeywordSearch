@@ -21,6 +21,26 @@ logging.basicConfig(
 MODEL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
 os.makedirs(MODEL_DIR, exist_ok=True)
 
+# 의미 분석기 임포트
+try:
+    from semantic_analyzer import SemanticKeywordAnalyzer, analyze_keyword, find_related_keywords, identify_segments
+    HAS_SEMANTIC_ANALYZER = True
+    logging.info("의미 분석기 로드 성공")
+except ImportError as e:
+    HAS_SEMANTIC_ANALYZER = False
+    logging.error(f"의미 분석기 로드 실패: {e}")
+    
+    # 모듈 경로 추가 시도
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        if current_dir not in sys.path:
+            sys.path.append(current_dir)
+        from semantic_analyzer import SemanticKeywordAnalyzer, analyze_keyword, find_related_keywords, identify_segments
+        HAS_SEMANTIC_ANALYZER = True
+        logging.info("의미 분석기 로드 성공 (경로 추가 후)")
+    except ImportError as e2:
+        logging.error(f"의미 분석기 로드 재시도 실패: {e2}")
+
 class MachineLearningBridge:
     def __init__(self):
         self.models = {}
@@ -184,12 +204,109 @@ class MachineLearningBridge:
                 'important_factors': []
             })
 
+    def analyze_keyword_meaning(self, keyword_json):
+        """키워드 의미 분석"""
+        try:
+            if not HAS_SEMANTIC_ANALYZER:
+                return json.dumps({
+                    'error': '의미 분석기를 사용할 수 없습니다.',
+                    'message': '의미 분석기 모듈이 로드되지 않았습니다.'
+                }, ensure_ascii=False)
+                
+            # JSON에서 키워드 추출
+            data = json.loads(keyword_json)
+            keyword = data.get('keyword', '')
+            
+            if not keyword:
+                return json.dumps({
+                    'error': '키워드가 필요합니다.',
+                    'message': '키워드를 입력하세요.'
+                }, ensure_ascii=False)
+            
+            # 의미 분석 수행
+            analysis = analyze_keyword(keyword)
+            
+            return json.dumps(analysis, ensure_ascii=False)
+        except Exception as e:
+            logging.error(f"키워드 의미 분석 오류: {str(e)}")
+            return json.dumps({
+                'error': '의미 분석 오류',
+                'message': str(e)
+            }, ensure_ascii=False)
+    
+    def find_semantic_related(self, keyword_json):
+        """의미적 연관 키워드 찾기"""
+        try:
+            if not HAS_SEMANTIC_ANALYZER:
+                return json.dumps({
+                    'error': '의미 분석기를 사용할 수 없습니다.',
+                    'message': '의미 분석기 모듈이 로드되지 않았습니다.'
+                }, ensure_ascii=False)
+                
+            # JSON에서 키워드와 옵션 추출
+            data = json.loads(keyword_json)
+            keyword = data.get('keyword', '')
+            limit = data.get('limit', 20)
+            
+            if not keyword:
+                return json.dumps({
+                    'error': '키워드가 필요합니다.',
+                    'message': '키워드를 입력하세요.'
+                }, ensure_ascii=False)
+            
+            # 연관 키워드 찾기
+            related = find_related_keywords(keyword, limit=limit)
+            
+            return json.dumps(related, ensure_ascii=False)
+        except Exception as e:
+            logging.error(f"의미적 연관 키워드 찾기 오류: {str(e)}")
+            return json.dumps({
+                'error': '연관 키워드 찾기 오류',
+                'message': str(e)
+            }, ensure_ascii=False)
+    
+    def identify_market_segments(self, keyword_json):
+        """시장 세그먼트 식별"""
+        try:
+            if not HAS_SEMANTIC_ANALYZER:
+                return json.dumps({
+                    'error': '의미 분석기를 사용할 수 없습니다.',
+                    'message': '의미 분석기 모듈이 로드되지 않았습니다.'
+                }, ensure_ascii=False)
+                
+            # JSON에서 키워드 추출
+            data = json.loads(keyword_json)
+            keyword = data.get('keyword', '')
+            
+            if not keyword:
+                return json.dumps({
+                    'error': '키워드가 필요합니다.',
+                    'message': '키워드를 입력하세요.'
+                }, ensure_ascii=False)
+            
+            # 세그먼트 식별
+            segments = identify_segments(keyword)
+            
+            return json.dumps(segments, ensure_ascii=False)
+        except Exception as e:
+            logging.error(f"시장 세그먼트 식별 오류: {str(e)}")
+            return json.dumps({
+                'error': '세그먼트 식별 오류',
+                'message': str(e)
+            }, ensure_ascii=False)
+    
     def process_command(self, command, data):
         """명령어 처리"""
         if command == 'predict_search_volume':
             return self.predict_search_volume(data)
         elif command == 'predict_success_probability':
             return self.predict_success_probability(data)
+        elif command == 'analyze_keyword_meaning':
+            return self.analyze_keyword_meaning(data)
+        elif command == 'find_semantic_related':
+            return self.find_semantic_related(data)
+        elif command == 'identify_market_segments':
+            return self.identify_market_segments(data)
         else:
             return json.dumps({'error': f'알 수 없는 명령어: {command}'})
 

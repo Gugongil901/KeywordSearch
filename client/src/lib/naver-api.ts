@@ -27,11 +27,45 @@ export interface SuccessProbability {
   }>;
 }
 
+export interface KeywordMeaning {
+  keyword: string;
+  nouns: string[];
+  categories: Array<{
+    category: string;
+    score: number;
+    matches: string[];
+  }>;
+  intent: {
+    intent: string;
+    score: number;
+    matches: string[];
+  };
+  sentiment: {
+    sentiment: string;
+    positive_score: number;
+    negative_score: number;
+  };
+}
+
+export interface SemanticRelatedKeyword {
+  keyword: string;
+  similarity: number;
+}
+
+export interface MarketSegment {
+  id: number;
+  label: string;
+  keywords: string[];
+}
+
 export interface MLAnalysisResult {
   keyword: string;
   ml_analysis: {
     search_forecast: SearchVolumeForecast[];
     success_probability: SuccessProbability;
+    keyword_meaning?: KeywordMeaning;
+    semantic_related_keywords?: SemanticRelatedKeyword[];
+    market_segments?: MarketSegment[];
   };
   timestamp: string;
 }
@@ -302,6 +336,55 @@ export async function getSuccessProbability(keyword: string): Promise<SuccessPro
     return data.probability;
   } catch (error) {
     console.error("성공 확률 예측 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 키워드 의미 분석 - 자연어 처리 기반
+ * @param keyword - 분석할 키워드
+ * @returns 키워드 의미 분석 결과
+ */
+export async function getKeywordMeaning(keyword: string): Promise<KeywordMeaning> {
+  try {
+    const response = await apiRequest("GET", `/api/ml/meaning/${encodeURIComponent(keyword)}`, undefined);
+    const data = await response.json();
+    return data.meaning;
+  } catch (error) {
+    console.error("키워드 의미 분석 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 의미적 연관 키워드 조회 - 자연어 처리 기반
+ * @param keyword - 기준 키워드
+ * @param limit - 최대 키워드 수
+ * @returns 의미적 연관 키워드 목록
+ */
+export async function getSemanticRelatedKeywords(keyword: string, limit: number = 20): Promise<SemanticRelatedKeyword[]> {
+  try {
+    const response = await apiRequest("GET", `/api/ml/semantic-related/${encodeURIComponent(keyword)}?limit=${limit}`, undefined);
+    const data = await response.json();
+    return data.related_keywords;
+  } catch (error) {
+    console.error("의미적 연관 키워드 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 시장 세그먼트 조회 - 자연어 처리 기반
+ * @param keyword - 기준 키워드
+ * @returns 시장 세그먼트 목록
+ */
+export async function getMarketSegments(keyword: string): Promise<MarketSegment[]> {
+  try {
+    const response = await apiRequest("GET", `/api/ml/market-segments/${encodeURIComponent(keyword)}`, undefined);
+    const data = await response.json();
+    return data.segments;
+  } catch (error) {
+    console.error("시장 세그먼트 조회 실패:", error);
     throw error;
   }
 }

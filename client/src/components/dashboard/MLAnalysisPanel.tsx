@@ -244,13 +244,167 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
     );
   }
 
+  // 키워드 의미 분석 렌더링
+  const renderKeywordMeaning = () => {
+    if (!mlData || !mlData.ml_analysis?.keyword_meaning) return null;
+    
+    const { keyword_meaning } = mlData.ml_analysis;
+    
+    return (
+      <div className="space-y-6">
+        {/* 추출된 명사 */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">핵심 명사</h4>
+          <div className="flex flex-wrap gap-2">
+            {keyword_meaning.nouns.map((noun, index) => (
+              <Badge key={index} variant="outline" className="px-3 py-1 bg-slate-50">
+                {noun}
+              </Badge>
+            ))}
+          </div>
+        </div>
+        
+        {/* 카테고리 분류 */}
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">의미 카테고리</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {keyword_meaning.categories.map((category, index) => (
+              <div key={index} className="border rounded-lg p-4 bg-gray-50">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium">{category.category}</span>
+                  <Badge>{category.score} 점</Badge>
+                </div>
+                <div className="text-sm text-gray-500">관련 단어:</div>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {category.matches.map((match, idx) => (
+                    <Badge key={idx} variant="outline" className="bg-white">
+                      {match}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* 검색 의도 */}
+        <div className="border rounded-lg p-4 bg-gray-50">
+          <h4 className="text-sm font-medium mb-2">사용자 검색 의도</h4>
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-lg">{keyword_meaning.intent.intent}</span>
+              <Badge>{keyword_meaning.intent.score} 점</Badge>
+            </div>
+          </div>
+          {keyword_meaning.intent.matches.length > 0 && (
+            <div>
+              <span className="text-sm text-gray-500">의도 관련 단어:</span>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {keyword_meaning.intent.matches.map((match, idx) => (
+                  <Badge key={idx} variant="outline" className="bg-white">
+                    {match}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* 감성 분석 */}
+        <div className="border rounded-lg p-4 bg-gray-50">
+          <h4 className="text-sm font-medium mb-2">키워드 감성 분석</h4>
+          <div className="flex items-center justify-between">
+            <div className="text-lg font-semibold">
+              {keyword_meaning.sentiment.sentiment}
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
+                <span className="text-sm">긍정: {keyword_meaning.sentiment.positive_score}</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
+                <span className="text-sm">부정: {keyword_meaning.sentiment.negative_score}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // 의미적 연관 키워드 렌더링
+  const renderSemanticKeywords = () => {
+    if (!mlData || !mlData.ml_analysis?.semantic_related_keywords) return null;
+    
+    const { semantic_related_keywords } = mlData.ml_analysis;
+    
+    return (
+      <div className="space-y-6">
+        <h4 className="text-sm font-medium">의미적 연관 키워드</h4>
+        <div className="border rounded-lg p-4 bg-gray-50 overflow-auto" style={{ maxHeight: '400px' }}>
+          <table className="w-full">
+            <thead className="bg-gray-100 sticky top-0">
+              <tr>
+                <th className="text-left p-2 text-sm font-medium">키워드</th>
+                <th className="text-right p-2 text-sm font-medium">유사도</th>
+              </tr>
+            </thead>
+            <tbody>
+              {semantic_related_keywords.map((item, index) => (
+                <tr key={index} className="border-t">
+                  <td className="p-2 text-sm">{item.keyword}</td>
+                  <td className="p-2 text-sm text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Progress value={item.similarity * 100} className="w-24 h-2" />
+                      <span>{(item.similarity * 100).toFixed(0)}%</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+  
+  // 시장 세그먼트 렌더링
+  const renderMarketSegments = () => {
+    if (!mlData || !mlData.ml_analysis?.market_segments) return null;
+    
+    const { market_segments } = mlData.ml_analysis;
+    
+    const colors = ['bg-blue-100', 'bg-green-100', 'bg-purple-100', 'bg-amber-100', 'bg-pink-100'];
+    
+    return (
+      <div className="space-y-6">
+        <h4 className="text-sm font-medium">시장 세그먼트 분석</h4>
+        <div className="grid grid-cols-1 gap-4">
+          {market_segments.map((segment, index) => (
+            <div key={index} className={`border rounded-lg p-4 ${colors[index % colors.length]}`}>
+              <div className="font-medium mb-2">세그먼트 {index + 1}: {segment.label}</div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {segment.keywords.map((kw, idx) => (
+                  <Badge key={idx} variant="outline" className="bg-white">
+                    {kw}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
             <CardTitle>머신러닝 분석</CardTitle>
-            <CardDescription>AI 기반 키워드 미래 예측 분석</CardDescription>
+            <CardDescription>AI 기반 키워드 미래 예측 및 의미 분석</CardDescription>
           </div>
           {mlData?.ml_analysis?.success_probability?.score && mlData.ml_analysis.success_probability.score >= 80 && (
             <Badge className="bg-gradient-to-r from-amber-500 to-amber-700">
@@ -261,15 +415,27 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="success" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="success">성공 확률</TabsTrigger>
             <TabsTrigger value="forecast">검색량 예측</TabsTrigger>
+            <TabsTrigger value="meaning">의미 분석</TabsTrigger>
+            <TabsTrigger value="semantic">연관 키워드</TabsTrigger>
+            <TabsTrigger value="segments">세그먼트</TabsTrigger>
           </TabsList>
           <TabsContent value="success" className="py-4">
             {renderSuccessProbability()}
           </TabsContent>
           <TabsContent value="forecast" className="py-4">
             {renderSearchForecast()}
+          </TabsContent>
+          <TabsContent value="meaning" className="py-4">
+            {renderKeywordMeaning()}
+          </TabsContent>
+          <TabsContent value="semantic" className="py-4">
+            {renderSemanticKeywords()}
+          </TabsContent>
+          <TabsContent value="segments" className="py-4">
+            {renderMarketSegments()}
           </TabsContent>
         </Tabs>
         

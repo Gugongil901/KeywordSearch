@@ -8,6 +8,11 @@ import { spawn } from 'child_process';
 import { logger } from '../../utils/logger';
 import { DatabaseConnector } from '../collectors/database-connector';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ESM 환경에서 __dirname 대체
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * 검색량 예측 결과 인터페이스
@@ -29,6 +34,46 @@ export interface SuccessProbability {
     factor: string;
     importance: number;
   }>;
+}
+
+/**
+ * 키워드 의미 분석 결과 인터페이스
+ */
+export interface KeywordMeaning {
+  keyword: string;
+  nouns: string[];
+  categories: Array<{
+    category: string;
+    score: number;
+    matches: string[];
+  }>;
+  intent: {
+    intent: string;
+    score: number;
+    matches: string[];
+  };
+  sentiment: {
+    sentiment: string;
+    positive_score: number;
+    negative_score: number;
+  };
+}
+
+/**
+ * 의미적 연관 키워드 인터페이스
+ */
+export interface SemanticRelatedKeyword {
+  keyword: string;
+  similarity: number;
+}
+
+/**
+ * 시장 세그먼트 인터페이스
+ */
+export interface MarketSegment {
+  id: number;
+  label: string;
+  keywords: string[];
 }
 
 /**
@@ -155,6 +200,96 @@ export class MachineLearningEnhancer {
       };
     }
   }
+  
+  /**
+   * 키워드 의미 분석
+   * @param keyword 분석할 키워드
+   * @returns 의미 분석 결과
+   */
+  async analyzeKeywordMeaning(keyword: string): Promise<KeywordMeaning> {
+    try {
+      // Python 스크립트 실행
+      const result = await this.executePythonScript('analyze_keyword_meaning', { keyword });
+      
+      // 결과 파싱
+      const analysis = JSON.parse(result);
+      
+      // 오류 확인
+      if (analysis.error) {
+        throw new Error(analysis.message || analysis.error);
+      }
+      
+      return analysis as KeywordMeaning;
+    } catch (error) {
+      logger.error(`키워드 의미 분석 오류: ${error}`);
+      return {
+        keyword,
+        nouns: [],
+        categories: [],
+        intent: {
+          intent: '정보 탐색',
+          score: 0,
+          matches: []
+        },
+        sentiment: {
+          sentiment: '중립',
+          positive_score: 0,
+          negative_score: 0
+        }
+      };
+    }
+  }
+  
+  /**
+   * 의미적 연관 키워드 찾기
+   * @param keyword 기준 키워드
+   * @param limit 반환할 최대 키워드 수
+   * @returns 연관 키워드 목록
+   */
+  async findSemanticRelatedKeywords(keyword: string, limit: number = 20): Promise<SemanticRelatedKeyword[]> {
+    try {
+      // Python 스크립트 실행
+      const result = await this.executePythonScript('find_semantic_related', { keyword, limit });
+      
+      // 결과 파싱
+      const related = JSON.parse(result);
+      
+      // 오류 확인
+      if (related.error) {
+        throw new Error(related.message || related.error);
+      }
+      
+      return related as SemanticRelatedKeyword[];
+    } catch (error) {
+      logger.error(`의미적 연관 키워드 검색 오류: ${error}`);
+      return this.generateDefaultRelatedKeywords(keyword);
+    }
+  }
+  
+  /**
+   * 시장 세그먼트 식별
+   * @param keyword 기준 키워드
+   * @returns 시장 세그먼트 목록
+   */
+  async identifyMarketSegments(keyword: string): Promise<MarketSegment[]> {
+    try {
+      // Python 스크립트 실행
+      const result = await this.executePythonScript('identify_market_segments', { keyword });
+      
+      // 결과 파싱
+      const segments = JSON.parse(result);
+      
+      // 오류 확인
+      if (segments.error) {
+        throw new Error(segments.message || segments.error);
+      }
+      
+      return segments as MarketSegment[];
+    } catch (error) {
+      logger.error(`시장 세그먼트 식별 오류: ${error}`);
+      return this.generateDefaultMarketSegments(keyword);
+    }
+  }
 
   /**
    * 키워드 특성 추출
@@ -278,5 +413,80 @@ export class MachineLearningEnhancer {
     }
     
     return forecasts;
+  }
+  
+  /**
+   * 기본 연관 키워드 생성
+   * @param keyword 기준 키워드
+   * @returns 기본 연관 키워드 목록
+   */
+  private generateDefaultRelatedKeywords(keyword: string): SemanticRelatedKeyword[] {
+    const suffixes = ['추천', '가격', '할인', '후기', '구매', '비교', '종류', '사용법', '효과', '브랜드'];
+    const prefixes = ['인기', '최고', '저렴한', '고급', '추천', '신상', '할인', '프리미엄'];
+    
+    const result: SemanticRelatedKeyword[] = [];
+    
+    // 접미사 키워드 생성
+    suffixes.forEach((suffix, index) => {
+      result.push({
+        keyword: `${keyword} ${suffix}`,
+        similarity: 0.9 - (index * 0.05)
+      });
+    });
+    
+    // 접두사 키워드 생성
+    prefixes.forEach((prefix, index) => {
+      result.push({
+        keyword: `${prefix} ${keyword}`,
+        similarity: 0.8 - (index * 0.05)
+      });
+    });
+    
+    return result;
+  }
+  
+  /**
+   * 기본 시장 세그먼트 생성
+   * @param keyword 기준 키워드
+   * @returns 기본 시장 세그먼트 목록
+   */
+  private generateDefaultMarketSegments(keyword: string): MarketSegment[] {
+    const segments = [
+      {
+        id: 1,
+        label: '가격 중심',
+        keywords: [
+          `${keyword} 가격`, 
+          `${keyword} 최저가`, 
+          `저렴한 ${keyword}`, 
+          `${keyword} 할인`, 
+          `${keyword} 특가`
+        ]
+      },
+      {
+        id: 2,
+        label: '품질 중심',
+        keywords: [
+          `${keyword} 품질`, 
+          `고급 ${keyword}`, 
+          `프리미엄 ${keyword}`, 
+          `${keyword} 내구성`, 
+          `${keyword} 성능`
+        ]
+      },
+      {
+        id: 3,
+        label: '정보 탐색',
+        keywords: [
+          `${keyword} 추천`, 
+          `${keyword} 후기`, 
+          `${keyword} 비교`, 
+          `${keyword} 종류`, 
+          `${keyword} 기능`
+        ]
+      }
+    ];
+    
+    return segments;
   }
 }
