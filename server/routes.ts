@@ -7,6 +7,7 @@ import { getDailyTrends, getWeeklyTrends } from "./api/trend";
 import { testAllNaverAPIs, testBasicNaverAPIs } from "./api/naver-api-test";
 import { initNaverAdAPI, getKeywordAnalysis, getKeywordInsights, getKeywordBidRecommendation } from "./api/naver-ad";
 import keywordRoutes from "./api/routes/keyword-routes";
+import systemRoutes from "./api/routes/system-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize Naver APIs
@@ -22,6 +23,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Register advanced keyword analysis routes
   app.use('/api/keyword-analysis', keywordRoutes);
+  
+  // Register integrated keyword analysis system routes
+  app.use('/api/system', systemRoutes);
 
   // API routes
   app.get("/api/health", (_req, res) => {
