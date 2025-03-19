@@ -21,8 +21,10 @@ const NAVER_AD_API_BASE = "https://api.naver.com";
 const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
 
 // 쇼핑인사이트 키워드 트렌드 조회 API (카테고리별 키워드 트렌드)
-// 2023년 API 공식 문서: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
+// 참고: 이 엔드포인트는 실제로 존재하지 않는 것으로 확인됨 (404 에러), 대신 통합검색어 트렌드 API를 사용
+// 원래 존재했던 API일 수 있으나 더 이상 공개되지 않거나 URL이 변경되었을 수 있음
+// 여기서는 참조용으로만 유지, 실제 호출에서는 건너뜀
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords/ratio";
 
 // 네이버 통합검색어 트렌드 API
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
@@ -637,14 +639,13 @@ export async function getHotKeywords(category: string = "all", period: string = 
       
       // 첫 번째 시도: 키워드 API (Java 예제 형식으로 업데이트)
       try {
-        // 네이버 API 명세에 맞게 수정된 형식: 
-        // 1. category와 keywordGroups를 동시에 사용하지 않음
-        // 2. 공식 문서에 맞는 필드명 사용
+        // 네이버 API 문서에 맞게 완전히 수정
+        // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#쇼핑인사이트-키워드-트렌드-비율-조회
         const keywordRequestBody = {
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
           timeUnit: period === "daily" ? "date" : "week",
-          category: categoryCode === "ALL" ? "" : categoryCode, // 카테고리 직접 전달
+          category: categoryCode,  // 카테고리 코드
           keyword: backupData.slice(0, 5), // 키워드 배열 (최대 5개)
           device: "",  // 모든 기기
           gender: "",  // 모든 성별
