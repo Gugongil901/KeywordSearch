@@ -82,6 +82,8 @@ export function setupNaverAPI() {
 // Search keywords in Naver Shopping
 export async function searchKeyword(keyword: string): Promise<KeywordSearchResponse> {
   try {
+    console.log(`🔍 네이버 쇼핑 검색 API 요청: "${keyword}"`);
+    
     // Get search results
     const searchResponse = await naverSearchClient.get(NAVER_SEARCH_API, {
       params: {
@@ -92,14 +94,38 @@ export async function searchKeyword(keyword: string): Promise<KeywordSearchRespo
       },
     });
 
+    console.log(`✅ 네이버 쇼핑 검색 API 응답 성공: 상품 ${searchResponse.data.total}개 발견`);
+
+    // 응답 데이터의 인코딩 확인 로그
+    if (searchResponse.data.items && searchResponse.data.items.length > 0) {
+      const firstItem = searchResponse.data.items[0];
+      console.log(`첫 번째 상품 제목 샘플: "${firstItem.title}"`);
+    }
+
+    // 문자열 정규화 및 HTML 태그 제거 함수
+    const cleanText = (text: string): string => {
+      if (!text) return "";
+      
+      // HTML 태그 제거
+      const withoutHtml = text.replace(/<[^>]*>?/gm, '');
+      
+      // 이상한 인코딩 문자 수정 (깨진 UTF-8 문자를 감지하고 대체)
+      const normalizedText = withoutHtml
+        .replace(/Ã«|Ã¬|Â´|Ã­|Â¤/g, '') // 깨진 한글 제거
+        .replace(/\\u[\dA-F]{4}/gi, '') // 유니코드 이스케이프 시퀀스 제거
+        .replace(/[^a-zA-Z0-9\s.,\-_()가-힣ㄱ-ㅎㅏ-ㅣ]/g, ''); // 비정상 문자 제거 (한글, 영문, 숫자, 일부 특수문자만 허용)
+      
+      return normalizedText;
+    };
+
     // Calculate stats from results
     const products = searchResponse.data.items.map((item: any, index: number) => ({
       productId: `naver-${item.productId || index}`,
-      title: item.title.replace(/<[^>]*>?/gm, ''),
+      title: cleanText(item.title),
       price: parseInt(item.lprice, 10),
       image: item.image,
-      category: item.category1,
-      brandName: item.brand || item.maker || "Unknown",
+      category: cleanText(item.category1),
+      brandName: cleanText(item.brand || item.maker || "Unknown"),
       reviewCount: 0, // Not available in basic API
       rank: index + 1,
       productUrl: item.link,
@@ -111,11 +137,12 @@ export async function searchKeyword(keyword: string): Promise<KeywordSearchRespo
     // Generate keyword stats
     const stats = calculateKeywordStats(products);
 
-    // Get related keywords
+    // Get related keywords (인코딩 정규화 적용)
     const relatedKeywords = await getRelatedKeywords(keyword);
+    const cleanedRelatedKeywords = relatedKeywords.map(kw => cleanText(kw));
 
     return {
-      keyword,
+      keyword: cleanText(keyword), // 키워드 자체도 정규화
       searchCount: Math.floor(Math.random() * 50000) + 5000, // Mock data
       pcSearchRatio: Math.floor(Math.random() * 40) + 20,
       mobileSearchRatio: Math.floor(Math.random() * 40) + 40,
@@ -127,7 +154,7 @@ export async function searchKeyword(keyword: string): Promise<KeywordSearchRespo
       realProductRatio: Math.floor(Math.random() * 30) + 50, // Mock data
       foreignProductRatio: Math.floor(Math.random() * 20) + 5, // Mock data
       products,
-      relatedKeywords,
+      relatedKeywords: cleanedRelatedKeywords,
       trends: mockTrends,
     };
   } catch (error) {
@@ -209,8 +236,26 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
       throw new Error("네이버 API 키가 설정되지 않았습니다");
     }
 
+    // 문자열 정규화 및 인코딩 처리 함수
+    const cleanText = (text: string): string => {
+      if (!text) return "";
+      
+      // 이상한 인코딩 문자 수정 (깨진 UTF-8 문자를 감지하고 대체)
+      const normalizedText = text
+        .replace(/Ã«|Ã¬|Â´|Ã­|Â¤/g, '') // 깨진 한글 제거
+        .replace(/\\u[\dA-F]{4}/gi, '') // 유니코드 이스케이프 시퀀스 제거
+        .replace(/[^a-zA-Z0-9\s.,\-_()가-힣ㄱ-ㅎㅏ-ㅣ]/g, ''); // 비정상 문자 제거 (한글, 영문, 숫자, 일부 특수문자만 허용)
+      
+      return normalizedText;
+    };
+
     // 인코딩/디코딩 확인
     console.log(`getKeywordTrends 함수 내부: 키워드=${keyword}, 기간=${period}`);
+    // 키워드 정규화
+    const normalizedKeyword = cleanText(keyword);
+    if (normalizedKeyword !== keyword) {
+      console.log(`키워드 정규화: "${keyword}" → "${normalizedKeyword}"`);
+    }
 
     const endDate = new Date();
     const startDate = new Date();
@@ -230,14 +275,14 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
     // 키워드 트렌드 API용 키워드 그룹 생성
     const keywordGroups = [
       {
-        groupName: keyword,
-        keywords: [keyword]
+        groupName: normalizedKeyword,
+        keywords: [normalizedKeyword]
       }
     ];
     
     // 먼저 자바 예제 형식으로 데이터랩 API 시도 (POST 방식)
     try {
-      console.log(`네이버 데이터랩 쇼핑인사이트 API 요청 (키워드: ${keyword})`);
+      console.log(`네이버 데이터랩 쇼핑인사이트 API 요청 (키워드: ${normalizedKeyword})`);
       
       // 네이버 개발자 센터 문서와 자바 예제에 맞춘 요청 형식
       const requestBody = {
@@ -261,7 +306,7 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
       const response = await naverDataLabClient.post(NAVER_DATALAB_CATEGORY_API, requestBody);
       
       if (response.data && response.data.results) {
-        console.log(`✅ 네이버 데이터랩 키워드 트렌드 API 성공 (${keyword})`);
+        console.log(`✅ 네이버 데이터랩 키워드 트렌드 API 성공 (${normalizedKeyword})`);
         console.log(`응답 데이터:`, JSON.stringify(response.data).substring(0, 200) + "...");
         
         // 실제 API 응답 데이터 파싱
@@ -276,16 +321,16 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
           
           console.log(`✅ 트렌드 데이터 파싱 성공: ${trendData.length}개 항목`);
           return {
-            keyword,
+            keyword: normalizedKeyword,
             trends: trendData
           };
         } else {
           console.log("⚠️ API 응답에 데이터가 없습니다. 백업 데이터 생성");
           
           // API는 성공했지만 데이터가 없는 경우 (비인기 키워드일 수 있음)
-          const backupTrendData = generateMockTrendData(keyword, period);
+          const backupTrendData = generateMockTrendData(normalizedKeyword, period);
           return {
-            keyword,
+            keyword: normalizedKeyword,
             trends: backupTrendData
           };
         }
@@ -296,21 +341,21 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
       
       // 두 번째로 쇼핑 검색 API 시도 (GET 방식)
       try {
-        console.log(`네이버 쇼핑 검색 API 요청 (키워드: ${keyword})`);
+        console.log(`네이버 쇼핑 검색 API 요청 (키워드: ${normalizedKeyword})`);
         
         const response = await naverSearchClient.get(NAVER_SEARCH_API, {
           params: {
-            query: keyword,
+            query: normalizedKeyword,
             display: 5
           }
         });
         
         if (response.data && response.data.items) {
-          console.log(`✅ 네이버 쇼핑 검색 API 성공 (${keyword}): ${response.data.total}개 결과 발견`);
+          console.log(`✅ 네이버 쇼핑 검색 API 성공 (${normalizedKeyword}): ${response.data.total}개 결과 발견`);
           console.log(`✅ API 연결 성공 확인. 백업 트렌드 데이터 사용.`);
           
           // API 연결이 성공했으므로 백업 데이터로 트렌드 정보 생성
-          const trendData = generateMockTrendData(keyword, period);
+          const trendData = generateMockTrendData(normalizedKeyword, period);
           
           // 검색 결과 데이터의 총 개수를 기반으로 트렌드 조정
           if (response.data.total > 0) {
@@ -322,7 +367,7 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
           }
           
           return {
-            keyword,
+            keyword: normalizedKeyword,
             trends: trendData
           };
         }
@@ -332,19 +377,23 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
     }
     
     // API 연결 실패 시 백업 데이터 사용
-    console.log(`키워드 '${keyword}'의 트렌드 데이터 생성 중...`);
-    const trendData = generateMockTrendData(keyword, period);
+    console.log(`키워드 '${normalizedKeyword}'의 트렌드 데이터 생성 중...`);
+    const trendData = generateMockTrendData(normalizedKeyword, period);
     
     return {
-      keyword,
+      keyword: normalizedKeyword,
       trends: trendData,
     };
   } catch (error) {
     console.error("Error getting keyword trends:", error);
+    
+    // 인코딩 정규화 시도
+    const normalizedKeyword = keyword.replace(/Ã«|Ã¬|Â´|Ã­|Â¤/g, '');
+    
     // 모든 오류 발생 시 백업 데이터 반환
     return {
-      keyword,
-      trends: generateMockTrendData(keyword, period)
+      keyword: normalizedKeyword || keyword,
+      trends: generateMockTrendData(normalizedKeyword || keyword, period)
     };
   }
 }

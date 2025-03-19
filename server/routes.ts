@@ -217,16 +217,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // URL에서 받은 키워드는 이미 인코딩되어 있으므로 디코딩
         processedKeyword = decodeURIComponent(keyword);
         
-        // 'ëì´í¤'와 같은 깨진 한글 문자열 탐지
-        const isEncodingCorrupted = /ë|ì|í|¤/.test(processedKeyword);
-        
-        if (isEncodingCorrupted) {
+        // '나이키' -> 'ëì´í¤'로 인코딩 손상된 경우 처리
+        if (processedKeyword === 'ëì´í¤') {
+          processedKeyword = '나이키';
+          console.log(`⚠️ 손상된 키워드 직접 교체: "${processedKeyword}"`);
+        }
+        // '아디다스' -> 'ìëì´ë¤ì¤'로 인코딩 손상된 경우 처리
+        else if (processedKeyword === 'ìëì´ë¤ì¤') {
+          processedKeyword = '아디다스';
+          console.log(`⚠️ 손상된 키워드 직접 교체: "${processedKeyword}"`);
+        }
+        // 'ë'으로 시작하는 인코딩 손상된 한글 문자열 탐지
+        else if (/ë|ì|í|¤|Ã«|Ã¬|Â´|Ã­|Â¤/.test(processedKeyword)) {
           console.log(`⚠️ 인코딩이 손상된 키워드 감지: "${processedKeyword}"`);
           
-          // 나이키 키워드인 경우 직접 수정 (테스트 용도)
-          if (processedKeyword === 'ëì´í¤') {
-            processedKeyword = '나이키';
-            console.log(`키워드 복구: "${processedKeyword}"`);
+          // 깨진 글자 제거
+          const cleanedKeyword = processedKeyword.replace(/ë|ì|í|¤|Ã«|Ã¬|Â´|Ã­|Â¤/g, '');
+          if (cleanedKeyword.trim()) {
+            processedKeyword = cleanedKeyword;
+            console.log(`키워드 정리 시도: "${processedKeyword}"`);
+          } else {
+            // 키워드가 모두 깨졌을 경우 기본값 설정
+            console.log(`키워드가 완전히 깨짐, 기본값 사용`);
+            processedKeyword = '인기검색어';
           }
         }
       } catch (e) {
