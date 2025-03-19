@@ -11,6 +11,7 @@ import KeywordDetail from "@/pages/keyword-detail";
 import KeywordSearch from "@/pages/keyword-search";
 import TrackRanking from "@/pages/track-ranking";
 import KeywordInsights from "@/pages/keyword-insights";
+import TestComponent from "@/components/test/TestComponent";
 
 function Router() {
   return (
@@ -31,6 +32,7 @@ function App() {
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         <main className="flex-1">
+          <TestComponent />
           <Router />
         </main>
         <Footer />
