@@ -46,25 +46,25 @@ const CategoryKeywords: React.FC<CategoryKeywordsProps> = ({ period }) => {
       // 카테고리별 백업 키워드
       const backupKeywords: Record<string, KeywordTrend[]> = {
         all: [
-          { keyword: "파로", rank: 1, change: "same" },
-          { keyword: "코스", rank: 2, change: "up" },
-          { keyword: "닭가슴살", rank: 3, change: "up" },
-          { keyword: "당근", rank: 4, change: "up" },
-          { keyword: "스투시", rank: 5, change: "up" },
+          { keyword: "제킷", rank: 1, change: "same" },
+          { keyword: "티셔츠", rank: 2, change: "up" },
+          { keyword: "원피스", rank: 3, change: "up" },
+          { keyword: "티셔츠", rank: 4, change: "down" },
+          { keyword: "제킷", rank: 5, change: "down" },
         ],
         fashion: [
-          { keyword: "투명안경테", rank: 1, change: "same" },
-          { keyword: "원피스", rank: 2, change: "up" },
-          { keyword: "투명사무실", rank: 3, change: "up" },
-          { keyword: "팔레스", rank: 4, change: "up" },
-          { keyword: "무지", rank: 5, change: "down" },
+          { keyword: "운동화", rank: 1, change: "same" },
+          { keyword: "단화", rank: 2, change: "up" },
+          { keyword: "슬리퍼백", rank: 3, change: "up" },
+          { keyword: "스니커즈", rank: 4, change: "same" },
+          { keyword: "토트백", rank: 5, change: "down" },
         ],
         digital: [
-          { keyword: "awehyu31030", rank: 1, change: "same" },
-          { keyword: "갤럭시", rank: 2, change: "up" },
-          { keyword: "아이폰", rank: 3, change: "up" },
-          { keyword: "맥북", rank: 4, change: "up" },
-          { keyword: "에어팟", rank: 5, change: "down" },
+          { keyword: "후대폰케이스", rank: 1, change: "same" },
+          { keyword: "키보드", rank: 2, change: "up" },
+          { keyword: "블루투스스피커", rank: 3, change: "up" },
+          { keyword: "노트북", rank: 4, change: "up" },
+          { keyword: "모니터", rank: 5, change: "down" },
         ],
       };
       
