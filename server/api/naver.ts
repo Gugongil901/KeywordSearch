@@ -644,15 +644,21 @@ export async function getHotKeywords(category: string = "all", period: string = 
       try {
         // 네이버 API 문서에 맞게 완전히 수정
         // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#쇼핑인사이트-카테고리별-키워드-트렌드-조회
+        // 개발자 센터 문서에 맞게 필드 형식 조정
         const keywordRequestBody = {
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
           timeUnit: period === "daily" ? "date" : "week",
-          category: categoryCode,  // 카테고리 코드
+          category: [
+            {
+              name: "쇼핑",
+              param: [categoryCode]  // 카테고리 코드 배열
+            }
+          ],
           keyword: backupData.slice(0, 5), // 키워드 배열 (최대 5개)
-          device: "",  // 모든 기기
-          gender: "",  // 모든 성별
-          ages: []     // 모든 연령대
+          device: "pc",  // 필수값: pc, mobile, all 중 하나여야 함
+          gender: "f",   // 필수값: m, f, a 중 하나여야 함 (a=all)
+          ages: ["20", "30"]  // 필수값: 연령대 코드 (최소 하나 이상 값이 필요)
         };
         
         apiEndpoint = NAVER_DATALAB_KEYWORD_API;
@@ -676,9 +682,9 @@ export async function getHotKeywords(category: string = "all", period: string = 
               groupName: kw,
               keywords: [kw]
             })),  // 최대 5개의 키워드 그룹
-            device: "",  // 모든 기기
-            ages: [],    // 모든 연령대
-            gender: ""   // 모든 성별
+            device: "pc",  // 필수값: pc, mobile, all 중 하나여야 함
+            ages: ["1", "2"],  // 필수값: 연령대 코드 (최소 하나 이상 값이 필요)
+            gender: "f"   // 필수값: m, f, a 중 하나여야 함 (a=all)
           };
           
           apiEndpoint = NAVER_DATALAB_SEARCH_API;
