@@ -17,7 +17,7 @@ const NAVER_AD_API_BASE = "https://api.naver.com";
 const NAVER_DATALAB_API = "https://openapi.naver.com/v1/datalab/shopping/categories";
 
 // 네이버 데이터랩 키워드 트렌드 API (공식 문서 참조)
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keywords"://openapi.naver.com/v1/datalab/shopping/keywords";
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/keywords";
 
 // 카테고리별 키워드 트렌드 API - 백업
 const NAVER_DATALAB_CATEGORY_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
