@@ -22,16 +22,16 @@ const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period }) => {
 
   // 서버에서 반환된 데이터가 없거나 키워드가 없을 때 기본값 사용
   const keywords: KeywordTrend[] = (data && typeof data === 'object' && 'keywords' in data && Array.isArray(data.keywords)) ? data.keywords : [
-    { keyword: "투명안경테", rank: 1, change: "same" },
-    { keyword: "원피스", rank: 2, change: "up" },
-    { keyword: "투명사무실", rank: 3, change: "up" },
-    { keyword: "햄스터", rank: 4, change: "same" },
-    { keyword: "팔레스", rank: 5, change: "up" },
-    { keyword: "가죽지갑", rank: 6, change: "up" },
-    { keyword: "무지", rank: 7, change: "down" },
-    { keyword: "스텐리스락", rank: 8, change: "same" },
-    { keyword: "메이차", rank: 9, change: "up" },
-    { keyword: "anotheryouth", rank: 10, change: "down" },
+    { keyword: "파로", rank: 1, change: "same" },
+    { keyword: "코스", rank: 2, change: "up" },
+    { keyword: "닭가슴살", rank: 3, change: "up" },
+    { keyword: "당근", rank: 4, change: "up" },
+    { keyword: "스투시", rank: 5, change: "up" },
+    { keyword: "파로효소", rank: 6, change: "same" },
+    { keyword: "쭈꾸미", rank: 7, change: "up" },
+    { keyword: "나이키운동화", rank: 8, change: "up" },
+    { keyword: "호카", rank: 9, change: "down" },
+    { keyword: "꼬망세", rank: 10, change: "down" },
   ];
 
   const getChangeIcon = (change: string) => {

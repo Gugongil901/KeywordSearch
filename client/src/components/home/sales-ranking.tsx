@@ -46,18 +46,18 @@ const CategoryKeywords: React.FC<CategoryKeywordsProps> = ({ period }) => {
       // 카테고리별 백업 키워드
       const backupKeywords: Record<string, KeywordTrend[]> = {
         all: [
-          { keyword: "투명안경테", rank: 1, change: "same" },
-          { keyword: "원피스", rank: 2, change: "up" },
-          { keyword: "투명사무실", rank: 3, change: "up" },
-          { keyword: "햄스터", rank: 4, change: "same" },
-          { keyword: "팔레스", rank: 5, change: "up" },
+          { keyword: "파로", rank: 1, change: "same" },
+          { keyword: "코스", rank: 2, change: "up" },
+          { keyword: "닭가슴살", rank: 3, change: "up" },
+          { keyword: "당근", rank: 4, change: "up" },
+          { keyword: "스투시", rank: 5, change: "up" },
         ],
         fashion: [
           { keyword: "투명안경테", rank: 1, change: "same" },
           { keyword: "원피스", rank: 2, change: "up" },
           { keyword: "투명사무실", rank: 3, change: "up" },
-          { keyword: "가죽지갑", rank: 4, change: "down" },
-          { keyword: "팔레스", rank: 5, change: "up" },
+          { keyword: "팔레스", rank: 4, change: "up" },
+          { keyword: "무지", rank: 5, change: "down" },
         ],
         digital: [
           { keyword: "awehyu31030", rank: 1, change: "same" },
