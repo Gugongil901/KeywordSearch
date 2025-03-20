@@ -22,7 +22,7 @@ interface ProductImageProps {
  * - 이미지 로딩 상태 처리
  * - 네이버 제품 페이지 링크 연결
  */
-function ProductImageComponent({
+export function ProductImage({
   src,
   alt,
   title,
@@ -125,3 +125,6 @@ function ProductImageComponent({
     </ImageWrapper>
   );
 }
+
+// 기본 내보내기도 추가 (import ProductImage from "@/components/ui/product-image" 형태로 사용할 수 있도록)
+export default ProductImage;

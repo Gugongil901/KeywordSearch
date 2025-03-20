@@ -40,7 +40,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MonitoringConfig, MonitoringResult, CompetitorProduct, PriceChange, RankChange, ReviewChange, NewProductAlert, MonitoringThresholds } from '@shared/schema';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from '@/hooks/use-toast';
-import ProductImage from '@/components/ui/product-image';
+import { ProductImage } from '@/components/ui/product-image';
 import { SiNaver } from 'react-icons/si';
 import { DEFAULT_PRODUCT_IMAGES } from '@/constants/images';
 import {
