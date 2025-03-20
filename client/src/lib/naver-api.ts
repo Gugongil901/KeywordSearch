@@ -50,6 +50,13 @@ export interface KeywordMeaning {
 export interface SemanticRelatedKeyword {
   keyword: string;
   similarity: number;
+  representativeProduct?: {
+    productId: string;
+    name: string;
+    price: number;
+    image?: string;
+    url?: string;
+  };
 }
 
 export interface MarketSegment {
