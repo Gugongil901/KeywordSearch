@@ -64,10 +64,18 @@ router.post('/setup', async (req: Request, res: Response) => {
  */
 router.get('/check/:keyword', async (req: Request, res: Response) => {
   try {
-    const { keyword } = req.params;
+    let { keyword } = req.params;
     
     if (!keyword) {
       return res.status(400).json({ error: '키워드가 필요합니다.' });
+    }
+    
+    // URL 디코딩 처리 - 한글 키워드 등 처리
+    try {
+      keyword = decodeURIComponent(keyword);
+      logger.info(`URL 디코딩 적용: "${keyword}"`);
+    } catch (e) {
+      logger.warn(`URL 디코딩 실패: "${keyword}"`);
     }
     
     const result = await monitoringSystem.checkForChanges(keyword);
@@ -98,10 +106,18 @@ router.get('/configs', (_req: Request, res: Response) => {
  */
 router.get('/configs/:keyword', (req: Request, res: Response) => {
   try {
-    const { keyword } = req.params;
+    let { keyword } = req.params;
     
     if (!keyword) {
       return res.status(400).json({ error: '키워드가 필요합니다.' });
+    }
+    
+    // URL 디코딩 처리 - 한글 키워드 등 처리
+    try {
+      keyword = decodeURIComponent(keyword);
+      logger.info(`URL 디코딩 적용: "${keyword}"`);
+    } catch (e) {
+      logger.warn(`URL 디코딩 실패: "${keyword}"`);
     }
     
     const config = db.getMonitoringConfig(keyword);
@@ -123,10 +139,18 @@ router.get('/configs/:keyword', (req: Request, res: Response) => {
  */
 router.get('/results/:keyword', (req: Request, res: Response) => {
   try {
-    const { keyword } = req.params;
+    let { keyword } = req.params;
     
     if (!keyword) {
       return res.status(400).json({ error: '키워드가 필요합니다.' });
+    }
+    
+    // URL 디코딩 처리 - 한글 키워드 등 처리
+    try {
+      keyword = decodeURIComponent(keyword);
+      logger.info(`URL 디코딩 적용: "${keyword}"`);
+    } catch (e) {
+      logger.warn(`URL 디코딩 실패: "${keyword}"`);
     }
     
     const results = monitoringSystem.getMonitoringResults(keyword);
@@ -143,10 +167,18 @@ router.get('/results/:keyword', (req: Request, res: Response) => {
  */
 router.get('/results/:keyword/latest', (req: Request, res: Response) => {
   try {
-    const { keyword } = req.params;
+    let { keyword } = req.params;
     
     if (!keyword) {
       return res.status(400).json({ error: '키워드가 필요합니다.' });
+    }
+    
+    // URL 디코딩 처리 - 한글 키워드 등 처리
+    try {
+      keyword = decodeURIComponent(keyword);
+      logger.info(`URL 디코딩 적용: "${keyword}"`);
+    } catch (e) {
+      logger.warn(`URL 디코딩 실패: "${keyword}"`);
     }
     
     const result = monitoringSystem.getLatestMonitoringResult(keyword);
