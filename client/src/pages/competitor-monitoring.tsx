@@ -245,13 +245,35 @@ const fetchCompetitorInsights = async (keyword: string, competitors: string[]): 
 
 const fetchLatestResult = async (keyword: string) => {
   try {
+    // 먼저 URI 컴포넌트로 인코딩 (한글 등 처리를 위함)
     const encodedKeyword = encodeURIComponent(keyword);
+    
+    // API 호출 전에 추가 검증 출력
+    console.log('모니터링 결과 API 호출 전 인코딩된 키워드:', encodedKeyword);
+    
+    // API 호출
     const response = await axios.get(`/api/monitoring/results/${encodedKeyword}/latest`);
+    
+    // 응답 로깅
     console.log('최신 모니터링 결과 응답:', response.data);
+    
+    // 결과 반환
     return response.data;
   } catch (error) {
+    // 에러 시, 에러 정보를 자세히 출력
     console.error('최신 모니터링 결과 API 호출 오류:', error);
-    throw error;
+    
+    // 폴백: 같은 키워드로 새로운 모니터링 검사 시작
+    try {
+      console.log(`최신 모니터링 결과 없음, 새 변화 감지 요청 시작: ${keyword}`);
+      const encodedKeyword = encodeURIComponent(keyword);
+      const checkResponse = await axios.get(`/api/monitoring/check/${encodedKeyword}`);
+      console.log('변화 감지 응답:', checkResponse.data);
+      return checkResponse.data;
+    } catch (fallbackError) {
+      console.error('변화 감지 폴백 요청 오류:', fallbackError);
+      throw error; // 원래 에러 전파
+    }
   }
 };
 
