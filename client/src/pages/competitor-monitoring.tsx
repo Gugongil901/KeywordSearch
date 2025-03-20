@@ -14,6 +14,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { 
   ArrowUpIcon, 
   ArrowDownIcon, 
@@ -28,20 +37,12 @@ import {
   EyeIcon,
   DollarSignIcon,
   ShoppingBagIcon,
-  StarIcon,
   InfoIcon,
+  ShieldAlertIcon,
   ListChecksIcon,
-  ShieldAlertIcon
+  StarIcon
 } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from "@/components/ui/dialog";
+// 이미 위에서 Dialog 컴포넌트를 임포트했으므로 중복 제거
 import { Progress } from "@/components/ui/progress";
 
 // 타입 정의
@@ -293,6 +294,11 @@ export default function CompetitorMonitoringPage() {
   const [activeKeyword, setActiveKeyword] = useState<string | null>(null);
   const [setupStatus, setSetupStatus] = useState<string | null>(null);
   const [checkStatus, setCheckStatus] = useState<string | null>(null);
+  
+  // 대화상자 상태 관리
+  const [selectedInsight, setSelectedInsight] = useState<CompetitorInsight | null>(null);
+  const [selectedStrength, setSelectedStrength] = useState<string | null>(null);
+  const [selectedWeakness, setSelectedWeakness] = useState<string | null>(null);
 
   // 모니터링 설정 목록 조회
   const { data: configs, isLoading: configsLoading, refetch: refetchConfigs } = useQuery({
