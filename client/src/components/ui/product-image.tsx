@@ -9,6 +9,7 @@ interface ProductImageProps {
   width?: number;
   height?: number;
   className?: string;
+  url?: string; // 제품 URL 추가
 }
 
 export function ProductImage({
@@ -18,7 +19,8 @@ export function ProductImage({
   category,
   width = 100,
   height = 100,
-  className = ''
+  className = '',
+  url
 }: ProductImageProps) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [isError, setIsError] = useState(false);
@@ -61,11 +63,29 @@ export function ProductImage({
     return DEFAULT_PRODUCT_IMAGES[Math.floor(Math.random() * DEFAULT_PRODUCT_IMAGES.length)];
   };
 
-  return (
-    <div
-      className={`overflow-hidden ${className}`}
-      style={{ width: `${width}px`, height: `${height}px` }}
-    >
+  // 네이버 상품 페이지로 연결하는 URL 생성
+  const getProductUrl = (): string => {
+    // URL이 제공된 경우 그대로 사용
+    if (url) return url;
+    
+    // 제품 ID가 숫자만 있는 경우 네이버 상품 페이지로 직접 연결
+    if (productId && /^\d+$/.test(productId)) {
+      return `https://search.shopping.naver.com/catalog/${productId}`;
+    }
+    
+    // 제품명이 있는 경우 검색 결과로 연결
+    if (title) {
+      return `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(title)}`;
+    }
+    
+    // 기본 검색 페이지
+    return 'https://search.shopping.naver.com';
+  };
+
+  const productUrl = getProductUrl();
+  
+  const imageContent = (
+    <>
       {!isError ? (
         <img
           src={imageSrc || ''}
@@ -80,6 +100,25 @@ export function ProductImage({
           className="w-full h-full object-contain"
         />
       )}
+    </>
+  );
+
+  return productUrl ? (
+    <a 
+      href={productUrl} 
+      target="_blank" 
+      rel="noopener noreferrer"
+      className={`overflow-hidden block ${className}`}
+      style={{ width: `${width}px`, height: `${height}px` }}
+    >
+      {imageContent}
+    </a>
+  ) : (
+    <div
+      className={`overflow-hidden ${className}`}
+      style={{ width: `${width}px`, height: `${height}px` }}
+    >
+      {imageContent}
     </div>
   );
 }

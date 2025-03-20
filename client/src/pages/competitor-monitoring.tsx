@@ -821,7 +821,7 @@ export default function CompetitorMonitoringPage() {
   });
   
   // ML 인사이트 조회 - 모든 경쟁사 표시 (최대 20개)
-  const { data: mlInsights, isLoading: insightsLoading } = useQuery({
+  const { data: mlInsights, isLoading: insightsLoading, isError: insightsError, refetch: refetchInsights } = useQuery({
     queryKey: ['competitorInsights', activeKeyword],
     queryFn: () => {
       if (!activeKeyword || !configs || !configs[activeKeyword]) return null;
@@ -832,7 +832,10 @@ export default function CompetitorMonitoringPage() {
       );
     },
     enabled: !!activeKeyword && !!configs && !!configs[activeKeyword],
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    retry: 2, // 최대 2번 재시도
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // 지수 백오프 적용
+    staleTime: 5 * 60 * 1000 // 5분간 캐시 유지
   });
 
   // 설정된 모니터링 키워드가 있으면 첫 번째 키워드를 활성화
