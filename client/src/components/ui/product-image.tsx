@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { DEFAULT_PRODUCT_IMAGES, getCompetitorProductImage, BRAND_WEBSITES } from '@/constants/images';
+import React, { useState, useEffect } from 'react';
+import { DEFAULT_PRODUCT_IMAGES, getCompetitorProductImage, BRAND_WEBSITES, COMPETITOR_PRODUCT_IMAGES } from '@/constants/images';
 import { extractProductIdFromUrl } from '@/utils/product-helper';
 import { SiNaver } from 'react-icons/si';
 
@@ -67,17 +67,57 @@ export function ProductImage({
   
   // 폴백 이미지 선택
   const getFallbackImage = () => {
-    // 경쟁사 이름이 제공된 경우 해당 경쟁사 기반 이미지 선택
+    // 경쟁사(브랜드) 이름이 제공된 경우 해당 경쟁사 전용 이미지 사용
     if (competitor) {
-      return getCompetitorProductImage(competitor, productIndex);
+      // 브랜드 이름에서 공백 제거하고 정확히 매칭
+      const normalizedCompetitor = competitor.trim();
+      
+      // 브랜드별 이미지 우선 시도
+      if (COMPETITOR_PRODUCT_IMAGES[normalizedCompetitor]) {
+        const images = COMPETITOR_PRODUCT_IMAGES[normalizedCompetitor];
+        // 제품 인덱스를 기준으로 다른 이미지 사용
+        const index = (productIndex || 0) % images.length;
+        console.log(`브랜드(${normalizedCompetitor}) 이미지 사용: ${images[index]}`);
+        return images[index];
+      }
+      
+      // 브랜드명이 포함된 키 찾기 (부분 일치)
+      const matchingBrand = Object.keys(COMPETITOR_PRODUCT_IMAGES).find(
+        brand => brand.includes(normalizedCompetitor) || normalizedCompetitor.includes(brand)
+      );
+      
+      if (matchingBrand) {
+        const images = COMPETITOR_PRODUCT_IMAGES[matchingBrand];
+        const index = (productIndex || 0) % images.length;
+        console.log(`유사 브랜드(${matchingBrand}) 이미지 사용: ${images[index]}`);
+        return images[index];
+      }
+      
+      // 완전히 정해진 이미지 반환 (해시 기반)
+      return getCompetitorProductImage(normalizedCompetitor, productIndex || 0);
     }
     
-    // 랜덤 이미지 선택
+    // 건강기능식품 카테고리 이미지 선택 
     return DEFAULT_PRODUCT_IMAGES[Math.floor(Math.random() * DEFAULT_PRODUCT_IMAGES.length)];
   };
   
   // 이미지 소스가 없거나 오류 발생시 폴백 이미지 사용
-  const imageSrc = (error || !src) ? getFallbackImage() : src;
+  // 로컬 상태로 저장하여 불필요한 재렌더링 방지
+  const [resolvedImageSrc, setResolvedImageSrc] = useState<string>(
+    src || getFallbackImage()
+  );
+  
+  // 이미지 오류 시 폴백 이미지로 교체
+  useEffect(() => {
+    if (error || !src) {
+      setResolvedImageSrc(getFallbackImage());
+    } else {
+      setResolvedImageSrc(src);
+    }
+  }, [error, src, competitor, productIndex]);
+  
+  // 최종 이미지 소스
+  const imageSrc = resolvedImageSrc;
   
   // 이미지 래퍼 (링크 또는 div)
   const ImageWrapper = ({ children }: { children: React.ReactNode }) => {

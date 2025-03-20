@@ -4,11 +4,13 @@
 
 // 제품 이미지 없을 때 사용할 기본 이미지 목록
 export const DEFAULT_PRODUCT_IMAGES = [
-  'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=300&h=300&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=300&h=300&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=300&h=300&fit=crop&q=80'
+  // 건강기능식품 관련 이미지로 변경
+  'https://images.unsplash.com/photo-1577041677443-8bbdfd8cce62?w=300&h=300&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1514326005837-fb4791d25e03?w=300&h=300&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1583623733237-4d5764a9dc82?w=300&h=300&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1624454002302-52a7c4c08ce2?w=300&h=300&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1652862730470-a66777f0235c?w=300&h=300&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1576426863848-c21f53c60b19?w=300&h=300&fit=crop&q=80'
 ];
 
 // 인기 카테고리별 대표 이미지
