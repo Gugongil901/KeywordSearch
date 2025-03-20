@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
-import { DEFAULT_PRODUCT_IMAGE, ALTERNATIVE_PRODUCT_IMAGES } from "@/constants/images";
+import { DEFAULT_PRODUCT_IMAGES } from "@/constants/images";
+import { ProductImage } from "@/components/ui/product-image";
 
 interface TrackedProduct {
   id: string;
@@ -183,17 +184,13 @@ const ProductRanking: React.FC = () => {
             {trackedProducts.map((product) => (
               <tr key={product.id} className="hover:bg-gray-50">
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <img
+                  <ProductImage
                     src={product.image}
-                    alt={product.name}
-                    className="w-12 h-12 object-cover rounded"
-                    onError={(e) => {
-                      // 이미지 로드 실패 시 기본 이미지로 대체
-                      if ((e.target as HTMLImageElement).src !== DEFAULT_PRODUCT_IMAGE) {
-                        console.log('이미지 로드 실패, 기본 이미지 사용:', product.image);
-                        (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE;
-                      }
-                    }}
+                    title={product.name}
+                    productId={product.id}
+                    width={48}
+                    height={48}
+                    className="rounded"
                   />
                 </td>
                 <td className="px-4 py-4">

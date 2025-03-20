@@ -1,137 +1,87 @@
-import React from 'react';
-import { DEFAULT_PRODUCT_IMAGE } from '@/constants/images';
-
-interface CompetitorProduct {
-  productId: string;
-  name: string;
-  price: number;
-  reviews: number;
-  rank: number;
-  image?: string;
-  url?: string;
-  collectedAt: string;
-}
+import { useState, useEffect } from 'react';
+import { DEFAULT_PRODUCT_IMAGES, CATEGORY_IMAGES } from '@/constants/images';
 
 interface ProductImageProps {
-  // 기존 인터페이스
-  product?: CompetitorProduct;
-  size?: 'small' | 'medium' | 'large';
-  showTitle?: boolean;
-  
-  // 직접 이미지 URL과 제품 정보를 받는 속성 추가
   src?: string;
-  alt?: string;
+  title?: string;
+  productId?: string;
+  category?: string;
   width?: number;
   height?: number;
-  productName?: string;
-  productUrl?: string;
   className?: string;
-  isClickable?: boolean;
 }
 
-export function ProductImage({ 
-  product, 
-  size = 'medium',
-  showTitle = false,
+export function ProductImage({
   src,
-  alt,
-  width,
-  height,
-  productName,
-  productUrl,
-  className,
-  isClickable = true
+  title,
+  productId,
+  category,
+  width = 100,
+  height = 100,
+  className = ''
 }: ProductImageProps) {
-  // 이미지 사이즈 설정
-  const sizeClass = {
-    small: 'w-12 h-12',
-    medium: 'w-16 h-16',
-    large: 'w-24 h-24'
-  }[size];
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [isError, setIsError] = useState(false);
 
-  // 기본 이미지 URL (제품 이미지가 없을 경우)
-  // 공통 상수에서 가져온 안정적인 이미지 URL 사용
-  
-  // product 객체가 제공된 경우와 직접 속성이 제공된 경우 처리
-  const imageUrl = product?.image || src || DEFAULT_PRODUCT_IMAGE;
-  const imageAlt = product?.name || alt || '제품 이미지';
-  const linkUrl = product?.url || 
-                 (product ? `https://search.shopping.naver.com/product/${product.productId}` : productUrl || '#');
-  const title = product?.name || productName || '';
-  
-  // 이미지 크기 설정 (직접 지정된 크기 또는 사이즈별 기본값)
-  const imageStyle = width && height 
-    ? { width: `${width}px`, height: `${height}px` }
-    : {};
-  
-  // 이미지 URL 프록시 처리
-  const getProxiedImageUrl = (url: string): string => {
-    // 로컬 이미지 또는 이미 프록시된 이미지인 경우 그대로 사용
-    if (url.startsWith('/') || url.startsWith(window.location.origin) || url.includes('/api/proxy/image')) {
-      return url;
+  useEffect(() => {
+    // 초기 이미지 소스 설정
+    if (src && !src.includes('data:image') && !src.includes('base64')) {
+      setImageSrc(src);
+    } else {
+      setIsError(true);
     }
-    
-    // 외부 이미지인 경우 프록시 사용
-    try {
-      // 프록시 API를 통해 이미지 로드
-      return `/api/proxy/image?url=${encodeURIComponent(url)}`;
-    } catch (error) {
-      console.error('이미지 URL 인코딩 오류:', error);
-      return DEFAULT_PRODUCT_IMAGE;
+  }, [src]);
+
+  const handleImageError = () => {
+    setIsError(true);
+  };
+
+  // 폴백 이미지를 선택하는 함수
+  const getFallbackImage = (): string => {
+    // 카테고리가 있으면 카테고리별 이미지 사용
+    if (category && CATEGORY_IMAGES[category]) {
+      return CATEGORY_IMAGES[category];
     }
-  };
-  
-  // 이미지 컨테이너 렌더링
-  const renderImage = () => {
-    // 프록시된 이미지 URL 가져오기
-    const proxiedUrl = imageUrl ? getProxiedImageUrl(imageUrl) : DEFAULT_PRODUCT_IMAGE;
-    
-    return (
-      <img 
-        src={proxiedUrl} 
-        alt={imageAlt} 
-        className={`${width && height ? '' : sizeClass} object-cover rounded border border-gray-200`}
-        style={imageStyle}
-        onError={(e) => {
-          // 이미지 로드 실패 시 기본 이미지로 대체
-          if ((e.target as HTMLImageElement).src !== DEFAULT_PRODUCT_IMAGE) {
-            console.log('이미지 로드 실패, 기본 이미지 사용:', imageUrl);
-            (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE;
-          }
-        }}
-      />
-    );
+
+    // 상품 ID가 있으면 그 값을 사용하여 일관된 이미지 선택
+    if (productId) {
+      const productNum = parseInt(productId.replace(/\D/g, '').slice(-2) || '0');
+      const index = productNum % DEFAULT_PRODUCT_IMAGES.length;
+      return DEFAULT_PRODUCT_IMAGES[index];
+    }
+
+    // 상품명이 있으면 그 값을 사용하여 일관된 이미지 선택
+    if (title) {
+      const charSum = title.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+      const index = charSum % DEFAULT_PRODUCT_IMAGES.length;
+      return DEFAULT_PRODUCT_IMAGES[index];
+    }
+
+    // 기본값: 랜덤하게 이미지 선택
+    return DEFAULT_PRODUCT_IMAGES[Math.floor(Math.random() * DEFAULT_PRODUCT_IMAGES.length)];
   };
 
-  // 제목 렌더링 (있는 경우)
-  const renderTitle = () => {
-    if (!(showTitle || productName)) return null;
-    return (
-      <div className="mt-1 text-xs text-center text-gray-700 truncate max-w-[150px]">
-        {title}
-      </div>
-    );
-  };
-
-  // 클릭 가능한 경우 링크로 감싸고, 그렇지 않은 경우 단순히 이미지만 표시
   return (
-    <div className="product-image-container">
-      {isClickable ? (
-        <a 
-          href={linkUrl} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className={`block transition-all hover:opacity-80 hover:shadow-md rounded ${className || ''}`}
-        >
-          {renderImage()}
-          {renderTitle()}
-        </a>
+    <div
+      className={`overflow-hidden ${className}`}
+      style={{ width: `${width}px`, height: `${height}px` }}
+    >
+      {!isError ? (
+        <img
+          src={imageSrc || ''}
+          alt={title || '상품 이미지'}
+          className="w-full h-full object-contain"
+          onError={handleImageError}
+        />
       ) : (
-        <div className={className || ''}>
-          {renderImage()}
-          {renderTitle()}
-        </div>
+        <img
+          src={getFallbackImage()}
+          alt={title || '상품 이미지'}
+          className="w-full h-full object-contain"
+        />
       )}
     </div>
   );
 }
+
+export default ProductImage;

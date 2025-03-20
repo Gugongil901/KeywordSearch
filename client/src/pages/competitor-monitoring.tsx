@@ -8,7 +8,7 @@ import { ProductImage } from "@/components/ui/product-image";
 // 강점/약점 레이더 차트 컴포넌트 임포트
 import { StrengthWeaknessRadar } from "@/components/charts/strength-weakness-radar";
 // 공통 상수 임포트
-import { DEFAULT_PRODUCT_IMAGE } from "@/constants/images";
+import { DEFAULT_PRODUCT_IMAGES } from "@/constants/images";
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";

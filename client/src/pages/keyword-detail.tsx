@@ -16,6 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import ProductSearchResults from '@/components/dashboard/ProductSearchResults';
 import {
   ArrowUpRight,
   ArrowDownRight,
@@ -591,30 +592,10 @@ export default function KeywordDetailPage() {
               </TabsList>
               
               <TabsContent value="products">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {keywordData.products.slice(0, 6).map((product) => (
-                    <Card key={product.productId} className="overflow-hidden">
-                      <div className="aspect-square w-full overflow-hidden flex items-center justify-center bg-gray-50">
-                        <img 
-                          src={product.image} 
-                          alt={product.title} 
-                          className="h-full w-auto object-contain"
-                        />
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="line-clamp-2 text-sm h-10">{product.title}</h3>
-                        <div className="flex justify-between mt-2">
-                          <span className="text-sm text-muted-foreground">{product.brandName || '일반 브랜드'}</span>
-                          <span className="font-medium">{formatCurrency(product.price)}원</span>
-                        </div>
-                        <div className="flex justify-between mt-1">
-                          <span className="text-xs text-muted-foreground">리뷰 {formatNumber(product.reviewCount)}개</span>
-                          <span className="text-xs text-muted-foreground">순위 {product.rank}위</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+                <ProductSearchResults 
+                  products={keywordData.products.slice(0, 10)} 
+                  title={`네이버 쇼핑 인기 상품 - ${keywordData.keyword}`}
+                />
               </TabsContent>
               
               <TabsContent value="recommendations">

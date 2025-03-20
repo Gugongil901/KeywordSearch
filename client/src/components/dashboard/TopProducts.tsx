@@ -6,7 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { DEFAULT_PRODUCT_IMAGE } from '@/constants/images';
+import { DEFAULT_PRODUCT_IMAGES } from '@/constants/images';
+import { ProductImage } from '@/components/ui/product-image';
 import { 
   Star, 
   Eye, 
@@ -77,24 +78,15 @@ const TopProducts: React.FC<TopProductsProps> = ({ data }) => {
                 <div className="flex flex-col md:flex-row">
                   <div className="md:w-1/4 lg:w-1/5 p-4 flex items-center justify-center bg-gray-50">
                     <div className="relative">
-                      {product.image ? (
-                        <img 
-                          src={product.image} 
-                          alt={removeHtmlTags(product.title)} 
-                          className="w-full h-32 object-contain"
-                          onError={(e) => {
-                            // 이미지 로드 실패 시 기본 이미지로 대체
-                            if ((e.target as HTMLImageElement).src !== DEFAULT_PRODUCT_IMAGE) {
-                              console.log('이미지 로드 실패, 기본 이미지 사용:', product.image);
-                              (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE;
-                            }
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-32 bg-gray-200 flex items-center justify-center">
-                          <ShoppingCart className="h-8 w-8 text-gray-400" />
-                        </div>
-                      )}
+                      <ProductImage
+                        src={product.image}
+                        title={removeHtmlTags(product.title)}
+                        productId={product.productId}
+                        category={product.category}
+                        width={128}
+                        height={128}
+                        className="w-full h-32"
+                      />
                       {product.rank <= 3 && (
                         <div className="absolute -top-2 -left-2 bg-amber-500 text-white h-8 w-8 rounded-full flex items-center justify-center font-bold">
                           {product.rank}
