@@ -814,15 +814,7 @@ export default function CompetitorMonitoringPage() {
                                 {competitorChanges.priceChanges.map((change, idx) => (
                                   <div key={idx} className="flex items-start border rounded-lg p-4">
                                     <div className="flex-shrink-0 mr-4">
-                                      <ProductImage 
-                                        src={change.product.image || DEFAULT_PRODUCT_IMAGE} 
-                                        alt={change.product.name}
-                                        width={80}
-                                        height={80}
-                                        productName={change.product.name}
-                                        productUrl={change.product.url}
-                                        isClickable={!!change.product.url}
-                                      />
+                                      <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
                                     </div>
                                     <div className="flex-1">
                                       <h4 className="font-medium">{change.product.name}</h4>
@@ -868,15 +860,7 @@ export default function CompetitorMonitoringPage() {
                                 {competitorChanges.newProducts.map((newProduct, idx) => (
                                   <div key={idx} className="border rounded-lg p-4 flex">
                                     <div className="flex-shrink-0 mr-4">
-                                      <ProductImage 
-                                        src={newProduct.product.image || DEFAULT_PRODUCT_IMAGE} 
-                                        alt={newProduct.product.name}
-                                        width={80}
-                                        height={80}
-                                        productName={newProduct.product.name}
-                                        productUrl={newProduct.product.url}
-                                        isClickable={!!newProduct.product.url}
-                                      />
+                                      <ProductImage src={newProduct.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={newProduct.product.name} productId={newProduct.product.productId} width={80} height={80} />
                                     </div>
                                     <div>
                                       <Badge className="mb-2 bg-green-600">신규</Badge>
@@ -902,15 +886,7 @@ export default function CompetitorMonitoringPage() {
                                 {competitorChanges.rankChanges.map((change, idx) => (
                                   <div key={idx} className="flex items-start border rounded-lg p-4">
                                     <div className="flex-shrink-0 mr-4">
-                                      <ProductImage 
-                                        src={change.product.image || DEFAULT_PRODUCT_IMAGE} 
-                                        alt={change.product.name}
-                                        width={80}
-                                        height={80}
-                                        productName={change.product.name}
-                                        productUrl={change.product.url}
-                                        isClickable={!!change.product.url}
-                                      />
+                                      <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
                                     </div>
                                     <div className="flex-1">
                                       <h4 className="font-medium">{change.product.name}</h4>
@@ -956,15 +932,7 @@ export default function CompetitorMonitoringPage() {
                                 {competitorChanges.reviewChanges.map((change, idx) => (
                                   <div key={idx} className="flex items-start border rounded-lg p-4">
                                     <div className="flex-shrink-0 mr-4">
-                                      <ProductImage 
-                                        src={change.product.image || DEFAULT_PRODUCT_IMAGE} 
-                                        alt={change.product.name}
-                                        width={80}
-                                        height={80}
-                                        productName={change.product.name}
-                                        productUrl={change.product.url}
-                                        isClickable={!!change.product.url}
-                                      />
+                                      <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
                                     </div>
                                     <div className="flex-1">
                                       <h4 className="font-medium">{change.product.name}</h4>
@@ -1072,15 +1040,7 @@ export default function CompetitorMonitoringPage() {
                           <div className="flex flex-col md:flex-row gap-6 items-center mb-4">
                             {/* 대표 제품 이미지 */}
                             <div className="flex-shrink-0 w-40">
-                              <ProductImage 
-                                src={insight.representativeProduct.image}
-                                alt={insight.representativeProduct.name}
-                                width={160}
-                                height={160}
-                                productName={insight.representativeProduct.name}
-                                productUrl={insight.representativeProduct.url}
-                                isClickable={true}
-                              />
+                              <ProductImage src={insight.representativeProduct.image} title={insight.representativeProduct.name} productId={insight.representativeProduct.name.productId} width={160} height={160} />
                               <div className="text-xs text-center mt-2">
                                 <div className="font-medium">{insight.representativeProduct.name}</div>
                                 <div className="text-muted-foreground">{insight.representativeProduct.price.toLocaleString()}원</div>
@@ -1174,13 +1134,11 @@ export default function CompetitorMonitoringPage() {
                                     className="flex flex-col border rounded-md p-2 bg-white hover:shadow-md transition-shadow"
                                   >
                                     <div className="w-full h-24 rounded-md overflow-hidden bg-gray-100 mb-2">
-                                      <img 
-                                        src={insight.representativeProduct?.image || DEFAULT_PRODUCT_IMAGE}
-                                        alt={`${insight.competitor} 제품 ${index + 1}`}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                          (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE;
-                                        }}
+                                      <ProductImage 
+                                        src={insight.representativeProduct?.image}
+                                        title={`${insight.competitor} 제품 ${index + 1}`}
+                                        productId={insight.representativeProduct?.productId}
+                                        className="w-full h-full"
                                       />
                                     </div>
                                     <div className="flex-1">
