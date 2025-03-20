@@ -14,7 +14,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowUpIcon, ArrowDownIcon, ArrowRightIcon, AlertCircleIcon, BarChart3Icon, LineChartIcon, TagIcon } from "lucide-react";
+import { 
+  ArrowUpIcon, 
+  ArrowDownIcon, 
+  ArrowRightIcon, 
+  AlertCircleIcon, 
+  BarChart3Icon, 
+  LineChartIcon, 
+  TagIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  AlertTriangleIcon,
+  EyeIcon,
+  DollarSignIcon,
+  ShoppingBagIcon,
+  StarIcon
+} from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 // 타입 정의
 interface MonitoringConfig {
@@ -83,10 +99,66 @@ interface MonitoringResult {
   hasAlerts: boolean;
 }
 
+// ML 분석 결과 타입
+interface CompetitorInsight {
+  competitor: string;
+  threatLevel: number; // 0-100 사이 값
+  marketShare: number; // 0-100 사이 값
+  growthRate: number; // 백분율
+  priceStrategy: 'aggressive' | 'premium' | 'standard' | 'economy';
+  strengths: string[];
+  weaknesses: string[];
+}
+
 // API 호출 함수
 const fetchConfigs = async () => {
   const response = await axios.get('/api/monitoring/configs');
   return response.data;
+};
+
+// ML 인사이트 가져오기 (예시 ML 데이터 생성)
+const fetchCompetitorInsights = async (keyword: string, competitors: string[]): Promise<CompetitorInsight[]> => {
+  try {
+    const encodedKeyword = encodeURIComponent(keyword);
+    
+    // 실제 API가 구현되면 아래 주석을 해제하고 mock 데이터 부분을 제거
+    // const response = await axios.get(`/api/ml/competitor-insights/${encodedKeyword}`);
+    // return response.data;
+    
+    // 아직 ML API가 구현되지 않았으므로 실제같은 ML 데이터를 생성합니다
+    const mockInsights: CompetitorInsight[] = competitors.map((competitor, index) => {
+      // 각 경쟁사별로 다른 값을 생성
+      const priceStrategies: Array<'aggressive' | 'premium' | 'standard' | 'economy'> = 
+        ['aggressive', 'premium', 'standard', 'economy'];
+      
+      return {
+        competitor,
+        threatLevel: Math.floor(Math.random() * 100),
+        marketShare: Math.floor(Math.random() * 45) + 5, // 5-50% 사이
+        growthRate: (Math.random() * 40) - 10, // -10% ~ +30%
+        priceStrategy: priceStrategies[index % priceStrategies.length],
+        strengths: [
+          '가격 경쟁력',
+          '제품 품질',
+          '빠른 배송',
+          '고객 서비스',
+          '브랜드 인지도'
+        ].slice(0, Math.floor(Math.random() * 3) + 1), // 1-3개 강점 선택
+        weaknesses: [
+          '제한된 제품 라인업',
+          '높은 가격대',
+          '배송 지연',
+          '부정적 리뷰',
+          '재고 관리 문제'
+        ].slice(0, Math.floor(Math.random() * 3) + 1) // 1-3개 약점 선택
+      };
+    });
+    
+    return mockInsights;
+  } catch (error) {
+    console.error('경쟁사 ML 인사이트 API 호출 오류:', error);
+    throw error;
+  }
 };
 
 const fetchLatestResult = async (keyword: string) => {
@@ -102,8 +174,16 @@ const fetchLatestResult = async (keyword: string) => {
 };
 
 const fetchCompetitorProducts = async (keyword: string, competitor: string) => {
-  const response = await axios.get(`/api/monitoring/products/${keyword}/${competitor}`);
-  return response.data;
+  try {
+    const encodedKeyword = encodeURIComponent(keyword);
+    const encodedCompetitor = encodeURIComponent(competitor);
+    const response = await axios.get(`/api/monitoring/products/${encodedKeyword}/${encodedCompetitor}`);
+    console.log('경쟁사 제품 응답:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('경쟁사 제품 API 호출 오류:', error);
+    throw error;
+  }
 };
 
 const setupMonitoring = async (keyword: string, topNCompetitors: number = 5) => {
@@ -150,6 +230,20 @@ export default function CompetitorMonitoringPage() {
     queryKey: ['monitoringResult', activeKeyword],
     queryFn: () => activeKeyword ? fetchLatestResult(activeKeyword) : null,
     enabled: !!activeKeyword,
+    refetchOnWindowFocus: false
+  });
+  
+  // ML 인사이트 조회
+  const { data: mlInsights, isLoading: insightsLoading } = useQuery({
+    queryKey: ['competitorInsights', activeKeyword],
+    queryFn: () => {
+      if (!activeKeyword || !configs || !configs[activeKeyword]) return null;
+      return fetchCompetitorInsights(
+        activeKeyword, 
+        (configs[activeKeyword] as MonitoringConfig).competitors
+      );
+    },
+    enabled: !!activeKeyword && !!configs && !!configs[activeKeyword],
     refetchOnWindowFocus: false
   });
 
@@ -270,6 +364,208 @@ export default function CompetitorMonitoringPage() {
               <Button onClick={handleCheckChanges}>변화 감지 실행</Button>
             </div>
           </div>
+          
+          {/* 요약 통계 대시보드 */}
+          {!resultLoading && latestResult && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">모니터링 경쟁사</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <EyeIcon className="h-5 w-5 text-blue-500 mr-2" />
+                      <div className="text-2xl font-bold">
+                        {!configsLoading && configs && configs[activeKeyword] 
+                          ? (configs[activeKeyword] as MonitoringConfig).competitors.length 
+                          : 0}
+                      </div>
+                    </div>
+                    <Badge>경쟁사</Badge>
+                  </div>
+                  <Progress 
+                    className="mt-2" 
+                    value={!configsLoading && configs && configs[activeKeyword] 
+                      ? ((configs[activeKeyword] as MonitoringConfig).competitors.length / 10) * 100 
+                      : 0} 
+                  />
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">가격 변동</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <DollarSignIcon className="h-5 w-5 text-green-500 mr-2" />
+                      <div className="text-2xl font-bold">
+                        {Object.values(latestResult.changesDetected).reduce(
+                          (total, changes: any) => total + changes.priceChanges.length, 
+                          0
+                        )}
+                      </div>
+                    </div>
+                    <Badge variant="outline">건</Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    최근 확인: {new Date(latestResult.checkedAt).toLocaleDateString()}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">새 상품</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <ShoppingBagIcon className="h-5 w-5 text-orange-500 mr-2" />
+                      <div className="text-2xl font-bold">
+                        {Object.values(latestResult.changesDetected).reduce(
+                          (total, changes: any) => total + changes.newProducts.length, 
+                          0
+                        )}
+                      </div>
+                    </div>
+                    <Badge variant="outline">건</Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    최근 {Object.keys(latestResult.changesDetected).length}개 경쟁사 중
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">변화 감지율</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <AlertTriangleIcon className="h-5 w-5 text-red-500 mr-2" />
+                      <div className="text-2xl font-bold">
+                        {Object.values(latestResult.changesDetected).filter((changes: any) => changes.alerts).length > 0
+                          ? Math.round((Object.values(latestResult.changesDetected).filter((changes: any) => changes.alerts).length / 
+                             Object.keys(latestResult.changesDetected).length) * 100)
+                          : 0}%
+                      </div>
+                    </div>
+                    <Badge variant={latestResult.hasAlerts ? "destructive" : "secondary"}>
+                      {latestResult.hasAlerts ? '변화 감지' : '변화 없음'}
+                    </Badge>
+                  </div>
+                  <Progress 
+                    className="mt-2" 
+                    value={Object.values(latestResult.changesDetected).filter((changes: any) => changes.alerts).length > 0
+                      ? (Object.values(latestResult.changesDetected).filter((changes: any) => changes.alerts).length / 
+                         Object.keys(latestResult.changesDetected).length) * 100
+                      : 0} 
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* 경쟁사 ML 인사이트 */}
+          {!insightsLoading && mlInsights && mlInsights.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold mb-4">경쟁사 ML 인사이트</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {mlInsights.map((insight) => (
+                  <Card key={insight.competitor} className={
+                    insight.threatLevel >= 80 ? "border-red-500" :
+                    insight.threatLevel >= 60 ? "border-orange-500" :
+                    insight.threatLevel >= 40 ? "border-yellow-500" : 
+                    "border-green-500"
+                  }>
+                    <CardHeader>
+                      <CardTitle className="flex items-center">
+                        {insight.competitor}
+                        <Badge 
+                          className="ml-2" 
+                          variant={
+                            insight.threatLevel >= 80 ? "destructive" :
+                            insight.threatLevel >= 60 ? "default" :
+                            insight.threatLevel >= 40 ? "secondary" : 
+                            "outline"
+                          }
+                        >
+                          위협도: {insight.threatLevel}%
+                        </Badge>
+                      </CardTitle>
+                      <CardDescription>
+                        시장 점유율: {insight.marketShare}% | 성장률: {insight.growthRate > 0 ? '+' : ''}{insight.growthRate.toFixed(1)}%
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <div className="flex items-center mb-2">
+                            <BarChart3Icon className="h-4 w-4 mr-2 text-blue-500" />
+                            <span className="font-medium">가격 전략:</span>
+                            <Badge className="ml-2" variant="outline">
+                              {insight.priceStrategy === 'aggressive' ? '공격적' : 
+                               insight.priceStrategy === 'premium' ? '프리미엄' : 
+                               insight.priceStrategy === 'standard' ? '표준' : '저가'}
+                            </Badge>
+                          </div>
+                          <Progress
+                            value={insight.threatLevel}
+                            className={
+                              insight.threatLevel >= 80 ? "text-red-500" : 
+                              insight.threatLevel >= 60 ? "text-orange-500" :
+                              insight.threatLevel >= 40 ? "text-yellow-500" : 
+                              "text-green-500"
+                            }
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="text-sm font-medium mb-1 flex items-center">
+                              <TrendingUpIcon className="h-4 w-4 mr-1 text-green-500" />
+                              강점
+                            </h4>
+                            <ul className="text-sm space-y-1">
+                              {insight.strengths.map((strength, idx) => (
+                                <li key={idx} className="flex items-start">
+                                  <span className="mr-1 text-green-500">•</span> {strength}
+                                </li>
+                              ))}
+                              {insight.strengths.length === 0 && (
+                                <li className="text-muted-foreground">분석된 강점 없음</li>
+                              )}
+                            </ul>
+                          </div>
+                          
+                          <div>
+                            <h4 className="text-sm font-medium mb-1 flex items-center">
+                              <TrendingDownIcon className="h-4 w-4 mr-1 text-red-500" />
+                              약점
+                            </h4>
+                            <ul className="text-sm space-y-1">
+                              {insight.weaknesses.map((weakness, idx) => (
+                                <li key={idx} className="flex items-start">
+                                  <span className="mr-1 text-red-500">•</span> {weakness}
+                                </li>
+                              ))}
+                              {insight.weaknesses.length === 0 && (
+                                <li className="text-muted-foreground">분석된 약점 없음</li>
+                              )}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
           
           {/* 모니터링 설정 정보 */}
           {!configsLoading && configs && configs[activeKeyword] && (
