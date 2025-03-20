@@ -478,8 +478,35 @@ export class NaverDataCollector {
           'esthermall.co.kr'
         ];
         
-        // 브랜드 URL인 경우 사전 처리
+        // 브랜드명 정규화 및 매핑
         let brandName = competitor;
+        
+        // 특정 브랜드명에 대한 매핑 (브랜드명 변형 처리)
+        const brandNameMapping: Record<string, string> = {
+          '닥터린': '닥터린',
+          '바디닥터': '바디닥터',
+          '내츄럴플러스': '내츄럴플러스',
+          '에스더몰': '에스더몰',
+          '안국건강': '안국건강',
+          '고려은단': '고려은단',
+          '뉴트리원': '뉴트리원',
+          '종근당건강': '종근당건강',
+          'GNM 자연의품격': 'GNM자연의품격',
+          '자연의품격': 'GNM자연의품격',
+          'GNM': 'GNM자연의품격',
+          'GNM자연의품격': 'GNM자연의품격',
+          '뉴트리데이': '뉴트리데이',
+          '주영엔에스': '주영엔에스',
+          '한미양행': '한미양행'
+        };
+        
+        // 브랜드 정확한 매핑
+        if (brandNameMapping[competitor]) {
+          brandName = brandNameMapping[competitor];
+          logger.info(`브랜드명 매핑 적용: ${competitor} → ${brandName}`);
+        }
+        
+        // 브랜드 URL인 경우 사전 처리
         if (brandStorePatterns.some(pattern => competitor.includes(pattern))) {
           // URL에서 브랜드명 추출 시도
           // brand.naver.com/브랜드명 패턴 처리
@@ -497,12 +524,37 @@ export class NaverDataCollector {
             brandName = '에스더몰';
             logger.info(`URL에서 브랜드명 추출: ${brandName}`);
           }
-          
-          // 기존 검색 전략을 수정하여 추출된 브랜드명 활용
-          searchStrategies.unshift(`${keyword} ${brandName}`);
-          searchStrategies.unshift(`${brandName} ${keyword}`);
-          searchStrategies.unshift(`${brandName}`);
         }
+        
+        // 브랜드별 특수 검색어 전략 추가
+        const specialSearchStrategies: Record<string, string[]> = {
+          '닥터린': ['닥터린 영양제', '닥터린 건강식품'],
+          '바디닥터': ['바디닥터 건강식품', '바디닥터 영양제'],
+          '내츄럴플러스': ['내츄럴플러스 비타민', '내츄럴플러스 건강기능식품'],
+          '에스더몰': ['에스더포뮬러', '에스더몰 영양제', '에스더 비타민'],
+          '안국건강': ['안국 영양제', '안국건강 루테인'],
+          '고려은단': ['고려은단 비타민', '고려은단 영양제'],
+          '뉴트리원': ['뉴트리원 비타민', '뉴트리원 프로바이오틱스'],
+          '종근당건강': ['종근당 건강', '종근당 영양제', '종근당건강 알티지'],
+          'GNM자연의품격': ['GNM 프리미엄', 'GNM 자연의품격', '자연의품격 건강식품'],
+          '뉴트리데이': ['뉴트리데이 비타민', '뉴트리데이 건강기능식품'],
+          '주영엔에스': ['주영엔에스 건강식품', '주영 비타민'],
+          '한미양행': ['한미 비타민', '한미양행 건강기능식품']
+        };
+        
+        // 특수 검색 전략 추가
+        if (specialSearchStrategies[brandName]) {
+          const strategies = specialSearchStrategies[brandName];
+          strategies.forEach(strategy => {
+            searchStrategies.unshift(`${strategy} ${keyword}`);
+          });
+        }
+        
+        // 기본 검색 전략을 추가
+        searchStrategies.unshift(`${keyword} ${brandName}`);
+        searchStrategies.unshift(`${brandName} ${keyword}`);
+        searchStrategies.unshift(`${brandName}`);
+        
 
         // 각 전략을 순차적으로 시도
         for (const searchQuery of searchStrategies) {
@@ -515,29 +567,126 @@ export class NaverDataCollector {
               // 1. 브랜드명 기반 필터링
               let filteredProducts = searchResult.products.filter((product: any) => {
                 const brand = product.brandName || '';
-                // 정확한 브랜드명 매칭 로직 추가
+                const title = product.title || '';
+                const mall = product.mall || '';
+                
+                // 브랜드 정규화
                 const normalizedBrand = brand.toLowerCase().replace(/\s+/g, '');
+                const normalizedTitle = title.toLowerCase().replace(/\s+/g, '');
+                const normalizedMall = mall.toLowerCase().replace(/\s+/g, '');
                 const normalizedCompetitor = brandName.toLowerCase().replace(/\s+/g, '');
                 
-                return !this.isExcludedSeller(brand) && 
-                       (normalizedBrand.includes(normalizedCompetitor) || 
-                        normalizedBrand.includes(competitor.toLowerCase().replace(/\s+/g, '')));
+                // 브랜드 별칭 (한국어 브랜드명 처리를 위한 추가 매핑)
+                const brandAliases: Record<string, string[]> = {
+                  '닥터린': ['닥터린', 'drlin', '닥터l', '닥터엘'],
+                  '바디닥터': ['바디닥터', 'bodydoctor', '바디dr', '바디doctor'],
+                  '내츄럴플러스': ['내츄럴플러스', '내추럴플러스', 'naturalplus', '네츄럴플러스'],
+                  '에스더몰': ['에스더몰', '에스더포뮬러', 'esthermall', 'estherformula'],
+                  '안국건강': ['안국건강', '안국', 'angukhealthcare', 'anguk'],
+                  '고려은단': ['고려은단', 'koreaeundan', '고려은행'],
+                  '뉴트리원': ['뉴트리원', 'nutri1', '뉴트리'],
+                  '종근당건강': ['종근당건강', '종근당', 'ckdhealthcare', 'ckd'],
+                  'GNM자연의품격': ['gnm자연의품격', 'gnm', '자연의품격', '지앤엠'],
+                  '뉴트리데이': ['뉴트리데이', 'nutriday', '뉴트리d'],
+                  '주영엔에스': ['주영엔에스', '주영', 'juyoungns', 'jooyoung'],
+                  '한미양행': ['한미양행', '한미', 'hanmi']
+                };
+                
+                // 해당 브랜드의 별칭 목록
+                const aliases = brandAliases[brandName] || [normalizedCompetitor];
+                
+                // 브랜드명, 판매자명, 제품명 중 하나에 브랜드명이나 별칭이 포함되는지 확인
+                const brandMatch = aliases.some(alias => 
+                  normalizedBrand.includes(alias) || 
+                  normalizedMall.includes(alias) ||
+                  // 제품명은 브랜드명이 명확하게 드러나는 경우에만 매칭 (오탐 방지)
+                  (normalizedTitle.includes(alias) && 
+                   (normalizedTitle.startsWith(alias) || 
+                    normalizedTitle.includes(` ${alias}`) || 
+                    normalizedTitle.includes(`[${alias}]`)))
+                );
+                
+                return !this.isExcludedSeller(brand) && brandMatch;
               });
               
-              // 브랜드명으로 찾지 못한 경우 제품명에서 검색
+              // 브랜드명으로 찾지 못한 경우 제품명에서 더 광범위하게 검색
               if (filteredProducts.length === 0) {
+                const brandAliases: Record<string, string[]> = {
+                  '닥터린': ['닥터린', 'drlin', '닥터l', '닥터엘'],
+                  '바디닥터': ['바디닥터', 'bodydoctor', '바디dr', '바디doctor'],
+                  '내츄럴플러스': ['내츄럴플러스', '내추럴플러스', 'naturalplus', '네츄럴플러스'],
+                  '에스더몰': ['에스더몰', '에스더포뮬러', 'esthermall', 'estherformula'],
+                  '안국건강': ['안국건강', '안국', 'angukhealthcare', 'anguk'],
+                  '고려은단': ['고려은단', 'koreaeundan', '고려은행'],
+                  '뉴트리원': ['뉴트리원', 'nutri1', '뉴트리'],
+                  '종근당건강': ['종근당건강', '종근당', 'ckdhealthcare', 'ckd'],
+                  'GNM자연의품격': ['gnm자연의품격', 'gnm', '자연의품격', '지앤엠'],
+                  '뉴트리데이': ['뉴트리데이', 'nutriday', '뉴트리d'],
+                  '주영엔에스': ['주영엔에스', '주영', 'juyoungns', 'jooyoung'],
+                  '한미양행': ['한미양행', '한미', 'hanmi']
+                };
+                
+                // 해당 브랜드의 별칭 목록
+                const aliases = brandAliases[brandName] || [
+                  brandName.toLowerCase().replace(/\s+/g, ''),
+                  competitor.toLowerCase().replace(/\s+/g, '')
+                ];
+                
                 filteredProducts = searchResult.products.filter((product: any) => {
                   const title = product.title || '';
                   const brand = product.brandName || '';
+                  const mallName = product.mall || '';
                   
-                  // 제품명에 경쟁사 이름이 포함되어 있고, 제외 판매자가 아닌 경우
+                  // 제품명이나 판매자명에 경쟁사 이름이 포함되어 있고, 제외 판매자가 아닌 경우
                   const normalizedTitle = title.toLowerCase().replace(/\s+/g, '');
-                  const normalizedCompetitor = brandName.toLowerCase().replace(/\s+/g, '');
+                  const normalizedMall = mallName.toLowerCase().replace(/\s+/g, '');
                   
-                  return !this.isExcludedSeller(brand) && 
-                         (normalizedTitle.includes(normalizedCompetitor) ||
-                          normalizedTitle.includes(competitor.toLowerCase().replace(/\s+/g, '')));
+                  // 별칭 중 하나라도 포함되면 매칭
+                  const hasBrandAlias = aliases.some(alias => 
+                    normalizedTitle.includes(alias) || normalizedMall.includes(alias)
+                  );
+                  
+                  return !this.isExcludedSeller(brand) && hasBrandAlias;
                 });
+                
+                // 결과가 없으면 추가 검색 전략 - 키워드와 브랜드를 별도로 확인
+                if (filteredProducts.length === 0) {
+                  // 키워드 관련 제품을 먼저 찾고, 그 중에서 어느 정도 브랜드명과 유사한 것 선택
+                  const keywordProducts = searchResult.products.filter((product: any) => {
+                    const title = product.title || '';
+                    return title.toLowerCase().includes(keyword.toLowerCase());
+                  }).slice(0, 20); // 최대 20개만 선택
+                  
+                  if (keywordProducts.length > 0) {
+                    // 유사도 점수 계산 (간단한 방식)
+                    const scoredProducts = keywordProducts.map(product => {
+                      const title = product.title || '';
+                      const brand = product.brandName || '';
+                      const mall = product.mall || '';
+                      
+                      let score = 0;
+                      
+                      // 브랜드명이나 별칭이 title이나 mall에 포함되면 점수 증가
+                      aliases.forEach(alias => {
+                        if (title.toLowerCase().includes(alias)) score += 2;
+                        if (brand.toLowerCase().includes(alias)) score += 3;
+                        if (mall.toLowerCase().includes(alias)) score += 3;
+                      });
+                      
+                      return { product, score };
+                    });
+                    
+                    // 점수 기준 정렬 후 일정 점수 이상만 선택
+                    const qualifiedProducts = scoredProducts
+                      .filter(item => item.score >= 2) // 최소 점수 이상만
+                      .sort((a, b) => b.score - a.score)
+                      .map(item => item.product);
+                    
+                    if (qualifiedProducts.length > 0) {
+                      filteredProducts = qualifiedProducts;
+                    }
+                  }
+                }
               }
               
               // 결과가 있으면 반환

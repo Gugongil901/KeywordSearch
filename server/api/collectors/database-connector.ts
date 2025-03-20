@@ -42,7 +42,8 @@ export class DatabaseConnector {
   private setupSampleMonitoringConfigs(): void {
     // 샘플 키워드 목록
     const sampleKeywords = [
-      '강아지간식', '스키니진', '노트북', '비타민', '여행가방', '무선이어폰'
+      '비타민', '종합비타민', '프로바이오틱스', '루테인', '비타민B', '비타민C', 
+      '비타민D', '글루코사민', '오메가3', '콜라겐'
     ];
     
     // 각 키워드에 대한 샘플 모니터링 구성 추가
@@ -50,9 +51,9 @@ export class DatabaseConnector {
       if (!this.monitoringConfigs.has(keyword)) {
         // 샘플 경쟁사 목록
         const competitors = [
-          '브랜드스토리', '건강한약국', '웰니스마트', '헬스케어몰', 
-          '비타민하우스', '뉴트리원', '내츄럴플러스', '더건강한', 
-          '비타플러스', '제이팜'
+          '닥터린', '바디닥터', '내츄럴플러스', '에스더몰', '안국건강', 
+          '고려은단', '뉴트리원', '종근당건강', 'GNM 자연의품격', '뉴트리데이', 
+          '주영엔에스', '한미양행'
         ];
         
         // 모니터링 구성 생성
@@ -112,23 +113,35 @@ export class DatabaseConnector {
       // 제품 이름 생성
       let productName = '';
       switch (keyword) {
-        case '강아지간식':
-          productName = i === 0 ? `프리미엄 강아지 육포 (대용량)` : `오가닉 강아지 비스킷 세트`;
-          break;
-        case '스키니진':
-          productName = i === 0 ? `클래식 스키니진 (블랙)` : `프리미엄 데님 스키니`;
-          break;
-        case '노트북':
-          productName = i === 0 ? `울트라 슬림 노트북 15인치` : `게이밍 노트북 프로`;
-          break;
         case '비타민':
           productName = i === 0 ? `종합 비타민 (90일분)` : `비타민C 1000mg (60정)`;
           break;
-        case '여행가방':
-          productName = i === 0 ? `여행용 캐리어 24인치` : `여행용 백팩 방수`;
+        case '종합비타민':
+          productName = i === 0 ? `데일리 종합비타민 (120정)` : `프리미엄 멀티비타민 미네랄`;
           break;
-        case '무선이어폰':
-          productName = i === 0 ? `프리미엄 블루투스 이어폰` : `액티브 노이즈 캔슬링 이어버드`;
+        case '프로바이오틱스':
+          productName = i === 0 ? `장건강 프로바이오틱스 (1조 유산균)` : `19종 유산균 프로바이오틱스`;
+          break;
+        case '루테인':
+          productName = i === 0 ? `눈건강 루테인 지아잔틴` : `고함량 루테인 오메가3 세트`;
+          break;
+        case '비타민B':
+          productName = i === 0 ? `비타민B 콤플렉스 (8종)` : `액티브 B 컴플렉스`;
+          break;
+        case '비타민C':
+          productName = i === 0 ? `고함량 비타민C 2000mg` : `천연 비타민C (로즈힙 추출)`;
+          break;
+        case '비타민D':
+          productName = i === 0 ? `비타민D 5000IU (365일분)` : `칼슘 마그네슘 비타민D 세트`;
+          break;
+        case '글루코사민':
+          productName = i === 0 ? `관절건강 글루코사민 (MSM+콘드로이친)` : `트리플 글루코사민 1500mg`;
+          break;
+        case '오메가3':
+          productName = i === 0 ? `알래스카 오메가3 (rTG타입)` : `초임계 알티지 오메가3`;
+          break;
+        case '콜라겐':
+          productName = i === 0 ? `피부건강 저분자 콜라겐` : `해양 콜라겐 펩타이드 파우더`;
           break;
         default:
           productName = `${competitor} ${keyword} 제품 ${i + 1}`;
@@ -148,15 +161,69 @@ export class DatabaseConnector {
         'https://shopping-phinf.pstatic.net/main_3440789/34407891818.20230302181305.jpg'
       ];
       
+      // 특정 제품 카테고리별 가격 범위 조정
+      let minPrice = 10000;
+      let maxPrice = 50000;
+      
+      // 카테고리별 가격 범위 조정
+      switch (keyword) {
+        case '비타민':
+        case '비타민C':
+        case '비타민B':
+        case '비타민D':
+          minPrice = 15000;
+          maxPrice = 45000;
+          break;
+        case '종합비타민':
+          minPrice = 25000;
+          maxPrice = 65000;
+          break;
+        case '프로바이오틱스':
+          minPrice = 30000;
+          maxPrice = 75000;
+          break;
+        case '루테인':
+          minPrice = 28000;
+          maxPrice = 70000;
+          break;
+        case '글루코사민':
+          minPrice = 35000;
+          maxPrice = 85000;
+          break;
+        case '오메가3':
+          minPrice = 30000;
+          maxPrice = 80000;
+          break;
+        case '콜라겐':
+          minPrice = 28000;
+          maxPrice = 75000;
+          break;
+      }
+      
+      // 브랜드별 프리미엄 가격 조정
+      const premiumBrands = ['종근당건강', '고려은단', '한미양행', 'GNM 자연의품격'];
+      if (premiumBrands.includes(competitor)) {
+        minPrice += 8000;
+        maxPrice += 15000;
+      }
+      
+      // 리뷰 수 조정 - 인기 브랜드는 더 많은 리뷰
+      let reviewMin = 10;
+      let reviewMax = 500;
+      if (premiumBrands.includes(competitor)) {
+        reviewMin = 50;
+        reviewMax = 1200;
+      }
+      
       products.push({
         productId,
         name: `${competitor} ${productName}`,
-        price: Math.floor(Math.random() * 50000) + 10000,
-        reviews: Math.floor(Math.random() * 500) + 10,
+        price: Math.floor(Math.random() * (maxPrice - minPrice)) + minPrice,
+        reviews: Math.floor(Math.random() * (reviewMax - reviewMin)) + reviewMin,
         rank: Math.floor(Math.random() * 50) + 1,
         // 여러 이미지 중 하나를 선택하여 사용 (제품ID 기반 고정값)
         image: naverImages[Math.abs(productId.charCodeAt(0) + productId.charCodeAt(1)) % naverImages.length],
-        url: `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(keyword)}`,
+        url: `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(keyword)}+${encodeURIComponent(competitor)}`,
         collectedAt: new Date().toISOString()
       });
     }
