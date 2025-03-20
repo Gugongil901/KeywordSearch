@@ -610,7 +610,7 @@ export default function CompetitorMonitoring() {
               <SelectValue placeholder="키워드 선택" />
             </SelectTrigger>
             <SelectContent>
-              {keywordsList.map((keyword) => (
+              {configs && Object.keys(configs).map((keyword) => (
                 <SelectItem key={keyword} value={keyword}>{keyword}</SelectItem>
               ))}
             </SelectContent>
