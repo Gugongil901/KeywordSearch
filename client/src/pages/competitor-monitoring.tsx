@@ -138,6 +138,14 @@ interface CompetitorInsight {
     impact: string;
     recommendations: string[];
   }>;
+  representativeProduct: {
+    name: string;
+    price: number;
+    image: string;
+    url: string;
+    reviews: number;
+    rank: number;
+  };
 }
 
 // API 호출 함수
@@ -217,6 +225,16 @@ const fetchCompetitorInsights = async (keyword: string, competitors: string[]): 
         '배송 지연'
       ].slice(0, (index % 2) + 1); // 1-2개 약점 선택
       
+      // 대표 제품 정보 생성 (실제 API에서는 필요한 정보로 대체)
+      const representativeProduct = {
+        name: `${competitor} 대표 상품 ${index + 1}`,
+        price: Math.floor(Math.random() * 50000) + 10000,
+        image: `https://source.unsplash.com/collection/3861531/160x160?${index}`, // 실제 상품 이미지
+        url: `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(competitor)}`,
+        reviews: Math.floor(Math.random() * 1000) + 50,
+        rank: index + 1
+      };
+      
       return {
         competitor,
         threatLevel: Math.floor(Math.random() * 100),
@@ -232,7 +250,8 @@ const fetchCompetitorInsights = async (keyword: string, competitors: string[]): 
         weaknessesDetails: selectedWeaknesses.reduce((acc, weakness) => {
           acc[weakness] = weaknessesDetails[weakness as keyof typeof weaknessesDetails];
           return acc;
-        }, {} as Record<string, any>)
+        }, {} as Record<string, any>),
+        representativeProduct // 대표 제품 정보 추가
       };
     });
     
@@ -898,14 +917,26 @@ export default function CompetitorMonitoringPage() {
                             {/* 대표 제품 이미지 */}
                             <div className="flex-shrink-0 w-40">
                               <ProductImage 
-                                src={`https://source.unsplash.com/featured/?${encodeURIComponent(insight.competitor)},product`} 
-                                alt={`${insight.competitor} 대표 제품`}
+                                src={insight.representativeProduct.image}
+                                alt={insight.representativeProduct.name}
                                 width={160}
                                 height={160}
-                                productName={`${insight.competitor} 대표 제품`}
-                                productUrl={'https://search.shopping.naver.com/search/all?query=' + encodeURIComponent(insight.competitor)}
+                                productName={insight.representativeProduct.name}
+                                productUrl={insight.representativeProduct.url}
                                 isClickable={true}
                               />
+                              <div className="text-xs text-center mt-2">
+                                <div className="font-medium">{insight.representativeProduct.name}</div>
+                                <div className="text-muted-foreground">{insight.representativeProduct.price.toLocaleString()}원</div>
+                                <div className="flex items-center justify-center gap-2 mt-1">
+                                  <span className="flex items-center text-yellow-500">
+                                    <StarIcon className="h-3 w-3 mr-0.5" />
+                                    {insight.representativeProduct.reviews}
+                                  </span>
+                                  <span>|</span>
+                                  <span>순위: {insight.representativeProduct.rank}위</span>
+                                </div>
+                              </div>
                             </div>
                             
                             {/* 레이더 차트 */}
