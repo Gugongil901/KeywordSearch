@@ -1192,12 +1192,15 @@ export default function CompetitorMonitoring() {
                   <div className="h-56 mb-4">
                     <StrengthWeaknessChart 
                       competitor={COMPETITOR_INSIGHTS_DATA[selectedCompetitor].competitor}
-                      data={{
-                        strengths: COMPETITOR_INSIGHTS_DATA[selectedCompetitor].strengths.length,
-                        weaknesses: COMPETITOR_INSIGHTS_DATA[selectedCompetitor].weaknesses.length,
-                        threatLevel: COMPETITOR_INSIGHTS_DATA[selectedCompetitor].threatLevel / 100,
-                        marketShare: COMPETITOR_INSIGHTS_DATA[selectedCompetitor].marketShare / 100,
-                        growthRate: COMPETITOR_INSIGHTS_DATA[selectedCompetitor].growthRate / 30 // 정규화
+                      strengthsData={{
+                        '강점 수': COMPETITOR_INSIGHTS_DATA[selectedCompetitor].strengths.length * 20,
+                        '위협도': COMPETITOR_INSIGHTS_DATA[selectedCompetitor].threatLevel,
+                        '시장점유율': COMPETITOR_INSIGHTS_DATA[selectedCompetitor].marketShare
+                      }}
+                      weaknessesData={{
+                        '약점 수': COMPETITOR_INSIGHTS_DATA[selectedCompetitor].weaknesses.length * 20,
+                        '성장률': COMPETITOR_INSIGHTS_DATA[selectedCompetitor].growthRate > 0 
+                          ? COMPETITOR_INSIGHTS_DATA[selectedCompetitor].growthRate : 0
                       }}
                     />
                   </div>
@@ -1500,11 +1503,35 @@ export default function CompetitorMonitoring() {
                       color: 'cyan'
                     }
                   ].map((item, i) => (
-                    <div key={i} className={`p-4 bg-${item.color}-50 rounded-lg`}>
-                      <h3 className={`font-medium text-${item.color}-800 mb-2`}>{item.brand}</h3>
+                    <div key={i} className={`p-4 rounded-lg ${
+                      item.color === 'blue' ? 'bg-blue-50' :
+                      item.color === 'green' ? 'bg-green-50' :
+                      item.color === 'purple' ? 'bg-purple-50' :
+                      item.color === 'red' ? 'bg-red-50' :
+                      item.color === 'yellow' ? 'bg-yellow-50' :
+                      item.color === 'indigo' ? 'bg-indigo-50' :
+                      item.color === 'cyan' ? 'bg-cyan-50' : 'bg-gray-50'
+                    }`}>
+                      <h3 className={`font-medium mb-2 ${
+                      item.color === 'blue' ? 'text-blue-800' :
+                      item.color === 'green' ? 'text-green-800' :
+                      item.color === 'purple' ? 'text-purple-800' :
+                      item.color === 'red' ? 'text-red-800' :
+                      item.color === 'yellow' ? 'text-yellow-800' :
+                      item.color === 'indigo' ? 'text-indigo-800' :
+                      item.color === 'cyan' ? 'text-cyan-800' : 'text-gray-800'
+                    }`}>{item.brand}</h3>
                       <div className="flex flex-wrap gap-2">
                         {item.keywords.map((keyword, j) => (
-                          <Badge key={j} variant="outline" className={`bg-${item.color}-100 text-${item.color}-700 border-${item.color}-200`}>
+                          <Badge key={j} variant="outline" className={
+                            item.color === 'blue' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                            item.color === 'green' ? 'bg-green-100 text-green-700 border-green-200' :
+                            item.color === 'purple' ? 'bg-purple-100 text-purple-700 border-purple-200' :
+                            item.color === 'red' ? 'bg-red-100 text-red-700 border-red-200' :
+                            item.color === 'yellow' ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                            item.color === 'indigo' ? 'bg-indigo-100 text-indigo-700 border-indigo-200' :
+                            item.color === 'cyan' ? 'bg-cyan-100 text-cyan-700 border-cyan-200' : 'bg-gray-100 text-gray-700 border-gray-200'
+                          }>
                             {keyword}
                           </Badge>
                         ))}
