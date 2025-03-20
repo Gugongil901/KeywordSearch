@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import * as fs from "fs";
 
 const app = express();
 app.use(express.json());
@@ -75,13 +76,22 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
+  // 모든 환경에서 Vite 설정을 사용하도록 수정
+  // (Replit 환경에서는 NODE_ENV가 설정되지 않을 수 있음)
+  // 운영 빌드가 있는 경우에만 정적 파일 서빙, 그렇지 않으면 Vite 개발 서버 사용
+  try {
+    const hasDistBuild = fs.existsSync('./dist/public/index.html');
+    if (process.env.NODE_ENV === 'production' && hasDistBuild) {
+      console.log('프로덕션 모드: 정적 파일 서빙');
+      serveStatic(app);
+    } else {
+      console.log('개발 모드: Vite 개발 서버 사용');
+      await setupVite(app, server);
+    }
+  } catch (error) {
+    console.error('Vite 설정 오류:', error);
+    // 오류 발생 시 Vite 설정 시도
     await setupVite(app, server);
-  } else {
-    serveStatic(app);
   }
 
   // Replit 환경에서 포트 설정 로직 개선

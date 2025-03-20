@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>테스트 페이지</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      h1 {
+        color: #2563eb;
+      }
+      .card {
+        background: #f0f9ff;
+        border: 1px solid #bae6fd;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+      .status {
+        padding: 8px 12px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-right: 10px;
+      }
+      .success {
+        background: #dcfce7;
+        color: #166534;
+      }
+      .error {
+        background: #fee2e2;
+        color: #b91c1c;
+      }
+      button {
+        background: #2563eb;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background: #1d4ed8;
+      }
+      pre {
+        background: #f1f5f9;
+        padding: 12px;
+        border-radius: 4px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>키워드 스카우터 테스트 페이지</h1>
+    
+    <div class="card">
+      <h2>서버 상태 확인</h2>
+      <div id="serverStatus">확인 중...</div>
+      <button onclick="checkServerStatus()">상태 확인</button>
+      <pre id="statusResponse"></pre>
+    </div>
+    
+    <div class="card">
+      <h2>React 앱 상태</h2>
+      <p>메인 React 앱이 로드되지 않아 테스트 페이지를 표시하고 있습니다.</p>
+      <button onclick="window.location.href='/'">React 앱으로 이동</button>
+    </div>
+    
+    <div class="card">
+      <h2>시스템 정보</h2>
+      <ul>
+        <li>브라우저: <span id="browserInfo"></span></li>
+        <li>현재 URL: <span id="currentUrl"></span></li>
+        <li>현재 시간: <span id="currentTime"></span></li>
+      </ul>
+    </div>
+    
+    <script>
+      // 브라우저 정보 표시
+      document.getElementById('browserInfo').textContent = navigator.userAgent;
+      document.getElementById('currentUrl').textContent = window.location.href;
+      document.getElementById('currentTime').textContent = new Date().toLocaleString();
+      
+      // 서버 상태 확인
+      async function checkServerStatus() {
+        try {
+          const statusElement = document.getElementById('serverStatus');
+          const responseElement = document.getElementById('statusResponse');
+          
+          statusElement.innerHTML = '확인 중...';
+          responseElement.textContent = '';
+          
+          // API 요청
+          const response = await fetch('/api/system/status');
+          const data = await response.json();
+          
+          // 응답 표시
+          if (response.ok) {
+            statusElement.innerHTML = '<span class="status success">정상</span> 서버가 응답합니다.';
+            responseElement.textContent = JSON.stringify(data, null, 2);
+          } else {
+            statusElement.innerHTML = '<span class="status error">오류</span> 서버 응답에 문제가 있습니다.';
+            responseElement.textContent = JSON.stringify(data, null, 2);
+          }
+        } catch (error) {
+          document.getElementById('serverStatus').innerHTML = 
+            '<span class="status error">연결 실패</span> 서버에 연결할 수 없습니다.';
+          document.getElementById('statusResponse').textContent = error.toString();
+        }
+      }
+      
+      // 페이지 로드 시 자동으로 서버 상태 확인
+      checkServerStatus();
+      
+      // 5초마다 시간 업데이트
+      setInterval(() => {
+        document.getElementById('currentTime').textContent = new Date().toLocaleString();
+      }, 5000);
+    </script>
+  </body>
+</html>

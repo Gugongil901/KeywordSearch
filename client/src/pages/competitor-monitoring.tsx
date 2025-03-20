@@ -197,6 +197,7 @@ interface CompetitorInsight {
     reviews: number;
     rank: number;
     productId: string;
+    collectedAt: string;
   };
 }
 
@@ -320,7 +321,8 @@ const COMPETITOR_INSIGHTS_DATA: Record<string, CompetitorInsight> = {
       url: 'https://smartstore.naver.com/drlin/products/4695586207',
       reviews: 1203,
       rank: 1,
-      productId: 'drlin-omega3'
+      productId: 'drlin-omega3',
+      collectedAt: new Date().toISOString()
     }
   },
   'naturalplus': {
@@ -378,7 +380,8 @@ const COMPETITOR_INSIGHTS_DATA: Record<string, CompetitorInsight> = {
       url: 'https://smartstore.naver.com/enatural/products/5361485552',
       reviews: 1543,
       rank: 1,
-      productId: 'naturalplus-lutein'
+      productId: 'naturalplus-lutein',
+      collectedAt: new Date().toISOString()
     }
   },
   'esthermall': {
@@ -436,7 +439,8 @@ const COMPETITOR_INSIGHTS_DATA: Record<string, CompetitorInsight> = {
       url: 'https://smartstore.naver.com/esthermall/products/4866324240',
       reviews: 824,
       rank: 1,
-      productId: 'esther-multivit'
+      productId: 'esther-multivit',
+      collectedAt: new Date().toISOString()
     }
   },
   'yuhan': {
@@ -494,7 +498,8 @@ const COMPETITOR_INSIGHTS_DATA: Record<string, CompetitorInsight> = {
       url: 'https://smartstore.naver.com/yuhan/products/5023613090',
       reviews: 5387,
       rank: 1,
-      productId: 'yuhan-omega3'
+      productId: 'yuhan-omega3',
+      collectedAt: new Date().toISOString()
     }
   }
 };
