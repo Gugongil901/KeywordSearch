@@ -1309,60 +1309,74 @@ export default function CompetitorMonitoring() {
           )}
           
           {/* 경쟁사 ML 인사이트 */}
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-4">
-              경쟁사 ML 인사이트
-              {insightsLoading && <span className="text-sm text-muted-foreground ml-2">(로딩 중...)</span>}
-              {insightsError && <span className="text-sm text-red-500 ml-2">(데이터 로드 실패 - <Button variant="link" size="sm" onClick={() => refetchInsights && refetchInsights()} className="p-0 h-auto text-sm text-blue-500">재시도</Button>)</span>}
-            </h3>
+          <div className="mb-5">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-lg font-semibold flex items-center">
+                <LineChartIcon className="h-4 w-4 mr-2 text-blue-500" />
+                경쟁사 ML 인사이트
+                {insightsLoading && <span className="text-xs text-muted-foreground ml-2">(로딩 중...)</span>}
+                {insightsError && <span className="text-xs text-red-500 ml-2">(로드 실패)</span>}
+              </h3>
+              {insightsError && 
+                <Button variant="outline" size="sm" onClick={() => refetchInsights && refetchInsights()} className="h-7 text-xs">
+                  <RefreshCcw className="h-3 w-3 mr-1" />
+                  다시 시도
+                </Button>
+              }
+            </div>
             
             {insightsLoading && (
-              <div className="flex justify-center items-center p-8">
+              <div className="flex justify-center items-center p-6 bg-gray-50 rounded-lg">
                 <div className="animate-pulse flex flex-col items-center">
-                  <div className="h-12 w-12 rounded-full bg-gray-200 mb-2"></div>
-                  <div className="h-4 w-32 bg-gray-200 mb-2 rounded"></div>
-                  <div className="h-2 w-24 bg-gray-200 rounded"></div>
+                  <div className="h-10 w-10 rounded-full bg-gray-200 mb-2"></div>
+                  <div className="h-3 w-28 bg-gray-200 mb-2 rounded"></div>
+                  <div className="h-2 w-20 bg-gray-200 rounded"></div>
                 </div>
               </div>
             )}
             
             {!insightsLoading && (!mlInsights || mlInsights.length === 0) && (
-              <div className="text-center p-8 border border-dashed rounded-lg">
-                <InfoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                <p className="text-muted-foreground">ML 인사이트를 생성하는 중 오류가 발생했습니다.</p>
-                <Button variant="outline" size="sm" onClick={() => refetchInsights && refetchInsights()} className="mt-2">
+              <div className="text-center p-6 border border-dashed rounded-lg bg-gray-50">
+                <InfoIcon className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">ML 인사이트를 생성하는 중 오류가 발생했습니다.</p>
+                <Button variant="outline" size="sm" onClick={() => refetchInsights && refetchInsights()} className="mt-2 h-7 text-xs">
+                  <RefreshCcw className="h-3 w-3 mr-1" />
                   다시 시도
                 </Button>
               </div>
             )}
             
             {!insightsLoading && mlInsights && mlInsights.length > 0 && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ maxHeight: "600px", overflowY: "auto" }}>
-                {mlInsights.slice(0, 10).map((insight) => (
-                  <Card key={insight.competitor} className={
-                    insight.threatLevel >= 80 ? "border-red-500" :
-                    insight.threatLevel >= 60 ? "border-orange-500" :
-                    insight.threatLevel >= 40 ? "border-yellow-500" : 
-                    "border-green-500"
-                  }>
-                    <CardHeader>
-                      <CardTitle className="flex items-center">
-                        {insight.competitor}
-                        <Badge 
-                          className="ml-2" 
-                          variant={
-                            insight.threatLevel >= 80 ? "destructive" :
-                            insight.threatLevel >= 60 ? "default" :
-                            insight.threatLevel >= 40 ? "secondary" : 
-                            "outline"
-                          }
-                        >
-                          위협도: {insight.threatLevel}%
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>
-                        시장 점유율: {insight.marketShare}% | 성장률: {insight.growthRate > 0 ? '+' : ''}{insight.growthRate.toFixed(1)}%
-                      </CardDescription>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ maxHeight: "550px", overflowY: "auto" }}>
+                {mlInsights.slice(0, 12).map((insight) => (
+                  <Card key={insight.competitor} className="shadow-sm hover:shadow-md transition-shadow overflow-hidden border-t-4" style={{
+                    borderTopColor: insight.threatLevel >= 80 ? 'rgb(239, 68, 68)' : 
+                                    insight.threatLevel >= 60 ? 'rgb(249, 115, 22)' : 
+                                    insight.threatLevel >= 40 ? 'rgb(234, 179, 8)' : 
+                                    'rgb(34, 197, 94)'
+                  }}>
+                    <CardHeader className="px-4 py-3 pb-0">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <CardTitle className="text-base font-medium flex items-center">
+                            {insight.competitor}
+                            <Badge 
+                              className="ml-2 text-xs px-2 py-0" 
+                              variant={
+                                insight.threatLevel >= 80 ? "destructive" :
+                                insight.threatLevel >= 60 ? "default" :
+                                insight.threatLevel >= 40 ? "secondary" : 
+                                "outline"
+                              }
+                            >
+                              위협도: {insight.threatLevel}%
+                            </Badge>
+                          </CardTitle>
+                          <CardDescription className="text-xs mt-1">
+                            시장 점유율: {insight.marketShare}% | 성장률: {insight.growthRate > 0 ? '+' : ''}{insight.growthRate.toFixed(1)}%
+                          </CardDescription>
+                        </div>
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
