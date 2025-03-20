@@ -191,13 +191,42 @@ export default function CompetitorMonitoring() {
       
       const data = await response.json();
       
-      if (!data || !data.products || !Array.isArray(data.products)) {
+      // API 응답 형식 확인 및 로깅
+      if (!data) {
+        console.warn(`API 응답이 비어있습니다`);
+        return [];
+      }
+      
+      // 배열이 직접 반환되는 경우와 products 필드에 있는 경우 모두 처리
+      const productsArray = Array.isArray(data) ? data : 
+                           (data.products && Array.isArray(data.products)) ? data.products : null;
+      
+      if (!productsArray) {
         console.warn(`API 응답에 제품 데이터가 없거나 형식이 잘못됨: `, data);
         return [];
       }
       
-      console.log(`${competitor} 제품 데이터 수신 완료: ${data.products.length}개`);
-      return data.products as CompetitorProduct[];
+      console.log(`${competitor} 제품 데이터 수신 완료: ${productsArray.length}개`);
+      
+      // 필드명 매핑 처리 (id → productId, reviews → reviewCount 등)
+      const mappedProducts: CompetitorProduct[] = productsArray.map(item => {
+        // 필수값이 없는 경우 필터링을 위해 null 반환
+        if (!item) return null;
+        
+        return {
+          productId: item.productId || item.id || `unknown-${Math.random().toString(36).substring(2, 10)}`,
+          name: item.name || item.title || `${competitor} 제품`,
+          price: typeof item.price === 'number' ? item.price : 0,
+          reviews: typeof item.reviews === 'number' ? item.reviews : 
+                  typeof item.reviewCount === 'number' ? item.reviewCount : 0,
+          rank: typeof item.rank === 'number' ? item.rank : 0,
+          image: item.image || undefined,
+          url: item.url || item.productUrl || undefined,
+          collectedAt: item.collectedAt || new Date().toISOString()
+        };
+      }).filter(item => item !== null) as CompetitorProduct[];
+      
+      return mappedProducts;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
       console.error(`경쟁사 제품 가져오기 실패 (${competitor}): ${errorMessage}`, error);
