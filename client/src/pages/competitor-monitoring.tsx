@@ -48,6 +48,9 @@ import {
   ShieldAlertIcon,
   ListChecksIcon,
   StarIcon,
+  XCircleIcon,
+  TrashIcon,
+  XIcon,
   PieChartIcon,
   ShoppingCartIcon
 } from "lucide-react";
@@ -776,6 +779,7 @@ export default function CompetitorMonitoringPage() {
   const [activeKeyword, setActiveKeyword] = useState<string | null>(null);
   const [setupStatus, setSetupStatus] = useState<string | null>(null);
   const [checkStatus, setCheckStatus] = useState<string | null>(null);
+  const [removeKeywordLoading, setRemoveKeywordLoading] = useState<string | null>(null);
   
   // 대화상자 상태 관리
   const [selectedInsight, setSelectedInsight] = useState<CompetitorInsight | null>(null);
@@ -849,6 +853,38 @@ export default function CompetitorMonitoringPage() {
       console.error('변화 감지 오류:', error);
     }
   };
+  
+  // 키워드 삭제 함수
+  const handleRemoveKeyword = async (keywordToRemove: string) => {
+    if (removeKeywordLoading === keywordToRemove) return;
+    
+    try {
+      setRemoveKeywordLoading(keywordToRemove);
+      console.log(`키워드 삭제 요청: ${keywordToRemove}`);
+      
+      // 실제 환경에서는 API 호출
+      // await axios.delete(`/api/monitoring/configs/${encodeURIComponent(keywordToRemove)}`);
+      
+      // API가 없는 상태에서는 메모리에서만 삭제
+      const newConfigs = { ...configs };
+      delete newConfigs[keywordToRemove];
+      
+      // 현재 활성 키워드가 삭제된 키워드인 경우 다른 키워드로 변경
+      if (activeKeyword === keywordToRemove) {
+        const remainingKeywords = Object.keys(newConfigs);
+        setActiveKeyword(remainingKeywords.length > 0 ? remainingKeywords[0] : null);
+      }
+      
+      // 설정 목록 갱신
+      refetchConfigs();
+      setRemoveKeywordLoading(null);
+      
+      console.log(`키워드 삭제 완료: ${keywordToRemove}`);
+    } catch (error) {
+      console.error(`키워드 삭제 오류(${keywordToRemove}):`, error);
+      setRemoveKeywordLoading(null);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">
@@ -902,14 +938,25 @@ export default function CompetitorMonitoringPage() {
           <h2 className="text-xl font-semibold mb-2">모니터링 중인 키워드</h2>
           <div className="flex flex-wrap gap-2">
             {Object.entries(configs).map(([keyword, config]: [string, any]) => (
-              <Badge 
-                key={keyword} 
-                variant={activeKeyword === keyword ? "default" : "outline"}
-                className="cursor-pointer text-base py-1 px-3"
-                onClick={() => setActiveKeyword(keyword)}
-              >
-                {keyword} ({(config as MonitoringConfig).competitors.length}개 경쟁사)
-              </Badge>
+              <div key={keyword} className="relative group">
+                <Badge 
+                  variant={activeKeyword === keyword ? "default" : "outline"}
+                  className="cursor-pointer text-base py-1 px-3 pr-7"
+                  onClick={() => setActiveKeyword(keyword)}
+                >
+                  {keyword} ({(config as MonitoringConfig).competitors.length}개 경쟁사)
+                  <button 
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation(); // 클릭 이벤트 버블링 방지
+                      handleRemoveKeyword(keyword);
+                    }}
+                    aria-label={`${keyword} 키워드 삭제`}
+                  >
+                    <XCircleIcon className="h-4 w-4 text-red-500 hover:text-red-700" />
+                  </button>
+                </Badge>
+              </div>
             ))}
           </div>
         </div>
