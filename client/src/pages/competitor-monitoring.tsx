@@ -551,7 +551,7 @@ export default function CompetitorMonitoringPage() {
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-2">
                     {
-                      Object.entries(latestResult.changesDetected).slice(0, 2).map(([competitor, changes]) => (
+                      Object.entries(latestResult.changesDetected).slice(0, 10).map(([competitor, changes]) => (
                         (changes as CompetitorChanges).newProducts.length > 0 && (
                           <div key={competitor} className="text-xs">
                             <span className="font-medium">{competitor}:</span> {(changes as CompetitorChanges).newProducts.length}개
@@ -838,7 +838,7 @@ export default function CompetitorMonitoringPage() {
             <div className="mb-6">
               <h3 className="text-xl font-semibold mb-4">경쟁사 ML 인사이트</h3>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {mlInsights.map((insight) => (
+                {mlInsights.slice(0, 10).map((insight) => (
                   <Card key={insight.competitor} className={
                     insight.threatLevel >= 80 ? "border-red-500" :
                     insight.threatLevel >= 60 ? "border-orange-500" :
