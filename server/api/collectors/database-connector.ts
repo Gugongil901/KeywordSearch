@@ -28,7 +28,125 @@ export class DatabaseConnector {
     this.monitoringConfigs = new Map<string, MonitoringConfig>();
     this.competitorBaselines = new Map<string, Record<string, CompetitorProduct[]>>();
     this.monitoringResults = new Map<string, MonitoringResult[]>();
+    
+    // 샘플 모니터링 구성 추가 (서버 재시작 시에도 기본 데이터 유지)
+    this.setupSampleMonitoringConfigs();
+    
     logger.info('데이터베이스 커넥터 초기화 완료');
+  }
+  
+  /**
+   * 샘플 모니터링 구성 초기화
+   * 서버 재시작 시에도 기본 데이터를 유지하기 위한 메소드
+   */
+  private setupSampleMonitoringConfigs(): void {
+    // 샘플 키워드 목록
+    const sampleKeywords = [
+      '강아지간식', '스키니진', '노트북', '비타민', '여행가방', '무선이어폰'
+    ];
+    
+    // 각 키워드에 대한 샘플 모니터링 구성 추가
+    for (const keyword of sampleKeywords) {
+      if (!this.monitoringConfigs.has(keyword)) {
+        // 샘플 경쟁사 목록
+        const competitors = [
+          '브랜드스토리', '건강한약국', '웰니스마트', '헬스케어몰', 
+          '비타민하우스', '뉴트리원', '내츄럴플러스', '더건강한', 
+          '비타플러스', '제이팜'
+        ];
+        
+        // 모니터링 구성 생성
+        const config: MonitoringConfig = {
+          keyword,
+          competitors: competitors.slice(0, 6), // 각 키워드마다 6개의 경쟁사 설정
+          createdAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString(),
+          monitorFrequency: 'daily',
+          alertThresholds: {
+            priceChangePercent: 5,
+            newProduct: true,
+            rankChange: true,
+            reviewChangePercent: 10
+          }
+        };
+        
+        // 모니터링 구성 저장
+        this.monitoringConfigs.set(keyword, config);
+        
+        // 기본 경쟁사 제품 데이터 생성
+        const baselineData: Record<string, CompetitorProduct[]> = {};
+        for (const competitor of config.competitors) {
+          baselineData[competitor] = this.generateSampleProducts(keyword, competitor, 2);
+        }
+        
+        // 경쟁사 기준 데이터 저장
+        this.competitorBaselines.set(keyword, baselineData);
+        
+        // 샘플 모니터링 결과 생성
+        const result: MonitoringResult = {
+          keyword,
+          checkedAt: new Date().toISOString(),
+          changesDetected: {},
+          hasAlerts: false
+        };
+        
+        // 모니터링 결과 저장
+        this.monitoringResults.set(keyword, [result]);
+      }
+    }
+  }
+  
+  /**
+   * 샘플 제품 데이터 생성
+   * @param keyword 키워드
+   * @param competitor 경쟁사명
+   * @param count 생성할 제품 수
+   * @returns 샘플 제품 목록
+   */
+  private generateSampleProducts(keyword: string, competitor: string, count: number): CompetitorProduct[] {
+    const products: CompetitorProduct[] = [];
+    
+    for (let i = 0; i < count; i++) {
+      const productId = `${keyword}_${competitor}_${i + 1}`;
+      
+      // 제품 이름 생성
+      let productName = '';
+      switch (keyword) {
+        case '강아지간식':
+          productName = i === 0 ? `프리미엄 강아지 육포 (대용량)` : `오가닉 강아지 비스킷 세트`;
+          break;
+        case '스키니진':
+          productName = i === 0 ? `클래식 스키니진 (블랙)` : `프리미엄 데님 스키니`;
+          break;
+        case '노트북':
+          productName = i === 0 ? `울트라 슬림 노트북 15인치` : `게이밍 노트북 프로`;
+          break;
+        case '비타민':
+          productName = i === 0 ? `종합 비타민 (90일분)` : `비타민C 1000mg (60정)`;
+          break;
+        case '여행가방':
+          productName = i === 0 ? `여행용 캐리어 24인치` : `여행용 백팩 방수`;
+          break;
+        case '무선이어폰':
+          productName = i === 0 ? `프리미엄 블루투스 이어폰` : `액티브 노이즈 캔슬링 이어버드`;
+          break;
+        default:
+          productName = `${competitor} ${keyword} 제품 ${i + 1}`;
+      }
+      
+      products.push({
+        productId,
+        name: `${competitor} ${productName}`,
+        price: Math.floor(Math.random() * 50000) + 10000,
+        reviews: Math.floor(Math.random() * 100) + 10,
+        rank: Math.floor(Math.random() * 50) + 1,
+        image: `https://via.placeholder.com/150?text=${encodeURIComponent(keyword)}`,
+        url: `https://example.com/product/${productId}`,
+        collectedAt: new Date().toISOString()
+      });
+    }
+    
+    return products;
   }
   
   /**
