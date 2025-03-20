@@ -70,11 +70,16 @@ import {
   UserIcon,
   Users2Icon,
   XCircleIcon,
-  LoaderIcon
+  LoaderIcon,
+  RefreshCcw,
+  AlertTriangleIcon,
+  AlertCircleIcon,
+  CheckCircleIcon
 } from 'lucide-react';
 import ChangeVisualizer from '../components/monitoring/change-visualizer';
 import AlertConfig from '../components/monitoring/alert-config';
 import { StrengthWeaknessChart } from '../components/charts/strength-weakness-radar';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // 타입 정의
 interface CompetitorInsight {
@@ -1553,90 +1558,4 @@ export default function CompetitorMonitoring() {
   );
 }
 
-// RefreshCcw 아이콘 컴포넌트 (lucide-react에서 누락된 것으로 가정)
-function RefreshCcw({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5" />
-      <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
-      <path d="M16 16h5v5" />
-    </svg>
-  );
-}
-
-// AlertTriangleIcon 아이콘 컴포넌트 (lucide-react에서 누락된 것으로 가정)
-function AlertTriangleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-      <path d="M12 9v4" />
-      <path d="M12 17h.01" />
-    </svg>
-  );
-}
-
-// CheckCircleIcon 아이콘 컴포넌트 (lucide-react에서 누락된 것으로 가정)
-function CheckCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-      <path d="m9 11 3 3L22 4" />
-    </svg>
-  );
-}
-
-// AlertCircleIcon 아이콘 컴포넌트 (lucide-react에서 누락된 것으로 가정)
-function AlertCircleIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" x2="12" y1="8" y2="12" />
-      <line x1="12" x2="12.01" y1="16" y2="16" />
-    </svg>
-  );
-}
+// 모든 아이콘은 lucide-react에서 직접 가져옵니다
