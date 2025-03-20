@@ -5,7 +5,7 @@
 
 // 제품 이미지 컴포넌트 임포트
 import { ProductImage } from "@/components/ui/product-image";
-import { CompetitorProductImage } from "@/components/competitor-product-image";
+import { CompetitorProductImage } from "@/components/competitor-product-image-new";
 // 강점/약점 레이더 차트 컴포넌트 임포트
 import { StrengthWeaknessChart } from "@/components/charts/strength-weakness-radar";
 // 공통 상수 임포트
