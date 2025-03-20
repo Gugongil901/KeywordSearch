@@ -71,29 +71,42 @@ export function ProductImage({
   
   // 이미지 래퍼 (링크 또는 div)
   const ImageWrapper = ({ children }: { children: React.ReactNode }) => {
+    // 모든 경우에 div를 사용하고, 필요한 경우 onClick 이벤트 추가
+    const commonProps = {
+      className: `relative block overflow-hidden ${className}`,
+      style: { width: width || 'auto', height: height || 'auto' }
+    };
+    
     if (navigable) {
       return (
-        <a
-          href={generateProductUrl()}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`relative block overflow-hidden ${className}`}
-          style={{ width: width || 'auto', height: height || 'auto' }}
+        <div
+          {...commonProps}
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.open(generateProductUrl(), '_blank', 'noopener,noreferrer');
+            }
+          }}
           title={title || alt || '제품 상세 보기'}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              if (typeof window !== 'undefined') {
+                window.open(generateProductUrl(), '_blank', 'noopener,noreferrer');
+              }
+            }
+          }}
+          style={{ 
+            ...commonProps.style, 
+            cursor: 'pointer' 
+          }}
         >
           {children}
-        </a>
+        </div>
       );
     }
     
-    return (
-      <div
-        className={`relative block overflow-hidden ${className}`}
-        style={{ width: width || 'auto', height: height || 'auto' }}
-      >
-        {children}
-      </div>
-    );
+    return <div {...commonProps}>{children}</div>;
   };
   
   return (
