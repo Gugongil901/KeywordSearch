@@ -4,7 +4,7 @@
  */
 
 // 제품 이미지 컴포넌트 임포트
-import { ProductImage } from "../components/product-image";
+import { ProductImage } from "@/components/ui/product-image";
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
@@ -953,13 +953,7 @@ export default function CompetitorMonitoringPage() {
                                   {competitorChanges.priceChanges.map((change, idx) => (
                                     <Alert key={idx} variant={change.changePercent < 0 ? "default" : "destructive"}>
                                       <div className="flex items-start gap-4">
-                                        {change.product.image && (
-                                          <img 
-                                            src={change.product.image} 
-                                            alt={change.product.name} 
-                                            className="w-16 h-16 object-cover rounded"
-                                          />
-                                        )}
+                                        <ProductImage product={change.product} />
                                         <div className="flex-1">
                                           <AlertTitle className="flex items-center gap-2">
                                             {change.product.name}
@@ -996,13 +990,7 @@ export default function CompetitorMonitoringPage() {
                                   {competitorChanges.newProducts.map((alert, idx) => (
                                     <Alert key={idx}>
                                       <div className="flex items-start gap-4">
-                                        {alert.product.image && (
-                                          <img 
-                                            src={alert.product.image} 
-                                            alt={alert.product.name} 
-                                            className="w-16 h-16 object-cover rounded"
-                                          />
-                                        )}
+                                        <ProductImage product={alert.product} />
                                         <div className="flex-1">
                                           <AlertTitle className="flex items-center gap-2">
                                             {alert.product.name}
@@ -1035,13 +1023,7 @@ export default function CompetitorMonitoringPage() {
                                   {competitorChanges.rankChanges.map((change, idx) => (
                                     <Alert key={idx} variant={change.change > 0 ? "destructive" : "default"}>
                                       <div className="flex items-start gap-4">
-                                        {change.product.image && (
-                                          <img 
-                                            src={change.product.image} 
-                                            alt={change.product.name} 
-                                            className="w-16 h-16 object-cover rounded"
-                                          />
-                                        )}
+                                        <ProductImage product={change.product} />
                                         <div className="flex-1">
                                           <AlertTitle className="flex items-center gap-2">
                                             {change.product.name}
@@ -1078,13 +1060,7 @@ export default function CompetitorMonitoringPage() {
                                   {competitorChanges.reviewChanges.map((change, idx) => (
                                     <Alert key={idx}>
                                       <div className="flex items-start gap-4">
-                                        {change.product.image && (
-                                          <img 
-                                            src={change.product.image} 
-                                            alt={change.product.name} 
-                                            className="w-16 h-16 object-cover rounded"
-                                          />
-                                        )}
+                                        <ProductImage product={change.product} />
                                         <div className="flex-1">
                                           <AlertTitle className="flex items-center gap-2">
                                             {change.product.name}
