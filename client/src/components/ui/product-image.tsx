@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DEFAULT_PRODUCT_IMAGES, getCompetitorProductImage, BRAND_WEBSITES, COMPETITOR_PRODUCT_IMAGES } from '@/constants/images';
+import { DEFAULT_PRODUCT_IMAGES, COMPETITOR_PRODUCT_IMAGES, BRAND_WEBSITES } from '@/constants/images';
 import { SiNaver } from 'react-icons/si';
 
 interface ProductImageProps {
@@ -27,49 +27,53 @@ export function ProductImage({
   productIndex = 0,
   navigable = true
 }: ProductImageProps) {
-  const [imgSrc, setImgSrc] = useState<string>(src || '');
+  const [imgSrc, setImgSrc] = useState<string>('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!src && competitor) {
-      const fallbackImage = getFallbackImage();
-      setImgSrc(fallbackImage);
+    setLoading(true);
+    setError(false);
+
+    if (src) {
+      setImgSrc(src);
+    } else if (competitor) {
+      setImgSrc(getFallbackImage());
+    } else {
+      setImgSrc(DEFAULT_PRODUCT_IMAGES[0]);
     }
   }, [src, competitor, productIndex]);
 
   const getFallbackImage = () => {
-    if (competitor) {
-      const normalizedCompetitor = competitor.trim();
+    if (!competitor) return DEFAULT_PRODUCT_IMAGES[0];
 
-      if (COMPETITOR_PRODUCT_IMAGES[normalizedCompetitor]) {
-        const images = COMPETITOR_PRODUCT_IMAGES[normalizedCompetitor];
-        const index = (productIndex || 0) % images.length;
-        return images[index];
-      }
+    const normalizedCompetitor = competitor.trim();
 
-      const matchingBrand = Object.keys(COMPETITOR_PRODUCT_IMAGES).find(
-        brand => brand.includes(normalizedCompetitor) || normalizedCompetitor.includes(brand)
-      );
-
-      if (matchingBrand) {
-        const images = COMPETITOR_PRODUCT_IMAGES[matchingBrand];
-        const index = (productIndex || 0) % images.length;
-        return images[index];
-      }
-
-      return getCompetitorProductImage(normalizedCompetitor, productIndex || 0);
+    if (COMPETITOR_PRODUCT_IMAGES[normalizedCompetitor]) {
+      const images = COMPETITOR_PRODUCT_IMAGES[normalizedCompetitor];
+      const index = productIndex % images.length;
+      return images[index];
     }
 
-    return DEFAULT_PRODUCT_IMAGES[Math.floor(Math.random() * DEFAULT_PRODUCT_IMAGES.length)];
+    const matchingBrand = Object.keys(COMPETITOR_PRODUCT_IMAGES).find(
+      brand => brand.includes(normalizedCompetitor) || normalizedCompetitor.includes(brand)
+    );
+
+    if (matchingBrand) {
+      const images = COMPETITOR_PRODUCT_IMAGES[matchingBrand];
+      const index = productIndex % images.length;
+      return images[index];
+    }
+
+    return DEFAULT_PRODUCT_IMAGES[0];
   };
 
   const handleImageError = () => {
     setError(true);
     setLoading(false);
     if (!error) {
-      const fallback = getFallbackImage();
-      setImgSrc(fallback);
+      const fallbackImage = DEFAULT_PRODUCT_IMAGES[0];
+      setImgSrc(fallbackImage);
     }
   };
 
@@ -82,46 +86,17 @@ export function ProductImage({
     if (competitor && BRAND_WEBSITES[competitor]) {
       return BRAND_WEBSITES[competitor];
     }
-
     if (!productId) return '#';
-
     if (productId.startsWith('http')) {
       return productId;
     }
-
     if (/^\d+$/.test(productId)) {
       return `https://smartstore.naver.com/main/products/${productId}`;
     }
-
     if (title) {
       return `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(title)}`;
     }
-
     return 'https://shopping.naver.com/';
-  };
-
-  const renderNaverLogo = () => {
-    if (!navigable) return null;
-
-    const getLogoColor = () => {
-      if (competitor?.includes('닥터린')) return 'text-red-600';
-      if (competitor?.includes('내츄럴플러스')) return 'text-blue-600';
-      if (competitor?.includes('에스더몰')) return 'text-pink-600';
-      if (competitor?.includes('안국건강')) return 'text-green-700';
-      if (competitor?.includes('고려은단')) return 'text-yellow-700';
-      if (competitor?.includes('뉴트리')) return 'text-blue-500';
-      if (competitor?.includes('종근당')) return 'text-red-700';
-      if (competitor?.includes('GNM') || competitor?.includes('자연의품격')) return 'text-green-600';
-      if (competitor?.includes('한미양행')) return 'text-indigo-600';
-      if (competitor?.includes('유한양행')) return 'text-blue-800';
-      return 'text-green-600';
-    };
-
-    return (
-      <div className="absolute bottom-0.5 right-0.5 p-1 bg-white bg-opacity-70 rounded-sm">
-        <SiNaver className={`text-xs ${getLogoColor()}`} />
-      </div>
-    );
   };
 
   const ImageWrapper = navigable ? 'a' : 'div';
@@ -139,7 +114,7 @@ export function ProductImage({
         style={{ width, height }}
       >
         {loading && (
-          <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+          <div className="absolute inset-0 bg-gray-100 animate-pulse rounded" />
         )}
         <img
           src={imgSrc}
@@ -148,10 +123,9 @@ export function ProductImage({
           height={height}
           onError={handleImageError}
           onLoad={handleImageLoad}
-          className={`object-cover transition-opacity duration-200 ${loading ? 'opacity-0' : 'opacity-100'}`}
+          className={`w-full h-full object-contain rounded transition-opacity duration-200 ${loading ? 'opacity-0' : 'opacity-100'}`}
         />
       </ImageWrapper>
-      {renderNaverLogo()}
     </div>
   );
 }
