@@ -814,7 +814,7 @@ export default function CompetitorMonitoringPage() {
                                   <div key={idx} className="flex items-start border rounded-lg p-4">
                                     <div className="flex-shrink-0 mr-4">
                                       <ProductImage 
-                                        src={change.product.image || `https://source.unsplash.com/featured/?product`} 
+                                        src={change.product.image || `DEFAULT_PRODUCT_IMAGE`} 
                                         alt={change.product.name}
                                         width={80}
                                         height={80}
@@ -868,7 +868,7 @@ export default function CompetitorMonitoringPage() {
                                   <div key={idx} className="border rounded-lg p-4 flex">
                                     <div className="flex-shrink-0 mr-4">
                                       <ProductImage 
-                                        src={newProduct.product.image || `https://source.unsplash.com/featured/?product`} 
+                                        src={newProduct.product.image || `DEFAULT_PRODUCT_IMAGE`} 
                                         alt={newProduct.product.name}
                                         width={80}
                                         height={80}
@@ -902,7 +902,7 @@ export default function CompetitorMonitoringPage() {
                                   <div key={idx} className="flex items-start border rounded-lg p-4">
                                     <div className="flex-shrink-0 mr-4">
                                       <ProductImage 
-                                        src={change.product.image || `https://source.unsplash.com/featured/?product`} 
+                                        src={change.product.image || `DEFAULT_PRODUCT_IMAGE`} 
                                         alt={change.product.name}
                                         width={80}
                                         height={80}
@@ -956,7 +956,7 @@ export default function CompetitorMonitoringPage() {
                                   <div key={idx} className="flex items-start border rounded-lg p-4">
                                     <div className="flex-shrink-0 mr-4">
                                       <ProductImage 
-                                        src={change.product.image || `https://source.unsplash.com/featured/?product`} 
+                                        src={change.product.image || `DEFAULT_PRODUCT_IMAGE`} 
                                         alt={change.product.name}
                                         width={80}
                                         height={80}
