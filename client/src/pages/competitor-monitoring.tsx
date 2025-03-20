@@ -40,10 +40,17 @@ import { SiNaver } from 'react-icons/si';
 import { DEFAULT_PRODUCT_IMAGES } from '@/constants/images';
 import {
   ArrowDownIcon,
+  ArrowLeftIcon,
   ArrowRightIcon,
   ArrowUpIcon,
   BarChart3Icon,
+  BellIcon,
+  BellRingIcon,
+  BuildingIcon,
+  CalendarIcon,
+  CalendarRangeIcon,
   ChevronRightIcon,
+  CheckIcon,
   ClockIcon,
   CopyIcon,
   CreditCardIcon,
@@ -54,9 +61,15 @@ import {
   HelpCircleIcon,
   InfoIcon,
   LineChartIcon,
+  ListFilterIcon,
+  LoaderIcon,
   MapPinIcon,
   MegaphoneIcon,
+  Pill,
+  PlusIcon,
   PlusCircleIcon,
+  RefreshCcw,
+  SaveIcon,
   SearchIcon,
   Settings2Icon,
   ShoppingBagIcon,
@@ -71,12 +84,19 @@ import {
   UserIcon,
   Users2Icon,
   XCircleIcon,
-  LoaderIcon,
-  RefreshCcw,
+  XIcon,
   AlertTriangleIcon,
   AlertCircleIcon,
   CheckCircleIcon
 } from 'lucide-react';
+
+// 건강기능식품 관련 상수
+const HEALTH_KEYWORDS = ['비타민', '종합비타민', '프로바이오틱스', '콜라겐', '글루타치온', '비타민C', '비타민D', '루테인', '오메가3', '유산균'];
+const HEALTH_BRANDS = [
+  '닥터린', '내츄럴플러스', '에스더몰', '안국건강', '고려은단', 
+  '뉴트리원', '종근당건강', 'GNM 자연의품격', '뉴트리데이', 
+  '주영엔에스', '한미양행', '유한양행'
+];
 import ChangeVisualizer from '../components/monitoring/change-visualizer';
 import AlertConfig from '../components/monitoring/alert-config';
 import { StrengthWeaknessChart } from '../components/charts/strength-weakness-radar';
