@@ -470,6 +470,40 @@ export class NaverDataCollector {
           ...keyword.split(' ').filter(k => k.length > 1).map(k => `${competitor} ${k}`)
         ];
         
+        // 브랜드 스토어 URL 처리
+        // 네이버 브랜드 스토어 URL에서 경쟁사 추출 (도메인에서 브랜드 식별)
+        const brandStorePatterns = [
+          'brand.naver.com',
+          'smartstore.naver.com',
+          'esthermall.co.kr'
+        ];
+        
+        // 브랜드 URL인 경우 사전 처리
+        let brandName = competitor;
+        if (brandStorePatterns.some(pattern => competitor.includes(pattern))) {
+          // URL에서 브랜드명 추출 시도
+          // brand.naver.com/브랜드명 패턴 처리
+          if (competitor.includes('brand.naver.com/')) {
+            brandName = competitor.split('brand.naver.com/')[1].split('/')[0].trim();
+            logger.info(`브랜드 URL에서 브랜드명 추출: ${brandName}`);
+          }
+          // smartstore.naver.com/브랜드명 패턴 처리
+          else if (competitor.includes('smartstore.naver.com/')) {
+            brandName = competitor.split('smartstore.naver.com/')[1].split('/')[0].trim();
+            logger.info(`스마트스토어 URL에서 브랜드명 추출: ${brandName}`);
+          }
+          // esthermall.co.kr 처리
+          else if (competitor.includes('esthermall.co.kr')) {
+            brandName = '에스더몰';
+            logger.info(`URL에서 브랜드명 추출: ${brandName}`);
+          }
+          
+          // 기존 검색 전략을 수정하여 추출된 브랜드명 활용
+          searchStrategies.unshift(`${keyword} ${brandName}`);
+          searchStrategies.unshift(`${brandName} ${keyword}`);
+          searchStrategies.unshift(`${brandName}`);
+        }
+
         // 각 전략을 순차적으로 시도
         for (const searchQuery of searchStrategies) {
           logger.info(`${competitor} 제품 검색 시도: '${searchQuery}'`);
@@ -481,17 +515,28 @@ export class NaverDataCollector {
               // 1. 브랜드명 기반 필터링
               let filteredProducts = searchResult.products.filter((product: any) => {
                 const brand = product.brandName || '';
-                return !this.isExcludedSeller(brand) &&
-                       brand.toLowerCase().includes(competitor.toLowerCase());
+                // 정확한 브랜드명 매칭 로직 추가
+                const normalizedBrand = brand.toLowerCase().replace(/\s+/g, '');
+                const normalizedCompetitor = brandName.toLowerCase().replace(/\s+/g, '');
+                
+                return !this.isExcludedSeller(brand) && 
+                       (normalizedBrand.includes(normalizedCompetitor) || 
+                        normalizedBrand.includes(competitor.toLowerCase().replace(/\s+/g, '')));
               });
               
               // 브랜드명으로 찾지 못한 경우 제품명에서 검색
               if (filteredProducts.length === 0) {
                 filteredProducts = searchResult.products.filter((product: any) => {
                   const title = product.title || '';
+                  const brand = product.brandName || '';
+                  
                   // 제품명에 경쟁사 이름이 포함되어 있고, 제외 판매자가 아닌 경우
-                  return !this.isExcludedSeller(product.brandName || '') &&
-                         title.toLowerCase().includes(competitor.toLowerCase());
+                  const normalizedTitle = title.toLowerCase().replace(/\s+/g, '');
+                  const normalizedCompetitor = brandName.toLowerCase().replace(/\s+/g, '');
+                  
+                  return !this.isExcludedSeller(brand) && 
+                         (normalizedTitle.includes(normalizedCompetitor) ||
+                          normalizedTitle.includes(competitor.toLowerCase().replace(/\s+/g, '')));
                 });
               }
               
