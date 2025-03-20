@@ -200,10 +200,19 @@ router.get('/results/:keyword/latest', (req: Request, res: Response) => {
  */
 router.get('/products/:keyword/:competitor', async (req: Request, res: Response) => {
   try {
-    const { keyword, competitor } = req.params;
+    let { keyword, competitor } = req.params;
     
     if (!keyword || !competitor) {
       return res.status(400).json({ error: '키워드와 경쟁사 이름이 필요합니다.' });
+    }
+    
+    // URL 디코딩 처리 - 한글 키워드 및 경쟁사 이름
+    try {
+      keyword = decodeURIComponent(keyword);
+      competitor = decodeURIComponent(competitor);
+      logger.info(`URL 디코딩 적용: 키워드="${keyword}", 경쟁사="${competitor}"`);
+    } catch (e) {
+      logger.warn(`URL 디코딩 실패: 키워드="${keyword}", 경쟁사="${competitor}"`);
     }
     
     const products = await dataCollector.collectCompetitorProducts(keyword, competitor);
