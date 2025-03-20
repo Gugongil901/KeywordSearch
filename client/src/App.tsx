@@ -11,6 +11,7 @@ import KeywordDetail from "@/pages/keyword-detail";
 import KeywordSearch from "@/pages/keyword-search";
 import TrackRanking from "@/pages/track-ranking";
 import KeywordInsights from "@/pages/keyword-insights";
+import CompetitorMonitoring from "@/pages/competitor-monitoring";
 import TestComponent from "@/components/test/TestComponent";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/keyword" component={KeywordSearch} />
       <Route path="/insights" component={KeywordInsights} />
       <Route path="/tracking" component={TrackRanking} />
+      <Route path="/monitoring" component={CompetitorMonitoring} />
       <Route component={NotFound} />
     </Switch>
   );

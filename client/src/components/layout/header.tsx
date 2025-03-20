@@ -35,6 +35,9 @@ const Header = () => {
             <Link href="/tracking" className={`text-sm font-medium ${isActive('/tracking') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
               판매/재고
             </Link>
+            <Link href="/monitoring" className={`text-sm font-medium ${isActive('/monitoring') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
+              경쟁사모니터링
+            </Link>
           </nav>
         </div>
         <div className="flex items-center space-x-4">

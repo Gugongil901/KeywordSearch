@@ -288,7 +288,7 @@ export default function CompetitorMonitoringPage() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <h3 className="text-xl font-semibold">최근 모니터링 결과</h3>
-                <Badge variant={latestResult.hasAlerts ? "destructive" : "success"}>
+                <Badge variant={latestResult.hasAlerts ? "destructive" : "secondary"}>
                   {latestResult.hasAlerts ? '변화 감지됨' : '변화 없음'}
                 </Badge>
                 <span className="text-sm text-muted-foreground">
