@@ -487,7 +487,7 @@ const checkForChanges = async (keyword: string) => {
   }
 };
 
-// DEFAULT_PRODUCT_IMAGE 상수는 이제 constants/images.ts에서 임포트됨
+// DEFAULT_PRODUCT_IMAGES 상수는 이제 constants/images.ts에서 임포트됨
 
 // 컴포넌트
 export default function CompetitorMonitoringPage() {
