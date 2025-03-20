@@ -796,18 +796,13 @@ export default function CompetitorMonitoring() {
       <div className="space-y-3 mb-4">
         <h4 className="font-medium text-sm">가격 변동</h4>
         {changes.map((change, index) => (
-          <div key={`price-${index}-${change.product.productId}`} className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md">
-            <div className="flex-shrink-0 w-12 h-12">
-              <ProductImage src={change.product.image} alt={change.product.name} className="rounded-md" />
-            </div>
-            <div className="flex-grow min-w-0">
-              <h5 className="text-sm font-medium truncate">{change.product.name}</h5>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">₩{formatNumber(change.oldPrice)} → ₩{formatNumber(change.newPrice)}</span>
-                <ChangeIndicator value={change.changePercent} />
-              </div>
-            </div>
-          </div>
+          <PriceChangeCard 
+            key={`price-${index}-${change.product.productId}`}
+            change={change}
+            brandName={brandName}
+            brandId={competitor}
+            className="mb-2"
+          />
         ))}
       </div>
     );

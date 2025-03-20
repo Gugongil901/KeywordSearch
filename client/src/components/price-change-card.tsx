@@ -39,6 +39,7 @@ export function PriceChangeCard({
 }: PriceChangeCardProps) {
   if (!change || !change.product) return null;
   
+  // 가격 감소는 좋은 것이므로 색상 클래스의 부호를 반대로 적용 (inverse=true)
   const colorClass = getChangeColorClass(change.changePercent, true);
   
   return (
