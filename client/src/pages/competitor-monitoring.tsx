@@ -313,7 +313,7 @@ export default function CompetitorMonitoringPage() {
   });
 
   // 최신 모니터링 결과 조회
-  const { data: latestResult, isLoading: resultLoading, refetch: refetchResult } = useQuery({
+  const { data: latestResult, isLoading: resultLoading, refetch: refetchResult, error: resultError } = useQuery({
     queryKey: ['monitoringResult', activeKeyword],
     queryFn: () => activeKeyword ? fetchLatestResult(activeKeyword) : null,
     enabled: !!activeKeyword,

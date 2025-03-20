@@ -25,6 +25,7 @@ interface ProductImageProps {
   productName?: string;
   productUrl?: string;
   className?: string;
+  isClickable?: boolean;
 }
 
 export function ProductImage({ 
@@ -37,7 +38,8 @@ export function ProductImage({
   height,
   productName,
   productUrl,
-  className
+  className,
+  isClickable = true
 }: ProductImageProps) {
   // 이미지 사이즈 설정
   const sizeClass = {
@@ -61,31 +63,49 @@ export function ProductImage({
     ? { width: `${width}px`, height: `${height}px` }
     : {};
   
+  // 이미지 컨테이너 렌더링
+  const renderImage = () => (
+    <img 
+      src={imageUrl} 
+      alt={imageAlt} 
+      className={`${width && height ? '' : sizeClass} object-cover rounded border border-gray-200`}
+      style={imageStyle}
+      onError={(e) => {
+        // 이미지 로드 실패 시 기본 이미지로 대체
+        (e.target as HTMLImageElement).src = defaultImageUrl;
+      }}
+    />
+  );
+
+  // 제목 렌더링 (있는 경우)
+  const renderTitle = () => {
+    if (!(showTitle || productName)) return null;
+    return (
+      <div className="mt-1 text-xs text-center text-gray-700 truncate max-w-[150px]">
+        {title}
+      </div>
+    );
+  };
+
+  // 클릭 가능한 경우 링크로 감싸고, 그렇지 않은 경우 단순히 이미지만 표시
   return (
     <div className="product-image-container">
-      <a 
-        href={linkUrl} 
-        target="_blank" 
-        rel="noopener noreferrer"
-        className={`block transition-all hover:opacity-80 hover:shadow-md rounded ${className || ''}`}
-      >
-        <img 
-          src={imageUrl} 
-          alt={imageAlt} 
-          className={`${width && height ? '' : sizeClass} object-cover rounded border border-gray-200`}
-          style={imageStyle}
-          onError={(e) => {
-            // 이미지 로드 실패 시 기본 이미지로 대체
-            (e.target as HTMLImageElement).src = defaultImageUrl;
-          }}
-        />
-        
-        {(showTitle || productName) && (
-          <div className="mt-1 text-xs text-center text-gray-700 truncate max-w-[150px]">
-            {title}
-          </div>
-        )}
-      </a>
+      {isClickable ? (
+        <a 
+          href={linkUrl} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className={`block transition-all hover:opacity-80 hover:shadow-md rounded ${className || ''}`}
+        >
+          {renderImage()}
+          {renderTitle()}
+        </a>
+      ) : (
+        <div className={className || ''}>
+          {renderImage()}
+          {renderTitle()}
+        </div>
+      )}
     </div>
   );
 }
