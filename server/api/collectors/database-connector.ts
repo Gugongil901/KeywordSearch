@@ -134,14 +134,29 @@ export class DatabaseConnector {
           productName = `${competitor} ${keyword} 제품 ${i + 1}`;
       }
       
+      // 실제 네이버 쇼핑 이미지 URL 패턴 사용
+      const naverImages = [
+        'https://shopping-phinf.pstatic.net/main_3246576/32465763176.20220420124534.jpg',
+        'https://shopping-phinf.pstatic.net/main_3398199/33981997035.20230508132808.jpg',
+        'https://shopping-phinf.pstatic.net/main_3783494/37834945046.20230531162821.jpg',
+        'https://shopping-phinf.pstatic.net/main_3816141/38161410429.20230613155050.jpg',
+        'https://shopping-phinf.pstatic.net/main_3245375/32453755149.20220417165320.jpg',
+        'https://shopping-phinf.pstatic.net/main_3393727/33937272223.20230502161405.jpg',
+        'https://shopping-phinf.pstatic.net/main_3568390/35683901799.20230208124510.jpg',
+        'https://shopping-phinf.pstatic.net/main_3598592/35985922890.20230223163309.jpg',
+        'https://shopping-phinf.pstatic.net/main_2405992/24059923523.20200925144716.jpg',
+        'https://shopping-phinf.pstatic.net/main_3440789/34407891818.20230302181305.jpg'
+      ];
+      
       products.push({
         productId,
         name: `${competitor} ${productName}`,
         price: Math.floor(Math.random() * 50000) + 10000,
-        reviews: Math.floor(Math.random() * 100) + 10,
+        reviews: Math.floor(Math.random() * 500) + 10,
         rank: Math.floor(Math.random() * 50) + 1,
-        image: `https://via.placeholder.com/150?text=${encodeURIComponent(keyword)}`,
-        url: `https://example.com/product/${productId}`,
+        // 여러 이미지 중 하나를 선택하여 사용 (제품ID 기반 고정값)
+        image: naverImages[Math.abs(productId.charCodeAt(0) + productId.charCodeAt(1)) % naverImages.length],
+        url: `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(keyword)}`,
         collectedAt: new Date().toISOString()
       });
     }
