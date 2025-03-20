@@ -116,7 +116,7 @@ export class CompetitorMonitoringSystem {
         const products = await this.dataCollector.collectCompetitorProducts(keyword, competitor);
         
         // 제품별 데이터 정리
-        const productData: CompetitorProduct[] = products.map(product => ({
+        const productData: CompetitorProduct[] = products.map((product: any) => ({
           productId: product.id || '',
           name: product.name || '',
           price: product.price || 0,
@@ -326,7 +326,7 @@ export class CompetitorMonitoringSystem {
     }
     
     // 가장 최근 결과 반환
-    return results.sort((a, b) => 
+    return results.sort((a: MonitoringResult, b: MonitoringResult) => 
       new Date(b.checkedAt).getTime() - new Date(a.checkedAt).getTime()
     )[0];
   }

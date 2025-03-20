@@ -286,8 +286,8 @@ export class NaverDataCollector {
       // 쇼핑몰 분포 계산
       const mallCounts: Record<string, number> = {};
       for (const p of products) {
-        // 판매자 정보 (mall) 속성을 우선 사용, 없는 경우 브랜드명이나 기타 사용
-        const mallName = p.mall || p.brandName || '기타';
+        // 판매자 정보 (임시로 brandName 또는 기타 속성 사용)
+        const mallName = p.brandName || '기타';
         mallCounts[mallName] = (mallCounts[mallName] || 0) + 1;
       }
       
@@ -384,8 +384,8 @@ export class NaverDataCollector {
       
       // 정렬된 쇼핑몰 순위
       const sortedMalls = Object.entries(mallDistribution)
-        .sort((a, b) => b[1] - a[1])
-        .map(([name, count]) => ({
+        .sort((a: [string, any], b: [string, any]) => b[1] - a[1])
+        .map(([name, count]: [string, any]) => ({
           name,
           count,
           type: brandSellers.has(name) ? 'brand' : 'general'
@@ -535,10 +535,10 @@ export class NaverDataCollector {
       const mallDistribution = shoppingResults.mallDistribution || {};
       
       // 총 제품 수
-      const totalProducts = Object.values(mallDistribution).reduce((sum, count) => sum + (count as number), 0);
+      const totalProducts = Object.values(mallDistribution).reduce((sum: number, count: any) => sum + (count as number), 0);
       
       // 경쟁사 정보 생성
-      const competitors = Object.entries(mallDistribution).map(([seller, count]) => ({
+      const competitors = Object.entries(mallDistribution).map(([seller, count]: [string, any]) => ({
         seller,
         productCount: count as number,
         marketShare: totalProducts > 0 ? (count as number) / totalProducts : 0
