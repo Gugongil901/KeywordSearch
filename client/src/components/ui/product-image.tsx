@@ -73,8 +73,23 @@ export function ProductImage({
       return `https://search.shopping.naver.com/catalog/${productId}`;
     }
     
-    // 제품명이 있는 경우 검색 결과로 연결
+    // 제품 ID에서 네이버 상품 ID 추출 시도
+    if (productId) {
+      // 네이버 제품 ID 패턴 (naver-123456)
+      const naverIdPattern = /naver-(\d+)/i;
+      const naverIdMatch = productId.match(naverIdPattern);
+      if (naverIdMatch && naverIdMatch[1]) {
+        return `https://search.shopping.naver.com/catalog/${naverIdMatch[1]}`;
+      }
+    }
+    
+    // 제품명에서 특정 패턴 탐지 (예: "내츄럴 플러스 프리미엄1")
     if (title) {
+      const productMatch = /([가-힣a-zA-Z]+\s*[가-힣a-zA-Z]+)\s*([가-힣a-zA-Z0-9]+[0-9]+)/i.exec(title);
+      if (productMatch) {
+        const [, brand, model] = productMatch;
+        return `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(`${brand} ${model}`)}`;
+      }
       return `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(title)}`;
     }
     

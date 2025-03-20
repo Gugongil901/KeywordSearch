@@ -775,11 +775,32 @@ const getHealthProductImage = (keyword: string, competitor: string): string => {
     'https://images.unsplash.com/photo-1631311695255-8896300ab4ce?w=160&q=80'  // 오메가3
   ];
   
-  // 키워드와 경쟁사 이름을 조합하여 일관된 인덱스 생성
-  const combinedString = keyword + competitor;
+  // 특정 제품명 패턴 확인 (예: "내츄럴 플러스 프리미엄1")
+  if (keyword.toLowerCase().includes('내츄럴') || 
+      keyword.toLowerCase().includes('프리미엄') || 
+      competitor.toLowerCase().includes('내츄럴') || 
+      competitor.toLowerCase().includes('프리미엄')) {
+    // 항상 같은 이미지 반환 (루테인 이미지)
+    return 'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=160&q=80';
+  }
+  
+  // 특정 경쟁사를 위한 고정 이미지 매핑
+  const specialCompetitors: Record<string, string> = {
+    '웰니스마트': 'https://images.unsplash.com/photo-1626170724762-8018cb8d44d6?w=160&q=80', 
+    '헬스케어몰': 'https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=160&q=80',
+    '건강한약국': 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=160&q=80',
+    '브랜드스토리': 'https://images.unsplash.com/photo-1505751172876-fa1923c5c528?w=160&q=80'
+  };
+  
+  // 특정 경쟁사는 고정 이미지 사용
+  if (specialCompetitors[competitor]) {
+    return specialCompetitors[competitor];
+  }
+  
+  // 일반적인 경우, 경쟁사 이름을 기반으로 일관된 이미지 선택 (키워드와 무관하게)
   let charSum = 0;
-  for (let i = 0; i < combinedString.length; i++) {
-    charSum += combinedString.charCodeAt(i);
+  for (let i = 0; i < competitor.length; i++) {
+    charSum += competitor.charCodeAt(i);
   }
   
   // 해시를 이용해 이미지 배열 인덱스 결정
