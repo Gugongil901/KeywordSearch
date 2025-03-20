@@ -1233,7 +1233,7 @@ export default function CompetitorMonitoring() {
                                             <StarIcon className="h-4 w-4 mr-1 text-green-500" />
                                             설명
                                           </h4>
-                                          <p className="text-sm">{insight.strengthsDetails[strength]?.description}</p>
+                                          <p className="text-sm">{insight.strengthsDetails && insight.strengthsDetails[strength]?.description}</p>
                                           
                                           {/* 강점 수치화 */}
                                           <div className="mt-3">
@@ -1261,7 +1261,7 @@ export default function CompetitorMonitoring() {
                                             대응 전략 권장사항
                                           </h4>
                                           <ul className="text-sm space-y-1">
-                                            {insight.strengthsDetails[strength]?.recommendations.map((rec, i) => (
+                                            {insight.strengthsDetails && insight.strengthsDetails[strength]?.recommendations?.map((rec, i) => (
                                               <li key={i}>{rec}</li>
                                             ))}
                                           </ul>
@@ -1316,7 +1316,7 @@ export default function CompetitorMonitoring() {
                                             <AlertCircleIcon className="h-4 w-4 mr-1 text-red-500" />
                                             설명
                                           </h4>
-                                          <p className="text-sm">{insight.weaknessesDetails[weakness]?.description}</p>
+                                          <p className="text-sm">{insight.weaknessesDetails && insight.weaknessesDetails[weakness]?.description}</p>
                                           
                                           {/* 약점 수치화 */}
                                           <div className="mt-3">
@@ -1344,7 +1344,7 @@ export default function CompetitorMonitoring() {
                                             경쟁 우위 전략 권장사항
                                           </h4>
                                           <ul className="text-sm space-y-1">
-                                            {insight.weaknessesDetails[weakness]?.recommendations.map((rec, i) => (
+                                            {insight.weaknessesDetails && insight.weaknessesDetails[weakness]?.recommendations?.map((rec, i) => (
                                               <li key={i}>{rec}</li>
                                             ))}
                                           </ul>
