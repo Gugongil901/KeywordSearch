@@ -292,7 +292,8 @@ export default function CompetitorMonitoring() {
         const response = await fetch(`/api/monitoring/results/${encodeURIComponent(activeKeyword)}/latest`);
         if (!response.ok) throw new Error('최근 결과를 가져오는데 실패했습니다');
         const data = await response.json();
-        return data.data as MonitoringResult;
+        // API가 직접 객체를 반환하므로 data.data가 아닌 data 자체를 사용
+        return data as MonitoringResult;
       } catch (error) {
         console.error('최근 결과 가져오기 오류:', error);
         throw error;
