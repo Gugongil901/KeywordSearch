@@ -97,6 +97,22 @@ const HEALTH_BRANDS = [
   '뉴트리원', '종근당건강', 'GNM 자연의품격', '뉴트리데이', 
   '주영엔에스', '한미양행', '유한양행'
 ];
+
+// 브랜드별 공식 스토어 URL
+const BRAND_STORE_URLS: Record<string, string> = {
+  '닥터린': 'https://brand.naver.com/dr_lean',
+  '내츄럴플러스': 'https://brand.naver.com/naturalplus',
+  '에스더몰': 'https://brand.naver.com/esthermall',
+  '안국건강': 'https://brand.naver.com/aghealth',
+  '고려은단': 'https://brand.naver.com/koreaeundanhc',
+  '뉴트리원': 'https://brand.naver.com/nutrione',
+  '종근당건강': 'https://brand.naver.com/ckdhc',
+  'GNM 자연의품격': 'https://brand.naver.com/gnm',
+  '뉴트리데이': 'https://brand.naver.com/nutriday',
+  '주영엔에스': 'https://brand.naver.com/jooyoungns',
+  '한미양행': 'https://brand.naver.com/hy',
+  '유한양행': 'https://brand.naver.com/yuhan'
+};
 import ChangeVisualizer from '../components/monitoring/change-visualizer';
 import AlertConfig from '../components/monitoring/alert-config';
 import { StrengthWeaknessChart } from '../components/charts/strength-weakness-radar';
