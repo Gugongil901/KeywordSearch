@@ -80,6 +80,7 @@ import {
 import ChangeVisualizer from '../components/monitoring/change-visualizer';
 import AlertConfig from '../components/monitoring/alert-config';
 import { StrengthWeaknessChart } from '../components/charts/strength-weakness-radar';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // 타입 정의
 interface CompetitorInsight {
@@ -749,138 +750,163 @@ export default function CompetitorMonitoring() {
                           {competitor}
                         </h3>
                         
-                        {/* 가격 변경 */}
-                        {changes.priceChanges.length > 0 && (
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium mb-2 flex items-center">
+                        <Tabs defaultValue="price">
+                          <TabsList className="grid w-full grid-cols-4 mb-4">
+                            <TabsTrigger value="price" className="flex items-center justify-center">
                               <BarChart3Icon className="h-4 w-4 mr-1 text-orange-500" />
-                              가격 변경
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {changes.priceChanges.map((change, index) => (
-                                <Card key={index} className="overflow-hidden">
-                                  <CardContent className="p-0">
-                                    <div className="flex">
-                                      <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
-                                      <div className="p-2 flex-1">
-                                        <div className="text-xs line-clamp-2 mb-1">{change.product.name}</div>
-                                        <ChangeVisualizer 
-                                          oldValue={change.oldPrice} 
-                                          newValue={change.newPrice} 
-                                          changePercent={change.changePercent}
-                                          formatValue={(val) => val.toLocaleString() + '원'} 
-                                        />
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* 신제품 */}
-                        {changes.newProducts.length > 0 && (
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium mb-2 flex items-center">
+                              <span className="whitespace-nowrap">가격</span>
+                              {changes.priceChanges.length > 0 && (
+                                <Badge variant="outline" className="ml-1">{changes.priceChanges.length}</Badge>
+                              )}
+                            </TabsTrigger>
+                            <TabsTrigger value="new" className="flex items-center justify-center">
                               <PlusCircleIcon className="h-4 w-4 mr-1 text-green-500" />
-                              신제품 등록
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {changes.newProducts.map((change, index) => (
-                                <Card key={index} className="overflow-hidden">
-                                  <CardContent className="p-0">
-                                    <div className="flex">
-                                      <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
-                                      <div className="p-2 flex-1">
-                                        <div className="text-xs line-clamp-2 mb-1">{change.product.name}</div>
-                                        <div className="flex justify-between text-xs">
-                                          <Badge variant="outline" className="bg-green-50 text-green-700">신규</Badge>
-                                          <span className="font-semibold">{change.product.price.toLocaleString()}원</span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* 순위 변경 */}
-                        {changes.rankChanges.length > 0 && (
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium mb-2 flex items-center">
+                              <span className="whitespace-nowrap">신제품</span>
+                              {changes.newProducts.length > 0 && (
+                                <Badge variant="outline" className="ml-1">{changes.newProducts.length}</Badge>
+                              )}
+                            </TabsTrigger>
+                            <TabsTrigger value="rank" className="flex items-center justify-center">
                               <ArrowUpIcon className="h-4 w-4 mr-1 text-blue-500" />
-                              순위 변경
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {changes.rankChanges.map((change, index) => (
-                                <Card key={index} className="overflow-hidden">
-                                  <CardContent className="p-0">
-                                    <div className="flex">
-                                      <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
-                                      <div className="p-2 flex-1">
-                                        <div className="text-xs line-clamp-2 mb-1">{change.product.name}</div>
-                                        <div className="flex items-center">
-                                          <span className="text-xs mr-2">
-                                            {change.oldRank}위 →
-                                          </span>
-                                          <Badge 
-                                            variant="outline" 
-                                            className={change.change > 0 
-                                              ? "bg-green-50 text-green-700" 
-                                              : "bg-red-50 text-red-700"}
-                                          >
-                                            {change.newRank}위
-                                            {change.change !== 0 && (
-                                              <span className="ml-1">
-                                                {change.change > 0 
-                                                  ? <ArrowUpIcon className="h-3 w-3 inline" /> 
-                                                  : <ArrowDownIcon className="h-3 w-3 inline" />}
-                                                {Math.abs(change.change)}
-                                              </span>
-                                            )}
-                                          </Badge>
+                              <span className="whitespace-nowrap">순위</span>
+                              {changes.rankChanges.length > 0 && (
+                                <Badge variant="outline" className="ml-1">{changes.rankChanges.length}</Badge>
+                              )}
+                            </TabsTrigger>
+                            <TabsTrigger value="review" className="flex items-center justify-center">
+                              <StarIcon className="h-4 w-4 mr-1 text-yellow-500" />
+                              <span className="whitespace-nowrap">리뷰</span>
+                              {changes.reviewChanges.length > 0 && (
+                                <Badge variant="outline" className="ml-1">{changes.reviewChanges.length}</Badge>
+                              )}
+                            </TabsTrigger>
+                          </TabsList>
+                          
+                          {/* 가격 변경 탭 */}
+                          <TabsContent value="price">
+                            {changes.priceChanges.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {changes.priceChanges.map((change, index) => (
+                                  <Card key={index} className="overflow-hidden">
+                                    <CardContent className="p-0">
+                                      <div className="flex">
+                                        <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
+                                        <div className="p-2 flex-1">
+                                          <div className="text-xs line-clamp-2 mb-1">{change.product.name}</div>
+                                          <ChangeVisualizer 
+                                            oldValue={change.oldPrice} 
+                                            newValue={change.newPrice} 
+                                            changePercent={change.changePercent}
+                                            formatValue={(val) => val.toLocaleString() + '원'} 
+                                          />
                                         </div>
                                       </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* 리뷰 변경 */}
-                        {changes.reviewChanges.length > 0 && (
-                          <div className="mb-4">
-                            <h4 className="text-sm font-medium mb-2 flex items-center">
-                              <StarIcon className="h-4 w-4 mr-1 text-yellow-500" />
-                              리뷰 변경
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                              {changes.reviewChanges.map((change, index) => (
-                                <Card key={index} className="overflow-hidden">
-                                  <CardContent className="p-0">
-                                    <div className="flex">
-                                      <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
-                                      <div className="p-2 flex-1">
-                                        <div className="text-xs line-clamp-2 mb-1">{change.product.name}</div>
-                                        <ChangeVisualizer 
-                                          oldValue={change.oldReviews} 
-                                          newValue={change.newReviews} 
-                                          changePercent={change.changePercent}
-                                          formatValue={(val) => val.toLocaleString() + '개'} 
-                                        />
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-center text-muted-foreground p-4">가격 변동이 감지되지 않았습니다.</p>
+                            )}
+                          </TabsContent>
+                          
+                          {/* 신규 제품 탭 */}
+                          <TabsContent value="new">
+                            {changes.newProducts.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {changes.newProducts.map((change, index) => (
+                                  <Card key={index} className="overflow-hidden">
+                                    <CardContent className="p-0">
+                                      <div className="flex">
+                                        <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
+                                        <div className="p-2 flex-1">
+                                          <div className="text-xs line-clamp-2 mb-1">{change.product.name}</div>
+                                          <div className="flex justify-between text-xs">
+                                            <Badge variant="outline" className="bg-green-50 text-green-700">신규</Badge>
+                                            <span className="font-semibold">{change.product.price.toLocaleString()}원</span>
+                                          </div>
+                                        </div>
                                       </div>
-                                    </div>
-                                  </CardContent>
-                                </Card>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-center text-muted-foreground p-4">신규 제품이 감지되지 않았습니다.</p>
+                            )}
+                          </TabsContent>
+                          
+                          {/* 순위 변경 탭 */}
+                          <TabsContent value="rank">
+                            {changes.rankChanges.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {changes.rankChanges.map((change, index) => (
+                                  <Card key={index} className="overflow-hidden">
+                                    <CardContent className="p-0">
+                                      <div className="flex">
+                                        <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
+                                        <div className="p-2 flex-1">
+                                          <div className="text-xs line-clamp-2 mb-1">{change.product.name}</div>
+                                          <div className="flex items-center">
+                                            <span className="text-xs mr-2">
+                                              {change.oldRank}위 →
+                                            </span>
+                                            <Badge 
+                                              variant="outline" 
+                                              className={change.change > 0 
+                                                ? "bg-green-50 text-green-700" 
+                                                : "bg-red-50 text-red-700"}
+                                            >
+                                              {change.newRank}위
+                                              {change.change !== 0 && (
+                                                <span className="ml-1">
+                                                  {change.change > 0 
+                                                    ? <ArrowUpIcon className="h-3 w-3 inline" /> 
+                                                    : <ArrowDownIcon className="h-3 w-3 inline" />}
+                                                  {Math.abs(change.change)}
+                                                </span>
+                                              )}
+                                            </Badge>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-center text-muted-foreground p-4">순위 변동이 감지되지 않았습니다.</p>
+                            )}
+                          </TabsContent>
+                          
+                          {/* 리뷰 변경 탭 */}
+                          <TabsContent value="review">
+                            {changes.reviewChanges.length > 0 ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {changes.reviewChanges.map((change, index) => (
+                                  <Card key={index} className="overflow-hidden">
+                                    <CardContent className="p-0">
+                                      <div className="flex">
+                                        <ProductImage src={change.product.image || DEFAULT_PRODUCT_IMAGES[0]} title={change.product.name} productId={change.product.productId} width={80} height={80} />
+                                        <div className="p-2 flex-1">
+                                          <div className="text-xs line-clamp-2 mb-1">{change.product.name}</div>
+                                          <ChangeVisualizer 
+                                            oldValue={change.oldReviews} 
+                                            newValue={change.newReviews} 
+                                            changePercent={change.changePercent}
+                                            formatValue={(val) => val.toLocaleString() + '개'} 
+                                          />
+                                        </div>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-center text-muted-foreground p-4">리뷰 변동이 감지되지 않았습니다.</p>
+                            )}
+                          </TabsContent>
+                        </Tabs>
                       </div>
                     )
                   ))}
