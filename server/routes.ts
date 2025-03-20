@@ -10,6 +10,7 @@ import keywordRoutes from "./api/routes/keyword-routes";
 import systemRoutes from "./api/routes/system-routes";
 import apiRouter from "./api/routes/api-router";
 import mlRoutes from "./api/routes/ml-routes";
+import monitoringRoutes from "./api/routes/monitoring-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // 기본 라우트 - 간단한 HTML 응답 추가 (테스트용)
@@ -110,6 +111,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register machine learning API routes
   app.use('/api/ml', mlRoutes);
+  
+  // Register competitor monitoring API routes
+  app.use('/api/monitoring', monitoringRoutes);
   
   // Register new FastAPI-like API router
   app.use('/api/v1', apiRouter);
