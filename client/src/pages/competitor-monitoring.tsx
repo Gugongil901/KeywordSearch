@@ -28,8 +28,20 @@ import {
   EyeIcon,
   DollarSignIcon,
   ShoppingBagIcon,
-  StarIcon
+  StarIcon,
+  InfoIcon,
+  ListChecksIcon,
+  ShieldAlertIcon
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 
 // 타입 정의
@@ -108,6 +120,18 @@ interface CompetitorInsight {
   priceStrategy: 'aggressive' | 'premium' | 'standard' | 'economy';
   strengths: string[];
   weaknesses: string[];
+  strengthsDetails: Record<string, {
+    description: string;
+    metrics: string;
+    impact: string;
+    examples: string[];
+  }>;
+  weaknessesDetails: Record<string, {
+    description: string;
+    metrics: string;
+    impact: string;
+    recommendations: string[];
+  }>;
 }
 
 // API 호출 함수
@@ -131,26 +155,78 @@ const fetchCompetitorInsights = async (keyword: string, competitors: string[]): 
       const priceStrategies: Array<'aggressive' | 'premium' | 'standard' | 'economy'> = 
         ['aggressive', 'premium', 'standard', 'economy'];
       
+      // 강점과 약점 상세 데이터 매핑
+      const strengthsDetails = {
+        '가격 경쟁력': {
+          description: '경쟁사 대비 10-15% 낮은 가격대 유지',
+          metrics: '평균 제품 가격이 시장 평균보다 12.3% 낮음',
+          impact: '가격 민감 고객층에서 시장 점유율 증가',
+          examples: ['특가 할인 이벤트', '대량 구매 할인', '무료 배송']
+        },
+        '제품 품질': {
+          description: '고품질 원재료와 엄격한 품질 관리',
+          metrics: '소비자 만족도 4.7/5.0, 품질 관련 반품률 1.2%',
+          impact: '브랜드 충성도 상승 및 재구매율 증가',
+          examples: ['품질 인증 취득', '투명한 성분 공개', '장기 보증 제공']
+        },
+        '빠른 배송': {
+          description: '주문 후 평균 1-2일 내 배송 완료',
+          metrics: '주문 처리 속도 업계 상위 10%, 배송 정시성 98.5%',
+          impact: '고객 만족도 증가 및 긴급 수요 고객층 확보',
+          examples: ['당일 배송 서비스', '주문 상태 실시간 추적', '지역별 물류 센터 운영']
+        }
+      };
+      
+      const weaknessesDetails = {
+        '제한된 제품 라인업': {
+          description: '주요 경쟁사 대비 40% 적은 제품 종류 보유',
+          metrics: '경쟁사 평균 100개 품목 대비 60개 품목만 제공',
+          impact: '다양한 소비자 니즈를 충족시키지 못해 잠재 고객 유실',
+          recommendations: ['점진적 제품 라인 확장', '틈새 시장 집중 전략', '고객 피드백 기반 신제품 개발']
+        },
+        '높은 가격대': {
+          description: '프리미엄 포지셔닝으로 진입 장벽 높음',
+          metrics: '시장 평균 대비 25-30% 높은 가격대 형성',
+          impact: '가격 민감 고객층 진입 어려움',
+          recommendations: ['가격대별 라인업 다양화', '가치 중심 마케팅 강화', '특별 프로모션 확대']
+        },
+        '배송 지연': {
+          description: '주문량 증가 시 배송 지연 문제 발생',
+          metrics: '성수기 평균 배송 시간 2일 증가, 불만 신고 15% 증가',
+          impact: '고객 이탈 및 부정적 리뷰 증가',
+          recommendations: ['물류 시스템 개선', '피크 시즌 인력 보강', '배송 지연 시 보상 정책 마련']
+        }
+      };
+      
+      // 경쟁사별 강점/약점 선택
+      const selectedStrengths = [
+        '가격 경쟁력',
+        '제품 품질',
+        '빠른 배송'
+      ].slice(0, ((index + 1) % 3) + 1); // 1-3개 강점 선택
+      
+      const selectedWeaknesses = [
+        '제한된 제품 라인업',
+        '높은 가격대',
+        '배송 지연'
+      ].slice(0, (index % 2) + 1); // 1-2개 약점 선택
+      
       return {
         competitor,
         threatLevel: Math.floor(Math.random() * 100),
         marketShare: Math.floor(Math.random() * 45) + 5, // 5-50% 사이
         growthRate: (Math.random() * 40) - 10, // -10% ~ +30%
         priceStrategy: priceStrategies[index % priceStrategies.length],
-        strengths: [
-          '가격 경쟁력',
-          '제품 품질',
-          '빠른 배송',
-          '고객 서비스',
-          '브랜드 인지도'
-        ].slice(0, Math.floor(Math.random() * 3) + 1), // 1-3개 강점 선택
-        weaknesses: [
-          '제한된 제품 라인업',
-          '높은 가격대',
-          '배송 지연',
-          '부정적 리뷰',
-          '재고 관리 문제'
-        ].slice(0, Math.floor(Math.random() * 3) + 1) // 1-3개 약점 선택
+        strengths: selectedStrengths,
+        weaknesses: selectedWeaknesses,
+        strengthsDetails: selectedStrengths.reduce((acc, strength) => {
+          acc[strength] = strengthsDetails[strength as keyof typeof strengthsDetails];
+          return acc;
+        }, {} as Record<string, any>),
+        weaknessesDetails: selectedWeaknesses.reduce((acc, weakness) => {
+          acc[weakness] = weaknessesDetails[weakness as keyof typeof weaknessesDetails];
+          return acc;
+        }, {} as Record<string, any>)
       };
     });
     
