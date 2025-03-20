@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ArrowUpIcon, ArrowDownIcon, AlertCircleIcon, BarChart3Icon, LineChartIcon, TagIcon } from "lucide-react";
+import { ArrowUpIcon, ArrowDownIcon, ArrowRightIcon, AlertCircleIcon, BarChart3Icon, LineChartIcon, TagIcon } from "lucide-react";
 
 // 타입 정의
 interface MonitoringConfig {
@@ -545,10 +545,3 @@ export default function CompetitorMonitoringPage() {
   );
 }
 
-// 컴포넌트 추가
-const ArrowRightIcon = ({ className }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M5 12h14"></path>
-    <path d="m12 5 7 7-7 7"></path>
-  </svg>
-);
