@@ -819,21 +819,13 @@ export default function CompetitorMonitoring() {
       <div className="space-y-3 mb-4">
         <h4 className="font-medium text-sm">순위 변동</h4>
         {changes.map((change, index) => (
-          <div key={`rank-${index}-${change.product.productId}`} className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md">
-            <div className="flex-shrink-0 w-12 h-12">
-              <ProductImage src={change.product.image} alt={change.product.name} className="rounded-md" />
-            </div>
-            <div className="flex-grow min-w-0">
-              <h5 className="text-sm font-medium truncate">{change.product.name}</h5>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">{change.oldRank}위 → {change.newRank}위</span>
-                <span className={change.change > 0 ? "text-green-600" : "text-red-600"}>
-                  {change.change > 0 ? <ArrowUp className="inline w-3 h-3" /> : <ArrowDown className="inline w-3 h-3" />}
-                  {Math.abs(change.change)} 단계
-                </span>
-              </div>
-            </div>
-          </div>
+          <RankChangeCard 
+            key={`rank-${index}-${change.product.productId}`}
+            change={change}
+            brandName={brandName}
+            brandId={competitor}
+            className="mb-2"
+          />
         ))}
       </div>
     );
@@ -850,18 +842,13 @@ export default function CompetitorMonitoring() {
       <div className="space-y-3 mb-4">
         <h4 className="font-medium text-sm">리뷰 변동</h4>
         {changes.map((change, index) => (
-          <div key={`review-${index}-${change.product.productId}`} className="flex items-center space-x-3 p-2 bg-gray-50 rounded-md">
-            <div className="flex-shrink-0 w-12 h-12">
-              <ProductImage src={change.product.image} alt={change.product.name} className="rounded-md" />
-            </div>
-            <div className="flex-grow min-w-0">
-              <h5 className="text-sm font-medium truncate">{change.product.name}</h5>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500"><Star className="inline w-3 h-3 text-yellow-500" /> {formatNumber(change.oldReviews)} → {formatNumber(change.newReviews)}</span>
-                <ChangeIndicator value={change.changePercent} />
-              </div>
-            </div>
-          </div>
+          <ReviewChangeCard 
+            key={`review-${index}-${change.product.productId}`}
+            change={change}
+            brandName={brandName}
+            brandId={competitor}
+            className="mb-2"
+          />
         ))}
       </div>
     );
@@ -878,18 +865,13 @@ export default function CompetitorMonitoring() {
       <div className="space-y-3 mb-4">
         <h4 className="font-medium text-sm">신규 제품</h4>
         {products.map((item, index) => (
-          <div key={`new-${index}-${item.product.productId}`} className="flex items-center space-x-3 p-2 bg-indigo-50 rounded-md">
-            <div className="flex-shrink-0 w-12 h-12">
-              <ProductImage src={item.product.image} alt={item.product.name} className="rounded-md" />
-            </div>
-            <div className="flex-grow min-w-0">
-              <h5 className="text-sm font-medium truncate">{item.product.name}</h5>
-              <div className="flex justify-between text-sm">
-                <Badge variant="outline" className="bg-indigo-100 border-indigo-200 text-indigo-700">신규</Badge>
-                <span className="text-gray-700">₩{formatNumber(item.product.price)}</span>
-              </div>
-            </div>
-          </div>
+          <NewProductCard 
+            key={`new-${index}-${item.product.productId}`}
+            item={item}
+            brandName={brandName}
+            brandId={competitor}
+            className="mb-2"
+          />
         ))}
       </div>
     );
@@ -1240,9 +1222,11 @@ export default function CompetitorMonitoring() {
                       <h4 className="font-medium mb-2">대표 제품</h4>
                       <div className="flex gap-4 items-center">
                         <div className="flex-shrink-0 w-16 h-16">
-                          <ProductImage 
-                            src={COMPETITOR_INSIGHTS_DATA[selectedCompetitor].representativeProduct.image}
-                            alt={COMPETITOR_INSIGHTS_DATA[selectedCompetitor].representativeProduct.name}
+                          <CompetitorProductImage 
+                            product={COMPETITOR_INSIGHTS_DATA[selectedCompetitor].representativeProduct}
+                            brandName={COMPETITOR_INSIGHTS_DATA[selectedCompetitor].competitor}
+                            brandId={selectedCompetitor}
+                            className="rounded-md"
                           />
                         </div>
                         <div>
