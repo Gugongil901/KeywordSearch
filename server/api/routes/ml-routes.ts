@@ -148,6 +148,11 @@ router.get('/semantic-related/:keyword', async (req: Request, res: Response) => 
     logger.info(`의미적 연관 키워드 요청: ${keyword}, 개수: ${limit}`);
     const relatedKeywords = await mlEnhancer.findSemanticRelatedKeywords(keyword, limit);
     
+    // 디버그를 위한 첫 번째 항목의 로깅
+    if (relatedKeywords.length > 0) {
+      logger.info(`첫 번째 연관 키워드 샘플: ${JSON.stringify(relatedKeywords[0])}`);
+    }
+    
     return res.json({
       keyword,
       related_keywords: relatedKeywords,

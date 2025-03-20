@@ -65,6 +65,13 @@ export interface KeywordMeaning {
 export interface SemanticRelatedKeyword {
   keyword: string;
   similarity: number;
+  representativeProduct?: {
+    productId: string;
+    name: string;
+    price: number;
+    image?: string;
+    url?: string;
+  };
 }
 
 /**
@@ -424,21 +431,48 @@ export class MachineLearningEnhancer {
     const suffixes = ['추천', '가격', '할인', '후기', '구매', '비교', '종류', '사용법', '효과', '브랜드'];
     const prefixes = ['인기', '최고', '저렴한', '고급', '추천', '신상', '할인', '프리미엄'];
     
+    const productNames = [
+      '프리미엄 고급형 제품', '스탠다드 일반형 제품', '슬림 경량형 제품', 
+      '프로페셔널 전문가용 제품', '올인원 다기능 제품', '에코 친환경 제품',
+      '울트라 고성능 제품', '베이직 기본형 제품', '컴팩트 소형 제품',
+      '하이엔드 최고급 제품', '미니 소형 제품', '플러스 확장형 제품'
+    ];
+    
     const result: SemanticRelatedKeyword[] = [];
     
     // 접미사 키워드 생성
     suffixes.forEach((suffix, index) => {
+      const relatedKeyword = `${keyword} ${suffix}`;
+      const productName = `${productNames[index % productNames.length]} ${suffix}`;
+      
       result.push({
-        keyword: `${keyword} ${suffix}`,
-        similarity: 0.9 - (index * 0.05)
+        keyword: relatedKeyword,
+        similarity: 0.9 - (index * 0.05),
+        representativeProduct: {
+          productId: `prod_${keyword}_${suffix}_${index}`,
+          name: productName,
+          price: Math.floor(Math.random() * 50000) + 10000,
+          image: `https://via.placeholder.com/150?text=${encodeURIComponent(relatedKeyword)}`,
+          url: `https://example.com/product/${encodeURIComponent(relatedKeyword)}`
+        }
       });
     });
     
     // 접두사 키워드 생성
     prefixes.forEach((prefix, index) => {
+      const relatedKeyword = `${prefix} ${keyword}`;
+      const productName = `${prefix} ${productNames[index % productNames.length]}`;
+      
       result.push({
-        keyword: `${prefix} ${keyword}`,
-        similarity: 0.8 - (index * 0.05)
+        keyword: relatedKeyword,
+        similarity: 0.8 - (index * 0.05),
+        representativeProduct: {
+          productId: `prod_${prefix}_${keyword}_${index}`,
+          name: productName,
+          price: Math.floor(Math.random() * 50000) + 10000,
+          image: `https://via.placeholder.com/150?text=${encodeURIComponent(relatedKeyword)}`,
+          url: `https://example.com/product/${encodeURIComponent(relatedKeyword)}`
+        }
       });
     });
     
