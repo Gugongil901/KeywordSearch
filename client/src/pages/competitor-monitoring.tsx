@@ -85,6 +85,22 @@ const BRAND_STORE_URLS = {
   'yuhan': 'https://smartstore.naver.com/yuhan'
 };
 
+// 브랜드별 대표 제품 이미지
+const BRAND_PRODUCT_IMAGES = {
+  'drlin': 'https://shop-phinf.pstatic.net/20230710_217/1688952676288NvNm4_JPEG/26121391946684402_1287609349.jpg',
+  'naturalplus': 'https://shop-phinf.pstatic.net/20230915_147/1694758066431zJKR3_JPEG/32926782127064937_1822402951.jpg',
+  'esthermall': 'https://shop-phinf.pstatic.net/20230721_271/1689926539095raqFn_JPEG/29195234962308650_1780833913.jpg',
+  'anguk': 'https://shop-phinf.pstatic.net/20230807_13/1691407115516KsaIC_JPEG/30745812128626636_1056185345.jpg',
+  'koreaeundan': 'https://shop-phinf.pstatic.net/20230526_167/1685090592258zLQ3X_JPEG/23059307964536430_1984189809.jpg',
+  'nutrione': 'https://shop-phinf.pstatic.net/20230830_143/1693371972252dNqlJ_JPEG/31540687839671376_2007286594.jpg',
+  'ckdhc': 'https://shop-phinf.pstatic.net/20230817_110/1692260729457aGj7M_JPEG/30429445111935644_1876483308.jpg',
+  'gnm': 'https://shop-phinf.pstatic.net/20220913_254/1663053635767gO5uL_JPEG/3222351466060232_1857158095.jpg',
+  'nutriday': 'https://shop-phinf.pstatic.net/20230804_18/1691134339370e2DXG_JPEG/29303054934659166_1507551594.jpg',
+  'jyns': 'https://shop-phinf.pstatic.net/20231023_4/16980118729982kz1J_JPEG/36180588683271784_2077002188.jpg',
+  'hanmi': 'https://shop-phinf.pstatic.net/20231109_45/1699507600992f6i9g_JPEG/37676316657248520_33345781.jpg',
+  'yuhan': 'https://shop-phinf.pstatic.net/20230508_102/1683530064193Bk0aL_JPEG/21698779851636714_1051203064.jpg'
+};
+
 // 건강기능식품 상위 제품 데이터
 // 인터페이스 정의
 interface CompetitorProduct {
@@ -186,64 +202,64 @@ interface CompetitorInsight {
 
 const TOP_HEALTH_PRODUCTS = {
   'drlin': [
-    { productId: 'drlin-omega3', name: '프리미엄 오메가3', price: 32900, reviews: 1203, rank: 1, image: 'https://shop-phinf.pstatic.net/20220923_300/1663869679546cF7Rh_JPEG/64997452449318461_1244795245.jpg' },
-    { productId: 'drlin-multivit', name: '종합비타민미네랄', price: 28900, reviews: 987, rank: 2, image: 'https://shop-phinf.pstatic.net/20220910_264/1662773040332I56l2_JPEG/63900817132950771_917085381.jpg' },
-    { productId: 'drlin-vitamin-d', name: '비타민D 5000IU', price: 19800, reviews: 754, rank: 3, image: 'https://shop-phinf.pstatic.net/20220504_13/1651647286713Dz9io_JPEG/52775071594963526_950200108.jpg' },
+    { productId: 'drlin-omega3', name: '프리미엄 오메가3', price: 32900, reviews: 1203, rank: 1, image: 'https://shop-phinf.pstatic.net/20220923_300/1663869679546cF7Rh_JPEG/64997452449318461_1244795245.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'drlin-multivit', name: '종합비타민미네랄', price: 28900, reviews: 987, rank: 2, image: 'https://shop-phinf.pstatic.net/20220910_264/1662773040332I56l2_JPEG/63900817132950771_917085381.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'drlin-vitamin-d', name: '비타민D 5000IU', price: 19800, reviews: 754, rank: 3, image: 'https://shop-phinf.pstatic.net/20220504_13/1651647286713Dz9io_JPEG/52775071594963526_950200108.jpg', collectedAt: new Date().toISOString() },
   ],
   'naturalplus': [
-    { productId: 'naturalplus-lutein', name: '루테인 지아잔틴', price: 34900, reviews: 1543, rank: 1, image: 'https://shop-phinf.pstatic.net/20230317_164/1679039485346xtDnk_JPEG/18308183272623729_1396195305.jpg' },
-    { productId: 'naturalplus-collagen', name: '더 콜라겐 히알루론산', price: 29900, reviews: 1322, rank: 2, image: 'https://shop-phinf.pstatic.net/20230327_299/1679884558132KpuPf_JPEG/19153252052429752_1613380331.jpg' },
-    { productId: 'naturalplus-probiotics', name: '장에 좋은 유산균', price: 37900, reviews: 987, rank: 3, image: 'https://shop-phinf.pstatic.net/20210902_159/1630544961088Mj9Sh_JPEG/31672748028842652_1866841073.jpg' },
+    { productId: 'naturalplus-lutein', name: '루테인 지아잔틴', price: 34900, reviews: 1543, rank: 1, image: 'https://shop-phinf.pstatic.net/20230317_164/1679039485346xtDnk_JPEG/18308183272623729_1396195305.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'naturalplus-collagen', name: '더 콜라겐 히알루론산', price: 29900, reviews: 1322, rank: 2, image: 'https://shop-phinf.pstatic.net/20230327_299/1679884558132KpuPf_JPEG/19153252052429752_1613380331.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'naturalplus-probiotics', name: '장에 좋은 유산균', price: 37900, reviews: 987, rank: 3, image: 'https://shop-phinf.pstatic.net/20210902_159/1630544961088Mj9Sh_JPEG/31672748028842652_1866841073.jpg', collectedAt: new Date().toISOString() },
   ],
   'esthermall': [
-    { productId: 'esther-multivit', name: '멀티비타민 미네랄', price: 59000, reviews: 824, rank: 1, image: 'https://shop-phinf.pstatic.net/20230721_271/1689926539095raqFn_JPEG/29195234962308650_1780833913.jpg' },
-    { productId: 'esther-prorobiotic', name: '프로바이오틱스', price: 69000, reviews: 612, rank: 2, image: 'https://shop-phinf.pstatic.net/20221207_251/1670377444278eHnOY_JPEG/10646139175414682_1021037816.jpg' },
-    { productId: 'esther-collagen', name: '히알루론산 콜라겐', price: 57000, reviews: 495, rank: 3, image: 'https://shop-phinf.pstatic.net/20220708_212/1657268845249r4Iio_JPEG/58396632191512798_1577577913.jpg' },
+    { productId: 'esther-multivit', name: '멀티비타민 미네랄', price: 59000, reviews: 824, rank: 1, image: 'https://shop-phinf.pstatic.net/20230721_271/1689926539095raqFn_JPEG/29195234962308650_1780833913.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'esther-prorobiotic', name: '프로바이오틱스', price: 69000, reviews: 612, rank: 2, image: 'https://shop-phinf.pstatic.net/20221207_251/1670377444278eHnOY_JPEG/10646139175414682_1021037816.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'esther-collagen', name: '히알루론산 콜라겐', price: 57000, reviews: 495, rank: 3, image: 'https://shop-phinf.pstatic.net/20220708_212/1657268845249r4Iio_JPEG/58396632191512798_1577577913.jpg', collectedAt: new Date().toISOString() },
   ],
   'anguk': [
-    { productId: 'anguk-iron', name: '철분 플러스', price: 19800, reviews: 3254, rank: 1, image: 'https://shop-phinf.pstatic.net/20230419_252/1681889825359mLVa1_JPEG/21158535259736380_658984878.jpg' },
-    { productId: 'anguk-vitamin-d', name: '비타민D 1000IU', price: 9800, reviews: 2876, rank: 2, image: 'https://shop-phinf.pstatic.net/20220413_264/1649818184992jCOoS_JPEG/50945975887204344_1651673133.jpg' },
-    { productId: 'anguk-omega3', name: '식물성 오메가3', price: 29800, reviews: 1932, rank: 3, image: 'https://shop-phinf.pstatic.net/20230110_25/1673325559033LkxQ3_JPEG/12594256935451834_184431566.jpg' },
+    { productId: 'anguk-iron', name: '철분 플러스', price: 19800, reviews: 3254, rank: 1, image: 'https://shop-phinf.pstatic.net/20230419_252/1681889825359mLVa1_JPEG/21158535259736380_658984878.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'anguk-vitamin-d', name: '비타민D 1000IU', price: 9800, reviews: 2876, rank: 2, image: 'https://shop-phinf.pstatic.net/20220413_264/1649818184992jCOoS_JPEG/50945975887204344_1651673133.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'anguk-omega3', name: '식물성 오메가3', price: 29800, reviews: 1932, rank: 3, image: 'https://shop-phinf.pstatic.net/20230110_25/1673325559033LkxQ3_JPEG/12594256935451834_184431566.jpg', collectedAt: new Date().toISOString() },
   ],
   'koreaeundan': [
-    { productId: 'eundan-vitamin-c', name: '비타민C 1000', price: 16900, reviews: 5327, rank: 1, image: 'https://shop-phinf.pstatic.net/20230505_9/1683252702946gOo2A_JPEG/22521407895271368_442223604.jpg' },
-    { productId: 'eundan-vitamin-b', name: '활력비타민B', price: 18900, reviews: 3246, rank: 2, image: 'https://shop-phinf.pstatic.net/20220803_185/1659516207733lrF62_JPEG/27402054737143694_218246605.jpg' },
-    { productId: 'eundan-probiotics', name: '장에 좋은 유산균', price: 23900, reviews: 2869, rank: 3, image: 'https://shop-phinf.pstatic.net/20220725_234/1658714267032YXSbS_JPEG/26600114035455764_1986884467.jpg' },
+    { productId: 'eundan-vitamin-c', name: '비타민C 1000', price: 16900, reviews: 5327, rank: 1, image: 'https://shop-phinf.pstatic.net/20230505_9/1683252702946gOo2A_JPEG/22521407895271368_442223604.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'eundan-vitamin-b', name: '활력비타민B', price: 18900, reviews: 3246, rank: 2, image: 'https://shop-phinf.pstatic.net/20220803_185/1659516207733lrF62_JPEG/27402054737143694_218246605.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'eundan-probiotics', name: '장에 좋은 유산균', price: 23900, reviews: 2869, rank: 3, image: 'https://shop-phinf.pstatic.net/20220725_234/1658714267032YXSbS_JPEG/26600114035455764_1986884467.jpg', collectedAt: new Date().toISOString() },
   ],
   'nutrione': [
-    { productId: 'nutrione-lactobacillus', name: '장쾌동 유산균', price: 29800, reviews: 4387, rank: 1, image: 'https://shop-phinf.pstatic.net/20220822_28/1661133613839BObxQ_JPEG/29019460799109804_1358335370.jpg' },
-    { productId: 'nutrione-omega3', name: '알티지 오메가3', price: 31900, reviews: 2965, rank: 2, image: 'https://shop-phinf.pstatic.net/20220614_159/16550920952493uoI9_JPEG/56219879098475798_2042764686.jpg' },
-    { productId: 'nutrione-multivit', name: '종합비타민 미네랄', price: 24900, reviews: 2547, rank: 3, image: 'https://shop-phinf.pstatic.net/20220617_86/1655451629826CvBMz_JPEG/23337473691050352_1000832853.jpg' },
+    { productId: 'nutrione-lactobacillus', name: '장쾌동 유산균', price: 29800, reviews: 4387, rank: 1, image: 'https://shop-phinf.pstatic.net/20220822_28/1661133613839BObxQ_JPEG/29019460799109804_1358335370.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'nutrione-omega3', name: '알티지 오메가3', price: 31900, reviews: 2965, rank: 2, image: 'https://shop-phinf.pstatic.net/20220614_159/16550920952493uoI9_JPEG/56219879098475798_2042764686.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'nutrione-multivit', name: '종합비타민 미네랄', price: 24900, reviews: 2547, rank: 3, image: 'https://shop-phinf.pstatic.net/20220617_86/1655451629826CvBMz_JPEG/23337473691050352_1000832853.jpg', collectedAt: new Date().toISOString() },
   ],
   'ckdhc': [
-    { productId: 'ckd-lactofit', name: '락토핏 생유산균', price: 17900, reviews: 8754, rank: 1, image: 'https://shop-phinf.pstatic.net/20220406_300/16492198417698hnLn_JPEG/50347632664059004_1040409731.jpg' },
-    { productId: 'ckd-omega3', name: '프로메가 오메가3', price: 19900, reviews: 6582, rank: 2, image: 'https://shop-phinf.pstatic.net/20230103_45/1672709864903gFKhA_JPEG/11978562863342562_16776074.jpg' },
-    { productId: 'ckd-redginseng', name: '홍삼정 에브리타임', price: 43900, reviews: 4389, rank: 3, image: 'https://shop-phinf.pstatic.net/20220603_25/1654234243993nTIBL_JPEG/55362027784397134_1272008747.jpg' },
+    { productId: 'ckd-lactofit', name: '락토핏 생유산균', price: 17900, reviews: 8754, rank: 1, image: 'https://shop-phinf.pstatic.net/20220406_300/16492198417698hnLn_JPEG/50347632664059004_1040409731.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'ckd-omega3', name: '프로메가 오메가3', price: 19900, reviews: 6582, rank: 2, image: 'https://shop-phinf.pstatic.net/20230103_45/1672709864903gFKhA_JPEG/11978562863342562_16776074.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'ckd-redginseng', name: '홍삼정 에브리타임', price: 43900, reviews: 4389, rank: 3, image: 'https://shop-phinf.pstatic.net/20220603_25/1654234243993nTIBL_JPEG/55362027784397134_1272008747.jpg', collectedAt: new Date().toISOString() },
   ],
   'gnm': [
-    { productId: 'gnm-garlic', name: '흑마늘 진액', price: 28900, reviews: 5243, rank: 1, image: 'https://shop-phinf.pstatic.net/20220524_180/1653381536396l9XVW_JPEG/54509320284697598_1193600621.jpg' },
-    { productId: 'gnm-probiotics', name: '장건강 데일리 유산균', price: 27900, reviews: 4765, rank: 2, image: 'https://shop-phinf.pstatic.net/20230721_189/1689898845436PORsO_JPEG/29167541307791778_1507301384.jpg' },
-    { productId: 'gnm-collagen', name: '저분자 콜라겐', price: 29900, reviews: 3654, rank: 3, image: 'https://shop-phinf.pstatic.net/20230330_12/1680139201693Ncfmi_JPEG/19407897623972774_1857072546.jpg' },
+    { productId: 'gnm-garlic', name: '흑마늘 진액', price: 28900, reviews: 5243, rank: 1, image: 'https://shop-phinf.pstatic.net/20220524_180/1653381536396l9XVW_JPEG/54509320284697598_1193600621.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'gnm-probiotics', name: '장건강 데일리 유산균', price: 27900, reviews: 4765, rank: 2, image: 'https://shop-phinf.pstatic.net/20230721_189/1689898845436PORsO_JPEG/29167541307791778_1507301384.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'gnm-collagen', name: '저분자 콜라겐', price: 29900, reviews: 3654, rank: 3, image: 'https://shop-phinf.pstatic.net/20230330_12/1680139201693Ncfmi_JPEG/19407897623972774_1857072546.jpg', collectedAt: new Date().toISOString() },
   ],
   'nutriday': [
-    { productId: 'nutriday-vitaminc', name: '비타민C 1000', price: 19800, reviews: 1874, rank: 1, image: 'https://shop-phinf.pstatic.net/20230726_258/1690336669818tYF86_JPEG/29605365690161488_1663889608.jpg' },
-    { productId: 'nutriday-calcium', name: '칼슘 마그네슘 아연', price: 14900, reviews: 1245, rank: 2, image: 'https://shop-phinf.pstatic.net/20230102_22/16726366906428OCPB_JPEG/11905388539181066_1881349018.jpg' },
-    { productId: 'nutriday-eye', name: '아이케어 루테인', price: 25800, reviews: 983, rank: 3, image: 'https://shop-phinf.pstatic.net/20230301_241/1677639799989t2OMq_JPEG/16908500044362372_1290702651.jpg' },
+    { productId: 'nutriday-vitaminc', name: '비타민C 1000', price: 19800, reviews: 1874, rank: 1, image: 'https://shop-phinf.pstatic.net/20230726_258/1690336669818tYF86_JPEG/29605365690161488_1663889608.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'nutriday-calcium', name: '칼슘 마그네슘 아연', price: 14900, reviews: 1245, rank: 2, image: 'https://shop-phinf.pstatic.net/20230102_22/16726366906428OCPB_JPEG/11905388539181066_1881349018.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'nutriday-eye', name: '아이케어 루테인', price: 25800, reviews: 983, rank: 3, image: 'https://shop-phinf.pstatic.net/20230301_241/1677639799989t2OMq_JPEG/16908500044362372_1290702651.jpg', collectedAt: new Date().toISOString() },
   ],
   'jyns': [
-    { productId: 'jyns-calcium', name: '칼마디 앤 비타민D', price: 27800, reviews: 2421, rank: 1, image: 'https://shop-phinf.pstatic.net/20221017_62/1665964818405lJV1u_JPEG/6233492294598176_1935169879.jpg' },
-    { productId: 'jyns-propolis', name: '브라질 그린 프로폴리스', price: 38700, reviews: 1854, rank: 2, image: 'https://shop-phinf.pstatic.net/20221216_75/1671153525293WVj5o_JPEG/11422198152469956_1380900621.jpg' },
-    { productId: 'jyns-zinc', name: '아연 비타민C 셀렌', price: 19800, reviews: 1432, rank: 3, image: 'https://shop-phinf.pstatic.net/20220614_108/1655198069384UrdaO_JPEG/56325852226650654_2035584873.jpg' },
+    { productId: 'jyns-calcium', name: '칼마디 앤 비타민D', price: 27800, reviews: 2421, rank: 1, image: 'https://shop-phinf.pstatic.net/20221017_62/1665964818405lJV1u_JPEG/6233492294598176_1935169879.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'jyns-propolis', name: '브라질 그린 프로폴리스', price: 38700, reviews: 1854, rank: 2, image: 'https://shop-phinf.pstatic.net/20221216_75/1671153525293WVj5o_JPEG/11422198152469956_1380900621.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'jyns-zinc', name: '아연 비타민C 셀렌', price: 19800, reviews: 1432, rank: 3, image: 'https://shop-phinf.pstatic.net/20220614_108/1655198069384UrdaO_JPEG/56325852226650654_2035584873.jpg', collectedAt: new Date().toISOString() },
   ],
   'hanmi': [
-    { productId: 'hanmi-probiotic', name: '한미 프로바이오틱스', price: 39800, reviews: 4287, rank: 1, image: 'https://shop-phinf.pstatic.net/20220316_59/1647425578873I9wgA_JPEG/48553361715238608_1539518774.jpg' },
-    { productId: 'hanmi-omega3', name: '한미 프리미엄 오메가3', price: 32800, reviews: 3254, rank: 2, image: 'https://shop-phinf.pstatic.net/20220915_191/1663231639532q6pjL_JPEG/1630341533738754_1107798969.jpg' },
-    { productId: 'hanmi-redginseng', name: '한미 홍삼정 스틱', price: 59800, reviews: 2154, rank: 3, image: 'https://shop-phinf.pstatic.net/20220322_23/1647921323266WfY9e_JPEG/49049106107630664_1835629657.jpg' },
+    { productId: 'hanmi-probiotic', name: '한미 프로바이오틱스', price: 39800, reviews: 4287, rank: 1, image: 'https://shop-phinf.pstatic.net/20220316_59/1647425578873I9wgA_JPEG/48553361715238608_1539518774.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'hanmi-omega3', name: '한미 프리미엄 오메가3', price: 32800, reviews: 3254, rank: 2, image: 'https://shop-phinf.pstatic.net/20220915_191/1663231639532q6pjL_JPEG/1630341533738754_1107798969.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'hanmi-redginseng', name: '한미 홍삼정 스틱', price: 59800, reviews: 2154, rank: 3, image: 'https://shop-phinf.pstatic.net/20220322_23/1647921323266WfY9e_JPEG/49049106107630664_1835629657.jpg', collectedAt: new Date().toISOString() },
   ],
   'yuhan': [
-    { productId: 'yuhan-omega3', name: '유한 오메가3', price: 22900, reviews: 5387, rank: 1, image: 'https://shop-phinf.pstatic.net/20210510_264/16206595319421oR4j_JPEG/21787318783259990_277337275.jpg' },
-    { productId: 'yuhan-multivit', name: '유한 종합비타민', price: 19900, reviews: 4329, rank: 2, image: 'https://shop-phinf.pstatic.net/20210510_249/1620659580245FOvSh_JPEG/21787367086586696_1231272000.jpg' },
-    { productId: 'yuhan-probiotics', name: '유한 프로바이오틱스', price: 28900, reviews: 3876, rank: 3, image: 'https://shop-phinf.pstatic.net/20220614_4/1655163844809vPPnf_JPEG/56291638694976708_1383602939.jpg' },
+    { productId: 'yuhan-omega3', name: '유한 오메가3', price: 22900, reviews: 5387, rank: 1, image: 'https://shop-phinf.pstatic.net/20210510_264/16206595319421oR4j_JPEG/21787318783259990_277337275.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'yuhan-multivit', name: '유한 종합비타민', price: 19900, reviews: 4329, rank: 2, image: 'https://shop-phinf.pstatic.net/20210510_249/1620659580245FOvSh_JPEG/21787367086586696_1231272000.jpg', collectedAt: new Date().toISOString() },
+    { productId: 'yuhan-probiotics', name: '유한 프로바이오틱스', price: 28900, reviews: 3876, rank: 3, image: 'https://shop-phinf.pstatic.net/20220614_4/1655163844809vPPnf_JPEG/56291638694976708_1383602939.jpg', collectedAt: new Date().toISOString() },
   ]
 };
 
@@ -483,6 +499,49 @@ const COMPETITOR_INSIGHTS_DATA: Record<string, CompetitorInsight> = {
   }
 };
 
+// 브랜드별 기본 제품 데이터 생성 함수
+// 브랜드별 제품 생성 함수
+function generateBrandProducts(brandId: string): CompetitorProduct[] {
+  const brandInfo = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === brandId);
+  const brandName = brandInfo ? brandInfo.name : brandId;
+  const brandImage = BRAND_PRODUCT_IMAGES[brandId as keyof typeof BRAND_PRODUCT_IMAGES];
+  const storeUrl = BRAND_STORE_URLS[brandId as keyof typeof BRAND_STORE_URLS];
+  
+  // 브랜드별 기본 제품 3개 생성
+  return [
+    {
+      productId: `${brandId}-multivit-${Date.now()}`,
+      name: `${brandName} 종합비타민`,
+      price: 25000 + Math.floor(Math.random() * 15000),
+      reviews: 100 + Math.floor(Math.random() * 900),
+      rank: 1,
+      image: brandImage,
+      url: storeUrl ? `${storeUrl}/products/${Date.now()}` : undefined,
+      collectedAt: new Date().toISOString()
+    },
+    {
+      productId: `${brandId}-omega3-${Date.now()}`,
+      name: `${brandName} 오메가3`,
+      price: 20000 + Math.floor(Math.random() * 20000),
+      reviews: 100 + Math.floor(Math.random() * 700),
+      rank: 2,
+      image: brandImage,
+      url: storeUrl ? `${storeUrl}/products/${Date.now()+1}` : undefined,
+      collectedAt: new Date().toISOString()
+    },
+    {
+      productId: `${brandId}-probiotic-${Date.now()}`,
+      name: `${brandName} 프로바이오틱스`,
+      price: 30000 + Math.floor(Math.random() * 25000),
+      reviews: 100 + Math.floor(Math.random() * 1000),
+      rank: 3,
+      image: brandImage,
+      url: storeUrl ? `${storeUrl}/products/${Date.now()+2}` : undefined,
+      collectedAt: new Date().toISOString()
+    }
+  ];
+};
+
 // 경쟁사 모니터링 메인 컴포넌트
 export default function CompetitorMonitoring() {
   // 상태 관리
@@ -571,6 +630,7 @@ export default function CompetitorMonitoring() {
   const generateMockResults = (): MonitoringResult => {
     const changesDetected: Record<string, CompetitorChanges> = {};
     
+    // 선택된 모든 경쟁사에 대해 결과 생성
     competitors.forEach(competitor => {
       const priceChanges: PriceChange[] = [];
       const newProducts: NewProductAlert[] = [];
@@ -580,78 +640,82 @@ export default function CompetitorMonitoring() {
       // 각 경쟁사별 제품 데이터 사용
       const products = TOP_HEALTH_PRODUCTS[competitor as keyof typeof TOP_HEALTH_PRODUCTS] || [];
       
-      // 변화 데이터 생성
-      if (products.length > 0) {
-        // 가격 변화
-        if (Math.random() > 0.5) {
-          const product = products[0];
-          const oldPrice = product.price;
-          const newPrice = Math.round(oldPrice * (1 + (Math.random() * 0.2 - 0.1)));
-          const changePercent = ((newPrice - oldPrice) / oldPrice) * 100;
-          
-          if (Math.abs(changePercent) >= alertThresholds.priceChangePercent) {
-            priceChanges.push({
-              product: { ...product, collectedAt: new Date().toISOString() },
-              oldPrice,
-              newPrice,
-              changePercent
-            });
-          }
-        }
+      // 제품 데이터가 없는 경우 브랜드에 맞는 기본 제품 데이터 생성
+      const brandProducts = products.length > 0 ? products : generateBrandProducts(competitor);
+      
+      // 가격 변화 (약 50% 확률로 발생)
+      if (Math.random() > 0.5 && brandProducts.length > 0) {
+        const product = brandProducts[0];
+        const oldPrice = product.price;
+        const newPrice = Math.round(oldPrice * (1 + (Math.random() * 0.2 - 0.1)));
+        const changePercent = ((newPrice - oldPrice) / oldPrice) * 100;
         
-        // 순위 변화
-        if (alertThresholds.rankChange && Math.random() > 0.6) {
-          const product = products[Math.floor(Math.random() * products.length)];
-          const oldRank = product.rank;
-          const change = Math.floor(Math.random() * 5) * (Math.random() > 0.5 ? 1 : -1);
-          const newRank = Math.max(1, oldRank - change);
-          
-          rankChanges.push({
+        if (Math.abs(changePercent) >= alertThresholds.priceChangePercent) {
+          priceChanges.push({
             product: { ...product, collectedAt: new Date().toISOString() },
-            oldRank,
-            newRank,
-            change
-          });
-        }
-        
-        // 리뷰 변화
-        if (Math.random() > 0.5) {
-          const product = products[Math.floor(Math.random() * products.length)];
-          const oldReviews = product.reviews;
-          const newReviews = Math.round(oldReviews * (1 + (Math.random() * 0.3)));
-          const changePercent = ((newReviews - oldReviews) / oldReviews) * 100;
-          
-          if (changePercent >= alertThresholds.reviewChangePercent) {
-            reviewChanges.push({
-              product: { ...product, collectedAt: new Date().toISOString() },
-              oldReviews,
-              newReviews,
-              changePercent
-            });
-          }
-        }
-        
-        // 새 제품
-        if (alertThresholds.newProduct && Math.random() > 0.75) {
-          const brandInfo = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor);
-          const brandName = brandInfo ? brandInfo.name : competitor;
-          
-          newProducts.push({
-            product: {
-              productId: `${competitor}-new-${Date.now()}`,
-              name: `신제품 ${brandName} ${Math.random() > 0.5 ? '종합비타민' : '프로바이오틱스'}`,
-              price: Math.round(15000 + Math.random() * 35000),
-              reviews: Math.floor(Math.random() * 50),
-              rank: Math.floor(Math.random() * 10) + 4,
-              image: 'https://shop-phinf.pstatic.net/20230111_10/1673421821959A6DYz_JPEG/12690534937377620_942697878.jpg',
-              collectedAt: new Date().toISOString()
-            },
-            type: 'new_product'
+            oldPrice,
+            newPrice,
+            changePercent
           });
         }
       }
       
-      // 변화 감지 데이터 저장
+      // 순위 변화 (약 40% 확률로 발생)
+      if (alertThresholds.rankChange && Math.random() > 0.6 && brandProducts.length > 0) {
+        const product = brandProducts[Math.floor(Math.random() * brandProducts.length)];
+        const oldRank = product.rank;
+        const change = Math.floor(Math.random() * 5) * (Math.random() > 0.5 ? 1 : -1);
+        const newRank = Math.max(1, oldRank - change);
+        
+        rankChanges.push({
+          product: { ...product, collectedAt: new Date().toISOString() },
+          oldRank,
+          newRank,
+          change
+        });
+      }
+      
+      // 리뷰 변화 (약 50% 확률로 발생)
+      if (Math.random() > 0.5 && brandProducts.length > 0) {
+        const product = brandProducts[Math.floor(Math.random() * brandProducts.length)];
+        const oldReviews = product.reviews;
+        const newReviews = Math.round(oldReviews * (1 + (Math.random() * 0.3)));
+        const changePercent = ((newReviews - oldReviews) / oldReviews) * 100;
+        
+        if (changePercent >= alertThresholds.reviewChangePercent) {
+          reviewChanges.push({
+            product: { ...product, collectedAt: new Date().toISOString() },
+            oldReviews,
+            newReviews,
+            changePercent
+          });
+        }
+      }
+      
+      // 새 제품 알림 (약 25% 확률로 발생)
+      if (alertThresholds.newProduct && Math.random() > 0.75) {
+        const brandInfo = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor);
+        const brandName = brandInfo ? brandInfo.name : competitor;
+        
+        // 브랜드별 신제품 이미지 및 정보 생성
+        const brandImage = BRAND_PRODUCT_IMAGES[competitor as keyof typeof BRAND_PRODUCT_IMAGES] || 
+          'https://shop-phinf.pstatic.net/20230111_10/1673421821959A6DYz_JPEG/12690534937377620_942697878.jpg';
+        
+        newProducts.push({
+          product: {
+            productId: `${competitor}-new-${Date.now()}`,
+            name: `신제품 ${brandName} ${Math.random() > 0.5 ? '종합비타민' : '프로바이오틱스'}`,
+            price: Math.round(15000 + Math.random() * 35000),
+            reviews: Math.floor(Math.random() * 50),
+            rank: Math.floor(Math.random() * 10) + 4,
+            image: brandImage,
+            collectedAt: new Date().toISOString()
+          },
+          type: 'new_product'
+        });
+      }
+      
+      // 변화 감지 데이터 저장 (알림 여부 계산)
       changesDetected[competitor] = {
         priceChanges,
         newProducts,
@@ -834,7 +898,6 @@ export default function CompetitorMonitoring() {
         <TabsList className="mb-4">
           <TabsTrigger value="monitoring">모니터링</TabsTrigger>
           <TabsTrigger value="insights">ML 인사이트</TabsTrigger>
-          <TabsTrigger value="keywords">키워드 분석</TabsTrigger>
         </TabsList>
         
         {/* 모니터링 탭 내용 */}
@@ -844,7 +907,7 @@ export default function CompetitorMonitoring() {
               <h2 className="text-xl font-semibold mb-2">경쟁사 변화 모니터링</h2>
               <p className="text-gray-500 text-sm">선택한 경쟁사의 제품 가격, 순위, 리뷰 변화를 모니터링합니다.</p>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex items-center space-x-2">
               <Button 
                 variant="outline" 
                 onClick={() => setShowConfigDialog(true)}
@@ -853,10 +916,19 @@ export default function CompetitorMonitoring() {
                 <Settings className="w-4 h-4 mr-2" />
                 설정
               </Button>
+              <div className="relative w-[280px]">
+                <Input
+                  type="text"
+                  placeholder="키워드 입력 (영양제, 비타민 등)"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  className="pr-10"
+                />
+              </div>
               <Button 
                 onClick={runMonitoring} 
-                disabled={loading || competitors.length === 0}
-                className="flex items-center"
+                disabled={loading || competitors.length === 0 || !keyword.trim()}
+                className="flex items-center whitespace-nowrap"
               >
                 {loading ? (
                   <>
@@ -884,12 +956,12 @@ export default function CompetitorMonitoring() {
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label htmlFor="keyword">키워드</Label>
+                  <Label htmlFor="keyword">모니터링할 키워드</Label>
                   <Input
                     id="keyword"
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    placeholder="모니터링할 키워드 입력 (영양제, 비타민 등)"
+                    placeholder="영양제, 비타민, 건강기능식품 등 키워드 입력"
                   />
                 </div>
                 <div className="space-y-2">
