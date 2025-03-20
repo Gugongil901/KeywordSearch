@@ -12,7 +12,8 @@ import { DEFAULT_PRODUCT_IMAGES } from "@/constants/images";
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -344,14 +345,28 @@ const fetchCompetitorInsights = async (keyword: string, competitors: string[]): 
           const productImage = topProduct.image && topProduct.image.startsWith('http') ?
             topProduct.image : getHealthProductImage(keyword, competitor);
             
+          // 제품 ID 추출 및 URL 생성
+          const productId = topProduct.productId || `${competitor}-product-${i}`;
+          
+          // 제품 URL 생성 - 직접 제품 페이지로 연결
+          // Naver 상품 페이지 URL 형식: https://search.shopping.naver.com/catalog/{productId}
+          let productUrl = topProduct.url;
+          if (!productUrl && productId.match(/^[0-9]+$/)) {
+            // 숫자만 있는 ID인 경우 네이버 상품 페이지 URL로 사용
+            productUrl = `https://search.shopping.naver.com/catalog/${productId}`;
+          } else {
+            // 그 외에는 일반 검색 URL 사용
+            productUrl = `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(competitor + ' ' + keyword)}`;
+          }
+          
           productData = {
             name: productName,
             price: typeof topProduct.price === 'number' ? topProduct.price : 35000 + (i * 1000),
             image: productImage,
-            url: topProduct.url || `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(competitor + ' ' + keyword)}`,
+            url: productUrl,
             reviews: typeof topProduct.reviews === 'number' ? topProduct.reviews : 50 + (i * 10),
             rank: typeof topProduct.rank === 'number' ? topProduct.rank : i + 1,
-            productId: topProduct.productId || `${competitor}-product-${i}`
+            productId: productId
           };
         } else {
           // 제품 정보가 없을 경우 키워드에 맞는 건강 기능식품 이미지 사용
@@ -785,6 +800,10 @@ export default function CompetitorMonitoringPage() {
   const [selectedInsight, setSelectedInsight] = useState<CompetitorInsight | null>(null);
   const [selectedStrength, setSelectedStrength] = useState<string | null>(null);
   const [selectedWeakness, setSelectedWeakness] = useState<string | null>(null);
+  
+  // 리액트 쿼리 클라이언트 및 토스트 훅
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // 모니터링 설정 목록 조회
   const { data: configs, isLoading: configsLoading, refetch: refetchConfigs } = useQuery({
@@ -865,23 +884,38 @@ export default function CompetitorMonitoringPage() {
       // 실제 환경에서는 API 호출
       // await axios.delete(`/api/monitoring/configs/${encodeURIComponent(keywordToRemove)}`);
       
-      // API가 없는 상태에서는 메모리에서만 삭제
-      const newConfigs = { ...configs };
-      delete newConfigs[keywordToRemove];
-      
-      // 현재 활성 키워드가 삭제된 키워드인 경우 다른 키워드로 변경
-      if (activeKeyword === keywordToRemove) {
-        const remainingKeywords = Object.keys(newConfigs);
-        setActiveKeyword(remainingKeywords.length > 0 ? remainingKeywords[0] : null);
+      // API 연결이 아직 없으므로 클라이언트 사이드에서 처리
+      if (configs) {
+        // 임시 객체 생성하여 해당 키워드 삭제
+        const tempConfigs = { ...configs };
+        delete tempConfigs[keywordToRemove];
+        
+        // 현재 활성 키워드가 삭제된 키워드인 경우 다른 키워드로 변경
+        if (activeKeyword === keywordToRemove) {
+          const remainingKeywords = Object.keys(tempConfigs);
+          setActiveKeyword(remainingKeywords.length > 0 ? remainingKeywords[0] : null);
+        }
+        
+        // 임시 데이터로 리액트 상태 직접 업데이트 (캐시 업데이트를 위한 방법)
+        queryClient.setQueryData(['monitoringConfigs'], tempConfigs);
+        
+        // 토스트 알림 표시
+        toast({
+          title: "키워드 삭제됨",
+          description: `"${keywordToRemove}" 키워드가 모니터링 목록에서 제거되었습니다.`,
+          variant: "default",
+        });
       }
-      
-      // 설정 목록 갱신
-      refetchConfigs();
-      setRemoveKeywordLoading(null);
       
       console.log(`키워드 삭제 완료: ${keywordToRemove}`);
     } catch (error) {
       console.error(`키워드 삭제 오류(${keywordToRemove}):`, error);
+      toast({
+        title: "키워드 삭제 실패",
+        description: `"${keywordToRemove}" 키워드 삭제 중 오류가 발생했습니다.`,
+        variant: "destructive",
+      });
+    } finally {
       setRemoveKeywordLoading(null);
     }
   };
