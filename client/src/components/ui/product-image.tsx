@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DEFAULT_PRODUCT_IMAGES, COMPETITOR_PRODUCT_IMAGES, BRAND_WEBSITES } from '@/constants/images';
 import { SiNaver } from 'react-icons/si';
+import { getProxiedImageUrl } from '@/utils/image';
 
 interface ProductImageProps {
   src?: string;
@@ -36,11 +37,14 @@ export function ProductImage({
     setError(false);
 
     if (src) {
-      setImgSrc(src);
+      // 외부 이미지 URL인 경우 프록시 사용
+      setImgSrc(getProxiedImageUrl(src));
     } else if (competitor) {
-      setImgSrc(getFallbackImage());
+      // 경쟁사 이미지도 프록시 사용
+      setImgSrc(getProxiedImageUrl(getFallbackImage()));
     } else {
-      setImgSrc(DEFAULT_PRODUCT_IMAGES[0]);
+      // 기본 이미지도 프록시 사용
+      setImgSrc(getProxiedImageUrl(DEFAULT_PRODUCT_IMAGES[0]));
     }
   }, [src, competitor, productIndex]);
 
@@ -73,7 +77,7 @@ export function ProductImage({
     setLoading(false);
     if (!error) {
       const fallbackImage = DEFAULT_PRODUCT_IMAGES[0];
-      setImgSrc(fallbackImage);
+      setImgSrc(getProxiedImageUrl(fallbackImage));
     }
   };
 
