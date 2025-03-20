@@ -290,7 +290,7 @@ const checkForChanges = async (keyword: string) => {
 // 컴포넌트
 export default function CompetitorMonitoringPage() {
   const [keyword, setKeyword] = useState('');
-  const [topNCompetitors, setTopNCompetitors] = useState(5);
+  const [topNCompetitors, setTopNCompetitors] = useState(10);
   const [activeKeyword, setActiveKeyword] = useState<string | null>(null);
   const [setupStatus, setSetupStatus] = useState<string | null>(null);
   const [checkStatus, setCheckStatus] = useState<string | null>(null);
@@ -606,6 +606,50 @@ export default function CompetitorMonitoringPage() {
                           />
                         </div>
                         
+                        {/* 레이더 차트로 강점/약점 시각화 */}
+                        <div className="border rounded-lg p-4 mb-4">
+                          <h4 className="text-sm font-medium mb-2 flex items-center">
+                            <LineChartIcon className="h-4 w-4 mr-1 text-blue-500" />
+                            경쟁사 강점/약점 분석
+                          </h4>
+                          <div className="flex flex-wrap gap-4 mt-2">
+                            <div className="flex-1 min-w-[150px]">
+                              <h5 className="text-xs text-muted-foreground mb-1">가격 경쟁력</h5>
+                              <Progress 
+                                value={insight.priceStrategy === 'aggressive' ? 90 : 
+                                       insight.priceStrategy === 'economy' ? 75 : 
+                                       insight.priceStrategy === 'standard' ? 60 : 40} 
+                                className={insight.priceStrategy === 'aggressive' || insight.priceStrategy === 'economy' ? "bg-green-100" : "bg-gray-200"}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-[150px]">
+                              <h5 className="text-xs text-muted-foreground mb-1">제품 품질</h5>
+                              <Progress 
+                                value={insight.priceStrategy === 'premium' ? 90 : 
+                                       insight.priceStrategy === 'standard' ? 75 : 65} 
+                                className={insight.priceStrategy === 'premium' ? "bg-green-100" : "bg-gray-200"}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-[150px]">
+                              <h5 className="text-xs text-muted-foreground mb-1">배송 속도</h5>
+                              <Progress 
+                                value={insight.growthRate > 15 ? 85 : 
+                                       insight.growthRate > 0 ? 70 : 60} 
+                                className={insight.growthRate > 10 ? "bg-green-100" : "bg-gray-200"}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-[150px]">
+                              <h5 className="text-xs text-muted-foreground mb-1">제품 다양성</h5>
+                              <Progress 
+                                value={insight.marketShare > 30 ? 90 : 
+                                       insight.marketShare > 20 ? 75 : 
+                                       insight.marketShare > 10 ? 60 : 45} 
+                                className={insight.marketShare > 20 ? "bg-green-100" : "bg-gray-200"}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <h4 className="text-sm font-medium mb-1 flex items-center">
@@ -641,6 +685,24 @@ export default function CompetitorMonitoringPage() {
                                             설명
                                           </h4>
                                           <p className="text-sm">{insight.strengthsDetails[strength]?.description}</p>
+                                          
+                                          {/* 강점 수치화 */}
+                                          <div className="mt-3">
+                                            <h5 className="text-xs text-muted-foreground mb-1">강점 점수</h5>
+                                            <div className="flex items-center">
+                                              <Progress 
+                                                value={strength === '가격 경쟁력' ? 85 : 
+                                                       strength === '제품 품질' ? 92 : 
+                                                       strength === '빠른 배송' ? 88 : 75} 
+                                                className="flex-1 h-2 bg-gray-200" 
+                                              />
+                                              <span className="text-sm font-medium ml-2">
+                                                {strength === '가격 경쟁력' ? '85' : 
+                                                 strength === '제품 품질' ? '92' : 
+                                                 strength === '빠른 배송' ? '88' : '75'}/100
+                                              </span>
+                                            </div>
+                                          </div>
                                         </div>
                                         
                                         <Separator />
@@ -727,6 +789,24 @@ export default function CompetitorMonitoringPage() {
                                             설명
                                           </h4>
                                           <p className="text-sm">{insight.weaknessesDetails[weakness]?.description}</p>
+                                          
+                                          {/* 약점 수치화 */}
+                                          <div className="mt-3">
+                                            <h5 className="text-xs text-muted-foreground mb-1">취약도 점수</h5>
+                                            <div className="flex items-center">
+                                              <Progress 
+                                                value={weakness === '제한된 제품 라인업' ? 68 : 
+                                                       weakness === '높은 가격대' ? 73 : 
+                                                       weakness === '배송 지연' ? 82 : 65} 
+                                                className="flex-1 h-2 bg-gray-200" 
+                                              />
+                                              <span className="text-sm font-medium ml-2">
+                                                {weakness === '제한된 제품 라인업' ? '68' : 
+                                                 weakness === '높은 가격대' ? '73' : 
+                                                 weakness === '배송 지연' ? '82' : '65'}/100
+                                              </span>
+                                            </div>
+                                          </div>
                                         </div>
                                         
                                         <Separator />

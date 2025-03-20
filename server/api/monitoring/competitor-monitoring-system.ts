@@ -40,7 +40,7 @@ export class CompetitorMonitoringSystem {
    */
   async setupMonitoring(
     keyword: string, 
-    topNCompetitors: number = 5
+    topNCompetitors: number = 10
   ): Promise<{ 
     keyword: string; 
     monitoringSetup: string; 
