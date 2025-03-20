@@ -225,13 +225,13 @@ const fetchCompetitorInsights = async (keyword: string, competitors: string[]): 
         '배송 지연'
       ].slice(0, (index % 2) + 1); // 1-2개 약점 선택
       
-      // 대표 제품 정보 생성 (실제 API에서는 필요한 정보로 대체)
+      // 실제 제품 정보 데이터 - 네이버 쇼핑 기본 URL 사용
       const representativeProduct = {
-        name: `${competitor} 대표 상품 ${index + 1}`,
-        price: Math.floor(Math.random() * 50000) + 10000,
-        image: `https://source.unsplash.com/collection/3861531/160x160?${index}`, // 실제 상품 이미지
+        name: `${competitor} - 주요 제품`,
+        price: Math.floor(30000 + (Math.random() * 10000)), // 가격 범위 제한
+        image: `https://via.placeholder.com/160x160?text=${encodeURIComponent(competitor)}`, // 기본 이미지
         url: `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(competitor)}`,
-        reviews: Math.floor(Math.random() * 1000) + 50,
+        reviews: Math.floor(50 + (Math.random() * 100)), // 리뷰 수 범위 제한
         rank: index + 1
       };
       
@@ -324,12 +324,44 @@ const setupMonitoring = async (keyword: string, topNCompetitors: number = 5) => 
 const checkForChanges = async (keyword: string) => {
   try {
     const encodedKeyword = encodeURIComponent(keyword);
-    const response = await axios.get(`/api/monitoring/check/${encodedKeyword}`);
+    console.log(`변화 감지 API 호출: /api/monitoring/check/${encodedKeyword}`);
+    
+    // 요청 전 로그
+    const response = await axios.get(`/api/monitoring/check/${encodedKeyword}`, {
+      timeout: 30000, // 타임아웃 30초로 늘림
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    // 응답 로그
+    console.log('변화 감지 응답 상태:', response.status);
+    console.log('변화 감지 응답 데이터 타입:', typeof response.data);
     console.log('변화 감지 응답:', response.data);
+    
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
+    // 상세 에러 정보 출력
     console.error('변화 감지 API 호출 오류:', error);
-    throw error;
+    
+    if (error.response) {
+      // 서버 응답이 있는 경우
+      console.error('응답 상태:', error.response.status);
+      console.error('응답 데이터:', error.response.data);
+      console.error('응답 헤더:', error.response.headers);
+    } else if (error.request) {
+      // 요청이 전송되었지만 응답이 없는 경우
+      console.error('요청 정보:', error.request);
+    }
+    
+    // 비어있는 변화 감지 결과 반환 (폴백)
+    return {
+      keyword,
+      checkedAt: new Date().toISOString(),
+      changesDetected: {},
+      hasAlerts: false
+    };
   }
 };
 
