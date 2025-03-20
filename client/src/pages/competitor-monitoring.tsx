@@ -162,12 +162,43 @@ export default function CompetitorMonitoring() {
    */
   async function fetchCompetitorProducts(keyword: string, competitor: string): Promise<CompetitorProduct[]> {
     try {
-      const response = await fetch(`/api/monitoring/products/${encodeURIComponent(keyword)}/${encodeURIComponent(competitor)}`);
-      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      console.log(`API 호출: 키워드 "${keyword}", 경쟁사 "${competitor}" 제품 데이터 요청`);
+      
+      // URL 인코딩 로깅 추가
+      const encodedKeyword = encodeURIComponent(keyword);
+      const encodedCompetitor = encodeURIComponent(competitor);
+      console.log(`인코딩된 URL: /api/monitoring/products/${encodedKeyword}/${encodedCompetitor}`);
+      
+      const response = await fetch(`/api/monitoring/products/${encodedKeyword}/${encodedCompetitor}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
+        // 타임아웃 설정을 위한 signal 추가
+        signal: AbortSignal.timeout(10000) // 10초 타임아웃
+      });
+      
+      // 응답 상태 자세히 로깅
+      console.log(`API 응답 상태: ${response.status} ${response.statusText}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => '응답 텍스트 추출 실패');
+        throw new Error(`API 오류 ${response.status}: ${response.statusText}, 응답: ${errorText}`);
+      }
+      
       const data = await response.json();
+      
+      if (!data || !data.products || !Array.isArray(data.products)) {
+        console.warn(`API 응답에 제품 데이터가 없거나 형식이 잘못됨: `, data);
+        return [];
+      }
+      
+      console.log(`${competitor} 제품 데이터 수신 완료: ${data.products.length}개`);
       return data.products as CompetitorProduct[];
     } catch (error) {
-      console.error('경쟁사 제품 가져오기 실패:', error);
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      console.error(`경쟁사 제품 가져오기 실패 (${competitor}): ${errorMessage}`, error);
       throw error;
     }
   }
@@ -336,27 +367,47 @@ export default function CompetitorMonitoring() {
           let retryCount = 0;
           const maxRetries = 2; // 최대 재시도 횟수
           
-          // 오류 발생 시 재시도 로직 구현
+          // 오류 발생 시 재시도 로직 개선
+          let lastError = null;
           while (retryCount <= maxRetries) {
             try {
               if (retryCount > 0) {
                 console.log(`${competitor} 제품 데이터 ${retryCount}번째 재시도 중...`);
-                // 재시도 간 짧은 지연 추가 (서버 부하 고려)
-                await new Promise(resolve => setTimeout(resolve, 500 * retryCount));
+                // 재시도 간 지연 시간을 점진적으로 증가 (백오프 전략)
+                const delayTime = 1000 * Math.pow(2, retryCount - 1); // 1초, 2초, 4초...
+                console.log(`${delayTime}ms 대기 후 재시도합니다.`);
+                await new Promise(resolve => setTimeout(resolve, delayTime));
               }
               
               products = await fetchCompetitorProducts(keyword, competitor);
-              console.log(`${competitor} 제품 데이터 수신 완료:`, products.length > 0 ? products.length + '개' : '데이터 없음');
-              break; // 성공시 루프 탈출
+              
+              // 데이터 유효성 검증
+              if (products && Array.isArray(products)) {
+                console.log(`${competitor} 제품 데이터 수신 완료: ${products.length}개 제품`);
+                if (products.length > 0) {
+                  console.log(`첫 번째 제품 샘플:`, JSON.stringify(products[0]).substring(0, 150) + '...');
+                }
+                break; // 성공시 루프 탈출
+              } else {
+                throw new Error('받은 데이터가 유효한 제품 배열이 아님');
+              }
             } catch (productError) {
+              lastError = productError;
               retryCount++;
-              console.error(`${competitor} 제품 데이터 가져오기 실패 (시도 ${retryCount}/${maxRetries}):`, productError);
+              
+              const errorMessage = productError instanceof Error ? productError.message : '알 수 없는 오류';
+              console.error(`${competitor} 제품 데이터 가져오기 실패 (시도 ${retryCount}/${maxRetries}): ${errorMessage}`);
               
               if (retryCount > maxRetries) {
-                console.warn(`${competitor} 제품 데이터 최대 재시도 횟수 초과, 기본 데이터 사용`);
+                console.warn(`${competitor} 제품 데이터 최대 재시도 횟수(${maxRetries}) 초과`);
                 products = []; // 빈 배열로 초기화하여 계속 진행
               }
             }
+          }
+          
+          // 모든 재시도 실패 후 로그 기록
+          if (products.length === 0 && lastError) {
+            console.error(`${competitor} 제품 데이터 최종 실패: ${lastError}`);
           }
         
           // 각 경쟁사별로 다른 값을 생성
@@ -488,24 +539,46 @@ export default function CompetitorMonitoring() {
           
           // 제품 데이터 기반 대표 제품 정보 구성
           let representativeProduct;
-          if (products.length > 0) {
-            // 실제 제품 데이터에서 첫 번째 제품 사용 (또는 가장 리뷰가 많은/판매량이 높은 제품 선택 가능)
-            const productWithMostReviews = [...products].sort((a, b) => b.reviews - a.reviews)[0];
-            representativeProduct = {
-              name: productWithMostReviews.name,
-              price: productWithMostReviews.price,
-              reviews: productWithMostReviews.reviews,
-              rank: productWithMostReviews.rank,
-              image: productWithMostReviews.image
-            };
+          
+          if (products && products.length > 0) {
+            try {
+              // 실제 제품 데이터에서 첫 번째 제품 사용 (또는 가장 리뷰가 많은/판매량이 높은 제품 선택 가능)
+              const productWithMostReviews = [...products].sort((a, b) => b.reviews - a.reviews)[0];
+              
+              // 상품 데이터 유효성 검사 추가
+              if (productWithMostReviews && typeof productWithMostReviews === 'object') {
+                representativeProduct = {
+                  name: productWithMostReviews.name || `${competitor} 제품`,
+                  price: typeof productWithMostReviews.price === 'number' ? productWithMostReviews.price : 0,
+                  reviews: typeof productWithMostReviews.reviews === 'number' ? productWithMostReviews.reviews : 0,
+                  rank: typeof productWithMostReviews.rank === 'number' ? productWithMostReviews.rank : 0,
+                  image: productWithMostReviews.image || undefined,
+                  url: productWithMostReviews.url || undefined,
+                  productId: productWithMostReviews.productId || undefined
+                };
+                
+                console.log(`${competitor} 대표 제품 정보 설정 완료:`, representativeProduct.name);
+              } else {
+                throw new Error('제품 데이터 형식이 올바르지 않음');
+              }
+            } catch (error) {
+              console.error(`대표 제품 데이터 처리 오류:`, error);
+              // 오류 발생 시 기본 표시 정보 사용
+              representativeProduct = {
+                name: `${competitor} 제품 정보 없음`,
+                price: 0,
+                reviews: 0,
+                rank: 0
+              };
+            }
           } else {
-            // 기본 대표 제품 정보 (실제 데이터 없을 경우)
+            // 제품 데이터가 없는 경우 표시할 정보
+            console.warn(`${competitor} 제품 데이터가 없어 제품 정보를 표시할 수 없습니다`);
             representativeProduct = {
-              name: `${competitor} 프리미엄 제품`,
-              price: 39900 + Math.floor(Math.random() * 20000),
-              reviews: 100 + Math.floor(Math.random() * 500),
-              rank: 5 + Math.floor(Math.random() * 15),
-              // 실제 이미지 없을 경우 컴포넌트 내부에서 기본 이미지 사용
+              name: `${competitor} 제품 정보 없음`,
+              price: 0,
+              reviews: 0,
+              rank: 0
             };
           }
           
