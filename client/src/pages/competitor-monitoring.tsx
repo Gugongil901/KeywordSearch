@@ -615,7 +615,7 @@ export default function CompetitorMonitoringPage() {
           {!resultLoading && latestResult && (
             <div className="mb-6">
               <h3 className="text-xl font-semibold mb-4">모니터링 결과: {new Date(latestResult.checkedAt).toLocaleString()}</h3>
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-4" style={{ maxHeight: "600px", overflowY: "auto" }}>
                 {Object.entries(latestResult.changesDetected).map(([competitor, changes]) => {
                   const competitorChanges = changes as CompetitorChanges;
                   const hasChanges = competitorChanges.priceChanges.length > 0 || 
@@ -856,7 +856,7 @@ export default function CompetitorMonitoringPage() {
           {!insightsLoading && mlInsights && mlInsights.length > 0 && (
             <div className="mb-6">
               <h3 className="text-xl font-semibold mb-4">경쟁사 ML 인사이트</h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ maxHeight: "600px", overflowY: "auto" }}>
                 {mlInsights.slice(0, 10).map((insight) => (
                   <Card key={insight.competitor} className={
                     insight.threatLevel >= 80 ? "border-red-500" :
