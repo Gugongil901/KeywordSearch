@@ -40,7 +40,7 @@ const monitoringSystem = getCompetitorMonitoringSystem(db, dataCollector, compet
  */
 router.post('/setup', async (req: Request, res: Response) => {
   try {
-    const { keyword, topNCompetitors = 5 } = req.body;
+    const { keyword, topNCompetitors = 10 } = req.body;
     
     if (!keyword) {
       return res.status(400).json({ error: '키워드가 필요합니다.' });

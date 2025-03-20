@@ -63,11 +63,24 @@ interface ReviewAnalysis {
 export class CompetitorAnalyzer {
   private dataCollector: NaverDataCollector;
   private db: DatabaseConnector;
+  private excludedSellers: string[] = ['네이버', 'NAVER', '네이버쇼핑', '쇼핑몰', '오픈마켓', '검색결과', '플랫폼'];
   
   constructor(dataCollector: NaverDataCollector, dbConnector: DatabaseConnector) {
     this.dataCollector = dataCollector;
     this.db = dbConnector;
     logger.info('경쟁 판매자 분석기 초기화 완료');
+  }
+  
+  /**
+   * 제외할 판매자인지 확인
+   * @param sellerName 판매자 이름
+   * @returns 제외 여부
+   */
+  private isExcludedSeller(sellerName: string): boolean {
+    const normalized = sellerName.trim().toLowerCase();
+    return this.excludedSellers.some(excluded => 
+      normalized.includes(excluded.toLowerCase())
+    );
   }
   
   /**
@@ -91,7 +104,8 @@ export class CompetitorAnalyzer {
       const sellerProducts: Record<string, any[]> = {};
       for (const product of products) {
         const mall = product.mall || '';
-        if (mall) {
+        // '네이버' 등 플랫폼 자체는 경쟁사에서 제외
+        if (mall && !this.isExcludedSeller(mall)) {
           if (!sellerProducts[mall]) {
             sellerProducts[mall] = [];
           }

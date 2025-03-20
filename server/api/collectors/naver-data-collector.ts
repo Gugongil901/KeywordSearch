@@ -16,11 +16,24 @@ import * as naverAdApi from '../naver-ad';
 export class NaverDataCollector {
   private apiKeys: any;
   private db: DatabaseConnector;
+  private excludedSellers: string[] = ['네이버', 'NAVER', '네이버쇼핑', '쇼핑몰', '오픈마켓', '검색결과', '플랫폼'];
   
   constructor(apiKeys: any) {
     this.apiKeys = apiKeys;
     this.db = DatabaseConnector.getInstance();
     logger.info('네이버 데이터 수집기 초기화 완료');
+  }
+  
+  /**
+   * 제외할 판매자인지 확인
+   * @param sellerName 판매자 이름
+   * @returns 제외 여부
+   */
+  private isExcludedSeller(sellerName: string): boolean {
+    const normalized = sellerName.trim().toLowerCase();
+    return this.excludedSellers.some(excluded => 
+      normalized.includes(excluded.toLowerCase())
+    );
   }
   
   /**
