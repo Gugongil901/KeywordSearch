@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { DEFAULT_PRODUCT_IMAGE } from '@/constants/images';
 import { 
   Star, 
   Eye, 
@@ -80,7 +81,14 @@ const TopProducts: React.FC<TopProductsProps> = ({ data }) => {
                         <img 
                           src={product.image} 
                           alt={removeHtmlTags(product.title)} 
-                          className="w-full h-32 object-contain" 
+                          className="w-full h-32 object-contain"
+                          onError={(e) => {
+                            // 이미지 로드 실패 시 기본 이미지로 대체
+                            if ((e.target as HTMLImageElement).src !== DEFAULT_PRODUCT_IMAGE) {
+                              console.log('이미지 로드 실패, 기본 이미지 사용:', product.image);
+                              (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE;
+                            }
+                          }}
                         />
                       ) : (
                         <div className="w-full h-32 bg-gray-200 flex items-center justify-center">
