@@ -45,7 +45,6 @@ export const COMPETITOR_PRODUCT_IMAGES: Record<string, string[]> = {
     'https://images.unsplash.com/photo-1509281373149-e957c6296406?w=300&h=300&fit=crop&q=80',
     'https://images.unsplash.com/photo-1547949003-9792a18a2601?w=300&h=300&fit=crop&q=80'
   ],
-  
   // 실제 건강기능식품 브랜드 (네이버 스토어)
   '닥터린': [
     'https://shop-phinf.pstatic.net/20240229_146/1709193841431wD9Cf_PNG/10329671365064520_380119835.png',
@@ -101,21 +100,16 @@ export const COMPETITOR_PRODUCT_IMAGES: Record<string, string[]> = {
 export const BRAND_WEBSITES: Record<string, string> = {
   '닥터린': 'https://brand.naver.com/dr_lean',
   '내츄럴플러스': 'https://brand.naver.com/naturalplus',
-  '에스더몰': 'https://esthermall.co.kr/main/index.php',
+  '에스더몰': 'https://brand.naver.com/esthermall',
   '안국건강': 'https://brand.naver.com/aghealth',
   '고려은단': 'https://brand.naver.com/koreaeundanhc',
   '뉴트리원': 'https://brand.naver.com/nutrione',
   '종근당건강': 'https://brand.naver.com/ckdhc',
-  'GNM 자연의품격': 'https://brand.naver.com/gnm',
-  '뉴트리데이': 'https://brand.naver.com/nutridday',
-  '주영엔에스': 'https://brand.naver.com/jyns',
-  '한미양행': 'https://smartstore.naver.com/raneeind',
-  '유한양행': 'https://brand.naver.com/yuhan',
-  // 기본 브랜드
-  '헬스케어몰': 'https://shopping.naver.com/',
-  '건강한약국': 'https://shopping.naver.com/',
-  '웰니스마트': 'https://shopping.naver.com/',
-  '브랜드 스토리': 'https://shopping.naver.com/'
+  'GNM자연의품격': 'https://brand.naver.com/natureofpurety',
+  '뉴트리데이': 'https://brand.naver.com/nutriday',
+  '주영엔에스': 'https://brand.naver.com/jooyoung-ns',
+  '한미양행': 'https://brand.naver.com/hanmibiologics',
+  '유한양행': 'https://brand.naver.com/yuhan'
 };
 
 // 키워드 카테고리별 배경 이미지
@@ -145,9 +139,16 @@ export function getCompetitorProductImage(competitorName: string, productIndex: 
     const images = COMPETITOR_PRODUCT_IMAGES[competitorName];
     return images[productIndex % images.length];
   }
-  
+
   // 2. 결정적 방식으로 이미지 선택 (같은 경쟁사는 항상 같은 이미지 사용)
   const baseIndex = getCompetitorImageIndex(competitorName);
   const finalIndex = (baseIndex + productIndex) % DEFAULT_PRODUCT_IMAGES.length;
   return DEFAULT_PRODUCT_IMAGES[finalIndex];
 }
+
+// Default product images for fallback
+export const DEFAULT_IMAGES = {
+  product: 'https://via.placeholder.com/300x300?text=No+Image',
+  brand: 'https://via.placeholder.com/600x300?text=Brand+Image',
+  health: 'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=600&h=300&fit=crop&q=80'
+};
