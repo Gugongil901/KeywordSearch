@@ -478,8 +478,8 @@ export default function CompetitorMonitoringPage() {
                     <div className="flex items-center">
                       <DollarSignIcon className="h-5 w-5 text-green-500 mr-2" />
                       <div className="text-2xl font-bold">
-                        {Object.values(latestResult.changesDetected).reduce(
-                          (total, changes: any) => total + changes.priceChanges.length, 
+                        {Object.values(latestResult.changesDetected as Record<string, CompetitorChanges>).reduce(
+                          (total, changes) => total + changes.priceChanges.length, 
                           0
                         )}
                       </div>
@@ -501,8 +501,8 @@ export default function CompetitorMonitoringPage() {
                     <div className="flex items-center">
                       <ShoppingBagIcon className="h-5 w-5 text-orange-500 mr-2" />
                       <div className="text-2xl font-bold">
-                        {Object.values(latestResult.changesDetected).reduce(
-                          (total, changes: any) => total + changes.newProducts.length, 
+                        {Object.values(latestResult.changesDetected as Record<string, CompetitorChanges>).reduce(
+                          (total, changes) => total + changes.newProducts.length, 
                           0
                         )}
                       </div>
@@ -617,7 +617,7 @@ export default function CompetitorMonitoringPage() {
                                         <InfoIcon className="h-3 w-3 ml-1 text-muted-foreground" />
                                       </span>
                                     </DialogTrigger>
-                                    <DialogContent className="sm:max-w-md">
+                                    <DialogContent className="max-w-md">
                                       <DialogHeader>
                                         <DialogTitle className="flex items-center">
                                           <TrendingUpIcon className="h-5 w-5 mr-2 text-green-500" />
@@ -703,7 +703,7 @@ export default function CompetitorMonitoringPage() {
                                         <InfoIcon className="h-3 w-3 ml-1 text-muted-foreground" />
                                       </span>
                                     </DialogTrigger>
-                                    <DialogContent className="sm:max-w-md">
+                                    <DialogContent className="max-w-md">
                                       <DialogHeader>
                                         <DialogTitle className="flex items-center">
                                           <TrendingDownIcon className="h-5 w-5 mr-2 text-red-500" />
