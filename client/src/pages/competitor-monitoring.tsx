@@ -602,45 +602,31 @@ export default function CompetitorMonitoring() {
         </h1>
         
         <div className="flex flex-col md:flex-row gap-2 md:items-center mt-4 md:mt-0">
-          <div className="flex flex-col sm:flex-row gap-2">
-            {/* 키워드 직접 입력 필드 */}
-            <div className="w-[180px]">
-              <div className="relative">
-                <Input 
-                  type="text" 
-                  placeholder="키워드 입력" 
-                  value={activeKeyword}
-                  onChange={(e) => setActiveKeyword(e.target.value)}
-                  className="pr-10"
-                />
-                {activeKeyword && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="absolute right-0 top-0 h-full p-0 px-2"
-                    onClick={() => setActiveKeyword("")}
-                  >
-                    <XCircleIcon className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* 기존 드롭다운 선택 (저장된 키워드) */}
-            <Select
+          {/* 키워드 입력 필드 */}
+          <div className="w-[180px] relative">
+            <Input 
+              type="text" 
+              placeholder="키워드 직접 입력" 
               value={activeKeyword}
-              onValueChange={(value) => setActiveKeyword(value)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="저장된 키워드" />
-              </SelectTrigger>
-              <SelectContent>
-                {configs && Object.keys(configs).map((keyword) => (
-                  <SelectItem key={keyword} value={keyword}>{keyword}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(e) => setActiveKeyword(e.target.value)}
+              className="pr-10"
+            />
           </div>
+          
+          {/* 기존 드롭다운 선택 */}
+          <Select
+            value={activeKeyword}
+            onValueChange={(value) => setActiveKeyword(value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="키워드 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              {configs && Object.keys(configs).map((keyword) => (
+                <SelectItem key={keyword} value={keyword}>{keyword}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           
           <div className="flex gap-2">
             <Button 
@@ -1413,49 +1399,38 @@ export default function CompetitorMonitoring() {
                 {keywordsLoading ? (
                   <Skeleton className="h-10 w-full" />
                 ) : (
-                  <div className="flex flex-col space-y-2">
+                  <div className="space-y-2">
                     {/* 직접 입력 필드 */}
-                    <div className="relative">
-                      <Input 
-                        type="text" 
-                        placeholder="키워드 입력" 
-                        value={activeKeyword}
-                        onChange={(e) => setActiveKeyword(e.target.value)}
-                        className="pr-10"
-                      />
-                      {activeKeyword && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="absolute right-0 top-0 h-full p-0 px-2"
-                          onClick={() => setActiveKeyword("")}
-                        >
-                          <XCircleIcon className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      )}
-                    </div>
+                    <Input 
+                      type="text" 
+                      placeholder="키워드 직접 입력" 
+                      value={activeKeyword}
+                      onChange={(e) => setActiveKeyword(e.target.value)}
+                    />
                     
                     {/* 기존 드롭다운 */}
-                    <div className="text-xs text-muted-foreground mb-1">
-                      또는 저장된 키워드 선택:
+                    <div className="mt-2">
+                      <div className="text-xs text-muted-foreground mb-1">
+                        또는 저장된 키워드 선택:
+                      </div>
+                      <Select 
+                        value={activeKeyword} 
+                        onValueChange={setActiveKeyword}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="키워드 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {keywords && keywords.length > 0 ? (
+                            keywords.map((keyword) => (
+                              <SelectItem key={keyword} value={keyword}>{keyword}</SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-keywords" disabled>사용 가능한 키워드 없음</SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <Select 
-                      value={activeKeyword} 
-                      onValueChange={setActiveKeyword}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="저장된 키워드" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {keywords && keywords.length > 0 ? (
-                          keywords.map((keyword) => (
-                            <SelectItem key={keyword} value={keyword}>{keyword}</SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="no-keywords" disabled>사용 가능한 키워드 없음</SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
                   </div>
                 )}
               </div>
