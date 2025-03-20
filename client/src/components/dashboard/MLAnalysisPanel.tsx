@@ -342,28 +342,61 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
     return (
       <div className="space-y-6">
         <h4 className="text-sm font-medium">의미적 연관 키워드</h4>
-        <div className="border rounded-lg p-4 bg-gray-50 overflow-auto" style={{ maxHeight: '400px' }}>
-          <table className="w-full">
-            <thead className="bg-gray-100 sticky top-0">
-              <tr>
-                <th className="text-left p-2 text-sm font-medium">키워드</th>
-                <th className="text-right p-2 text-sm font-medium">유사도</th>
-              </tr>
-            </thead>
-            <tbody>
-              {semantic_related_keywords.map((item, index) => (
-                <tr key={index} className="border-t">
-                  <td className="p-2 text-sm">{item.keyword}</td>
-                  <td className="p-2 text-sm text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Progress value={item.similarity * 100} className="w-24 h-2" />
-                      <span>{(item.similarity * 100).toFixed(0)}%</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {semantic_related_keywords.map((item, index) => (
+            <div key={index} className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
+              <div className="flex justify-between items-center mb-2">
+                <div className="font-medium">{item.keyword}</div>
+                <Badge variant="outline">
+                  유사도: {(item.similarity * 100).toFixed(0)}%
+                </Badge>
+              </div>
+              
+              {/* 진행률 표시 */}
+              <Progress value={item.similarity * 100} className="h-1 mb-3" />
+              
+              {/* 대표 제품 정보 - 있을 경우 표시 */}
+              {item.representativeProduct && (
+                <div className="mt-3 pt-3 border-t">
+                  <div className="text-xs text-gray-500 mb-2">대표 제품:</div>
+                  <div className="flex gap-3">
+                    {/* 제품 이미지 */}
+                    <div className="flex-shrink-0">
+                      {item.representativeProduct.image && (
+                        <img 
+                          src={item.representativeProduct.image} 
+                          alt={item.representativeProduct.name}
+                          className="w-16 h-16 object-cover rounded border border-gray-200"
+                          onError={(e) => {
+                            // 이미지 로드 실패 시 기본 이미지로 대체
+                            (e.target as HTMLImageElement).src = '/placeholder-product.png';
+                          }}
+                        />
+                      )}
                     </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    
+                    {/* 제품 상세 정보 */}
+                    <div className="flex-1">
+                      <div className="text-sm font-medium mb-1">{item.representativeProduct.name}</div>
+                      <div className="text-sm text-gray-700">
+                        {item.representativeProduct.price.toLocaleString('ko-KR')}원
+                      </div>
+                      {item.representativeProduct.url && (
+                        <a 
+                          href={item.representativeProduct.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 text-xs text-blue-600 hover:underline inline-block"
+                        >
+                          제품 상세 보기
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     );
