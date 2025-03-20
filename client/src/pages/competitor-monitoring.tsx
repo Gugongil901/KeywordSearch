@@ -5,6 +5,8 @@
 
 // 제품 이미지 컴포넌트 임포트
 import { ProductImage } from "@/components/ui/product-image";
+// 강점/약점 레이더 차트 컴포넌트 임포트
+import { StrengthWeaknessRadar } from "@/components/charts/strength-weakness-radar";
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
@@ -616,7 +618,30 @@ export default function CompetitorMonitoringPage() {
                             <LineChartIcon className="h-4 w-4 mr-1 text-blue-500" />
                             경쟁사 강점/약점 분석
                           </h4>
-                          <div className="flex flex-wrap gap-4 mt-2">
+                          
+                          {/* 레이더 차트 컴포넌트 추가 */}
+                          <StrengthWeaknessRadar 
+                            competitor={insight.competitor}
+                            strengthsData={{
+                              "가격 경쟁력": insight.priceStrategy === 'aggressive' ? 90 : 
+                                             insight.priceStrategy === 'economy' ? 75 : 
+                                             insight.priceStrategy === 'standard' ? 60 : 40,
+                              "제품 품질": insight.priceStrategy === 'premium' ? 90 : 
+                                         insight.priceStrategy === 'standard' ? 75 : 65,
+                              "배송 속도": insight.growthRate > 15 ? 85 : 
+                                         insight.growthRate > 0 ? 70 : 60
+                            }}
+                            weaknessesData={{
+                              "제품 다양성": insight.marketShare < 15 ? 75 : 
+                                           insight.marketShare < 25 ? 60 : 40,
+                              "고객 서비스": insight.threatLevel > 60 ? 30 :
+                                           insight.threatLevel > 40 ? 45 : 70
+                            }}
+                            size="small"
+                          />
+                          
+                          {/* 기존 강점/약점 분석 유지 - 차트와 함께 표시 */}
+                          <div className="flex flex-wrap gap-4 mt-4">
                             <div className="flex-1 min-w-[150px]">
                               <h5 className="text-xs text-muted-foreground mb-1">가격 경쟁력</h5>
                               <Progress 
