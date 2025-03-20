@@ -111,6 +111,8 @@ interface CompetitorInsight {
     reviews: number;
     rank: number;
     image?: string;
+    url?: string;
+    productId?: string;
   };
 }
 
@@ -568,7 +570,10 @@ export default function CompetitorMonitoring() {
                 name: `${competitor} 제품 정보 없음`,
                 price: 0,
                 reviews: 0,
-                rank: 0
+                rank: 0,
+                image: undefined,
+                url: undefined,
+                productId: undefined
               };
             }
           } else {
@@ -578,7 +583,10 @@ export default function CompetitorMonitoring() {
               name: `${competitor} 제품 정보 없음`,
               price: 0,
               reviews: 0,
-              rank: 0
+              rank: 0,
+              image: undefined,
+              url: undefined,
+              productId: undefined
             };
           }
           
