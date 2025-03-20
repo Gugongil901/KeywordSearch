@@ -74,7 +74,7 @@ import {
 } from 'lucide-react';
 import ChangeVisualizer from '../components/monitoring/change-visualizer';
 import AlertConfig from '../components/monitoring/alert-config';
-import { StrengthWeaknessRadar } from '../components/charts/strength-weakness-radar';
+import { StrengthWeaknessChart } from '../components/charts/strength-weakness-radar';
 
 // 타입 정의
 interface CompetitorInsight {
@@ -978,7 +978,7 @@ export default function CompetitorMonitoring() {
                             
                             {/* 레이더 차트 */}
                             <div className="flex-1">
-                              <StrengthWeaknessRadar 
+                              <StrengthWeaknessChart 
                                 competitor={insight.competitor}
                                 strengthsData={{
                                   "가격 경쟁력": insight.priceStrategy === 'aggressive' ? 90 : 

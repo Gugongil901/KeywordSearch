@@ -20,19 +20,19 @@ ChartJS.register(
   Legend
 );
 
-interface StrengthWeaknessRadarProps {
+interface StrengthWeaknessChartProps {
   competitor: string;
   strengthsData: Record<string, number>;
   weaknessesData: Record<string, number>;
   size?: 'small' | 'medium' | 'large';
 }
 
-export function StrengthWeaknessRadar({ 
+export function StrengthWeaknessChart({ 
   competitor, 
   strengthsData, 
   weaknessesData,
   size = 'medium'
-}: StrengthWeaknessRadarProps) {
+}: StrengthWeaknessChartProps) {
   
   // 데이터셋 준비
   const strengths = Object.keys(strengthsData);
