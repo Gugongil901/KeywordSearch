@@ -454,59 +454,118 @@ export class NaverDataCollector {
                seller.toLowerCase().includes(competitor.toLowerCase());
       });
       
-      // 결과가 없으면 검색어에 경쟁사 이름 포함해서 다시 검색
+      // 결과가 없으면 다양한 검색 방법으로 재시도
       if (competitorProducts.length === 0) {
-        const combinedKeyword = `${keyword} ${competitor}`;
-        logger.info(`${competitor} 제품이 없어 '${combinedKeyword}'로 재검색`);
+        // 검색 전략들 - 다양한 방식으로 검색 시도
+        const searchStrategies = [
+          // 1. 키워드 + 경쟁사 이름
+          `${keyword} ${competitor}`,
+          // 2. 경쟁사 이름 + 키워드
+          `${competitor} ${keyword}`,
+          // 3. 경쟁사 이름만 (카테고리를 파악했을 경우)
+          `${competitor}`,
+          // 4. 키워드 분해 + 경쟁사 (키워드가 복합어인 경우)
+          ...keyword.split(' ').filter(k => k.length > 1).map(k => `${k} ${competitor}`),
+          // 5. 경쟁사 + 키워드 분해 (키워드가 복합어인 경우) 
+          ...keyword.split(' ').filter(k => k.length > 1).map(k => `${competitor} ${k}`)
+        ];
         
-        try {
-          const searchResult = await naverApi.searchKeyword(combinedKeyword);
-          if (searchResult && searchResult.products) {
-            // 경쟁사 이름이 포함된 상품만 재필터링 (네이버 등 플랫폼 제외)
-            const filteredProducts = searchResult.products.filter((product: any) => {
-              const seller = product.brandName || '';
-              return !this.isExcludedSeller(seller) &&
-                     seller.toLowerCase().includes(competitor.toLowerCase());
-            });
-            
-            if (filteredProducts.length > 0) {
-              const formattedProducts = filteredProducts.map((product: any, index: number) => ({
-                id: product.productId || `${competitor}-${index}`,
-                name: product.title || '제품명 없음',
-                price: product.price || 0,
-                reviews: product.reviewCount || 0,
-                rank: index + 1,
-                image: product.image || undefined,
-                url: product.productUrl || undefined
-              }));
+        // 각 전략을 순차적으로 시도
+        for (const searchQuery of searchStrategies) {
+          logger.info(`${competitor} 제품 검색 시도: '${searchQuery}'`);
+          
+          try {
+            const searchResult = await naverApi.searchKeyword(searchQuery);
+            if (searchResult && searchResult.products && searchResult.products.length > 0) {
+              // 검색 결과에서 경쟁사 제품 필터링
+              // 1. 브랜드명 기반 필터링
+              let filteredProducts = searchResult.products.filter((product: any) => {
+                const brand = product.brandName || '';
+                return !this.isExcludedSeller(brand) &&
+                       brand.toLowerCase().includes(competitor.toLowerCase());
+              });
               
-              logger.info(`[${keyword}] ${competitor} 경쟁사 제품 수집 완료: ${formattedProducts.length}개 제품`);
-              return formattedProducts;
+              // 브랜드명으로 찾지 못한 경우 제품명에서 검색
+              if (filteredProducts.length === 0) {
+                filteredProducts = searchResult.products.filter((product: any) => {
+                  const title = product.title || '';
+                  // 제품명에 경쟁사 이름이 포함되어 있고, 제외 판매자가 아닌 경우
+                  return !this.isExcludedSeller(product.brandName || '') &&
+                         title.toLowerCase().includes(competitor.toLowerCase());
+                });
+              }
+              
+              // 결과가 있으면 반환
+              if (filteredProducts.length > 0) {
+                const formattedProducts = filteredProducts.map((product: any, index: number) => ({
+                  id: product.productId || `${competitor}-${index}`,
+                  name: product.title || '제품명 없음',
+                  price: product.price || 0,
+                  reviews: product.reviewCount || 0,
+                  rank: index + 1,
+                  image: product.image || undefined,
+                  url: product.productUrl || undefined
+                }));
+                
+                logger.info(`[${keyword}] ${competitor} 경쟁사 제품 수집 완료: ${formattedProducts.length}개 제품`);
+                return formattedProducts;
+              }
             }
+          } catch (searchError) {
+            logger.error(`[${searchQuery}] 검색 오류: ${searchError}`);
+            // 계속 다음 전략 시도
           }
-        } catch (searchError) {
-          logger.error(`[${combinedKeyword}] 재검색 오류: ${searchError}`);
         }
         
-        // 여전히 결과가 없으면 모의 데이터 생성
-        logger.warn(`[${keyword}] ${competitor} 경쟁사 제품을 찾을 수 없어 모의 데이터 생성`);
+        // 추가 전략: 경쟁사 이름의 변형 시도 (공백 추가/제거, 띄어쓰기 변형 등)
+        const competitorVariants = [
+          competitor.replace(/\s+/g, ''),  // 공백 제거
+          competitor.replace(/(\S)(\S)/g, '$1 $2'), // 각 글자 사이에 공백 추가
+          ...competitor.split(' ').filter(c => c.length > 1) // 단어 분리
+        ];
         
-        const mockProducts = [];
-        const count = Math.floor(Math.random() * 5) + 3; // 3-7개 제품
-        
-        for (let i = 0; i < count; i++) {
-          mockProducts.push({
-            id: `${competitor}-mock-${i}`,
-            name: `${competitor} ${keyword} 제품 ${i+1}`,
-            price: Math.floor(Math.random() * 100000) + 10000,
-            reviews: Math.floor(Math.random() * 100),
-            rank: i + 1,
-            image: undefined,
-            url: undefined
-          });
+        for (const variant of competitorVariants) {
+          if (variant === competitor) continue; // 원래 이름과 같으면 건너뛰기
+          
+          const searchQuery = `${keyword} ${variant}`;
+          logger.info(`${competitor} 변형 검색 시도: '${searchQuery}'`);
+          
+          try {
+            const searchResult = await naverApi.searchKeyword(searchQuery);
+            if (searchResult && searchResult.products && searchResult.products.length > 0) {
+              // 제품명에서 경쟁사 이름 검색
+              const filteredProducts = searchResult.products.filter((product: any) => {
+                const title = product.title || '';
+                const brand = product.brandName || '';
+                return !this.isExcludedSeller(brand) &&
+                       (title.toLowerCase().includes(variant.toLowerCase()) || 
+                        title.toLowerCase().includes(competitor.toLowerCase()));
+              }).slice(0, 10); // 상위 10개만
+              
+              if (filteredProducts.length > 0) {
+                const formattedProducts = filteredProducts.map((product: any, index: number) => ({
+                  id: product.productId || `${competitor}-${index}`,
+                  name: product.title || '제품명 없음',
+                  price: product.price || 0,
+                  reviews: product.reviewCount || 0,
+                  rank: index + 1,
+                  image: product.image || undefined,
+                  url: product.productUrl || undefined
+                }));
+                
+                logger.info(`[${keyword}] ${competitor} 변형 검색으로 제품 수집 완료: ${formattedProducts.length}개 제품`);
+                return formattedProducts;
+              }
+            }
+          } catch (searchError) {
+            logger.error(`[${searchQuery}] 변형 검색 오류: ${searchError}`);
+            // 계속 다음 전략 시도
+          }
         }
         
-        return mockProducts;
+        // 모든 전략이 실패하면 빈 배열 반환
+        logger.warn(`[${keyword}] ${competitor} 경쟁사 제품을 찾을 수 없어 빈 결과 반환`);
+        return [];
       }
       
       // 경쟁사 제품 포맷팅
