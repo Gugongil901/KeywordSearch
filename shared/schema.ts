@@ -118,6 +118,74 @@ export interface NaverProductResult {
   productUrl: string;
 }
 
+export interface CompetitorProduct {
+  productId: string;
+  name: string;
+  price: number;
+  reviews: number;
+  rank: number;
+  image?: string;
+  url?: string;
+  collectedAt: string;
+}
+
+export interface MonitoringThresholds {
+  priceChangePercent: number;
+  newProduct: boolean;
+  rankChange: boolean;
+  reviewChangePercent: number;
+}
+
+export interface MonitoringConfig {
+  keyword: string;
+  competitors: string[];
+  createdAt: string;
+  lastUpdated: string;
+  monitorFrequency: 'daily' | 'weekly';
+  alertThresholds: MonitoringThresholds;
+}
+
+export interface PriceChange {
+  product: CompetitorProduct;
+  oldPrice: number;
+  newPrice: number;
+  changePercent: number;
+}
+
+export interface RankChange {
+  product: CompetitorProduct;
+  oldRank: number;
+  newRank: number;
+  change: number; // 양수: 순위 상승, 음수: 순위 하락
+}
+
+export interface ReviewChange {
+  product: CompetitorProduct;
+  oldReviews: number;
+  newReviews: number;
+  changePercent: number;
+}
+
+export interface NewProductAlert {
+  product: CompetitorProduct;
+  type: 'new_product';
+}
+
+export interface CompetitorChanges {
+  priceChanges: PriceChange[];
+  newProducts: NewProductAlert[];
+  rankChanges: RankChange[];
+  reviewChanges: ReviewChange[];
+  alerts: boolean;
+}
+
+export interface MonitoringResult {
+  keyword: string;
+  checkedAt: string;
+  changesDetected: Record<string, CompetitorChanges>;
+  hasAlerts: boolean;
+}
+
 export interface NaverTrendResult {
   keyword: string;
   trends: Array<{

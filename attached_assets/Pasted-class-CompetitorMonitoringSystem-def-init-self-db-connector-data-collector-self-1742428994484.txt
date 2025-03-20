@@ -1,0 +1,169 @@
+class CompetitorMonitoringSystem:
+    def __init__(self, db_connector, data_collector):
+        self.db = db_connector
+        self.data_collector = data_collector
+        
+    async def setup_monitoring(self, keyword, top_n_competitors=5):
+        """키워드에 대한 경쟁사 모니터링 설정"""
+        # 현재 경쟁사 분석
+        competitor_analysis = await self.data_collector.analyze_competitors(keyword)
+        
+        # 상위 경쟁사 선정
+        top_competitors = competitor_analysis['top_competitors'][:top_n_competitors]
+        
+        # 모니터링 설정 저장
+        monitoring_config = {
+            'keyword': keyword,
+            'competitors': [comp['seller'] for comp in top_competitors],
+            'created_at': datetime.now().isoformat(),
+            'last_updated': datetime.now().isoformat(),
+            'monitor_frequency': 'daily',  # daily, weekly
+            'alert_thresholds': {
+                'price_change_percent': 5,  # 5% 이상 가격 변동 시 알림
+                'new_product': True,        # 새 상품 출시 시 알림
+                'rank_change': True,        # 순위 변동 시 알림
+                'review_change_percent': 10 # 10% 이상 리뷰 증가 시 알림
+            }
+        }
+        
+        self.db.save_monitoring_config(keyword, monitoring_config)
+        
+        # 초기 데이터 수집
+        baseline_data = await self.collect_competitor_data(keyword, monitoring_config['competitors'])
+        self.db.save_competitor_baseline(keyword, baseline_data)
+        
+        return {
+            'keyword': keyword,
+            'monitoring_setup': 'success',
+            'competitors': monitoring_config['competitors'],
+            'alerts_configured': monitoring_config['alert_thresholds']
+        }
+    
+    async def collect_competitor_data(self, keyword, competitors):
+        """경쟁사 데이터 수집"""
+        all_competitor_data = {}
+        
+        for competitor in competitors:
+            # 경쟁사 제품 데이터 수집
+            products = await self.data_collector.collect_competitor_products(keyword, competitor)
+            
+            # 제품별 가격, 리뷰, 랭킹 정보
+            product_data = []
+            for product in products:
+                product_data.append({
+                    'product_id': product.get('id', ''),
+                    'name': product.get('name', ''),
+                    'price': product.get('price', 0),
+                    'reviews': product.get('reviews', 0),
+                    'rank': product.get('rank', 0),
+                    'collected_at': datetime.now().isoformat()
+                })
+                
+            all_competitor_data[competitor] = product_data
+            
+        return all_competitor_data
+    
+    async def check_for_changes(self, keyword):
+        """변화 감지 실행"""
+        # 모니터링 설정 조회
+        monitoring_config = self.db.get_monitoring_config(keyword)
+        if not monitoring_config:
+            return {'error': '모니터링 설정을 찾을 수 없습니다.'}
+            
+        # 기준 데이터 조회
+        baseline_data = self.db.get_competitor_baseline(keyword)
+        if not baseline_data:
+            return {'error': '기준 데이터를 찾을 수 없습니다.'}
+            
+        # 현재 데이터 수집
+        current_data = await self.collect_competitor_data(keyword, monitoring_config['competitors'])
+        
+        # 변화 감지
+        changes = self._detect_changes(baseline_data, current_data, monitoring_config['alert_thresholds'])
+        
+        # 결과 저장
+        monitoring_result = {
+            'keyword': keyword,
+            'checked_at': datetime.now().isoformat(),
+            'changes_detected': changes,
+            'has_alerts': any(change['alerts'] for change in changes.values())
+        }
+        
+        self.db.save_monitoring_result(keyword, monitoring_result)
+        
+        # 기준 데이터 업데이트
+        self.db.save_competitor_baseline(keyword, current_data)
+        
+        return monitoring_result
+    
+    def _detect_changes(self, baseline_data, current_data, thresholds):
+        """기준 데이터와 현재 데이터 비교로 변화 감지"""
+        changes = {}
+        
+        for competitor, current_products in current_data.items():
+            competitor_changes = {
+                'price_changes': [],
+                'new_products': [],
+                'rank_changes': [],
+                'review_changes': [],
+                'alerts': False
+            }
+            
+            # 기준 데이터의 해당 경쟁사 찾기
+            baseline_products = baseline_data.get(competitor, [])
+            
+            # 기준 상품 ID 사전
+            baseline_product_map = {p['product_id']: p for p in baseline_products}
+            
+            for current_product in current_products:
+                product_id = current_product['product_id']
+                
+                # 새 상품 확인
+                if product_id not in baseline_product_map:
+                    if thresholds['new_product']:
+                        competitor_changes['new_products'].append({
+                            'product': current_product,
+                            'type': 'new_product'
+                        })
+                        competitor_changes['alerts'] = True
+                    continue
+                    
+                baseline_product = baseline_product_map[product_id]
+                
+                # 가격 변동 확인
+                price_change_percent = ((current_product['price'] - baseline_product['price']) / baseline_product['price']) * 100
+                if abs(price_change_percent) >= thresholds['price_change_percent']:
+                    competitor_changes['price_changes'].append({
+                        'product': current_product,
+                        'old_price': baseline_product['price'],
+                        'new_price': current_product['price'],
+                        'change_percent': price_change_percent
+                    })
+                    competitor_changes['alerts'] = True
+                    
+                # 순위 변동 확인
+                if thresholds['rank_change'] and baseline_product['rank'] != current_product['rank']:
+                    rank_change = baseline_product['rank'] - current_product['rank']
+                    competitor_changes['rank_changes'].append({
+                        'product': current_product,
+                        'old_rank': baseline_product['rank'],
+                        'new_rank': current_product['rank'],
+                        'change': rank_change  # 양수: 순위 상승, 음수: 순위 하락
+                    })
+                    competitor_changes['alerts'] = True
+                    
+                # 리뷰 변동 확인
+                if baseline_product['reviews'] > 0:
+                    review_change_percent = ((current_product['reviews'] - baseline_product['reviews']) / baseline_product['reviews']) * 100
+                    if review_change_percent >= thresholds['review_change_percent']:
+                        competitor_changes['review_changes'].append({
+                            'product': current_product,
+                            'old_reviews': baseline_product['reviews'],
+                            'new_reviews': current_product['reviews'],
+                            'change_percent': review_change_percent
+                        })
+                        competitor_changes['alerts'] = True
+                        
+            changes[competitor] = competitor_changes
+            
+        return changes

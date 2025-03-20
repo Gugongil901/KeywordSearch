@@ -4,6 +4,11 @@
  */
 
 import { logger } from '../../utils/logger';
+import {
+  MonitoringConfig,
+  MonitoringResult,
+  CompetitorProduct
+} from '../../../shared/schema';
 
 /**
  * 데이터베이스 커넥터 클래스 (싱글톤 패턴)
@@ -11,12 +16,18 @@ import { logger } from '../../utils/logger';
 export class DatabaseConnector {
   private static instance: DatabaseConnector;
   private keywordData: Map<string, any>;
+  private monitoringConfigs: Map<string, MonitoringConfig>;
+  private competitorBaselines: Map<string, Record<string, CompetitorProduct[]>>;
+  private monitoringResults: Map<string, MonitoringResult[]>;
   
   /**
    * 생성자 (private으로 외부에서 직접 인스턴스화 방지)
    */
   private constructor() {
     this.keywordData = new Map<string, any>();
+    this.monitoringConfigs = new Map<string, MonitoringConfig>();
+    this.competitorBaselines = new Map<string, Record<string, CompetitorProduct[]>>();
+    this.monitoringResults = new Map<string, MonitoringResult[]>();
     logger.info('데이터베이스 커넥터 초기화 완료');
   }
   
@@ -202,5 +213,176 @@ export class DatabaseConnector {
     };
     
     return categoryReviews[category] || categoryReviews['default'];
+  }
+
+  // -------------- 경쟁사 모니터링 관련 메소드 --------------
+
+  /**
+   * 모니터링 설정 저장
+   * @param keyword 키워드
+   * @param config 모니터링 설정
+   */
+  public saveMonitoringConfig(keyword: string, config: MonitoringConfig): void {
+    try {
+      const key = keyword.toLowerCase().trim();
+      this.monitoringConfigs.set(key, {
+        ...config,
+        lastUpdated: new Date().toISOString()
+      });
+      logger.info(`[${keyword}] 모니터링 설정 저장 완료`);
+    } catch (error) {
+      logger.error(`[${keyword}] 모니터링 설정 저장 오류: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * 모니터링 설정 조회
+   * @param keyword 키워드
+   * @returns 모니터링 설정
+   */
+  public getMonitoringConfig(keyword: string): MonitoringConfig | undefined {
+    try {
+      const key = keyword.toLowerCase().trim();
+      return this.monitoringConfigs.get(key);
+    } catch (error) {
+      logger.error(`[${keyword}] 모니터링 설정 조회 오류: ${error}`);
+      return undefined;
+    }
+  }
+
+  /**
+   * 모든 모니터링 설정 조회
+   * @returns 모든 모니터링 설정
+   */
+  public getAllMonitoringConfigs(): Record<string, MonitoringConfig> {
+    try {
+      const configs: Record<string, MonitoringConfig> = {};
+      this.monitoringConfigs.forEach((config, keyword) => {
+        configs[keyword] = config;
+      });
+      return configs;
+    } catch (error) {
+      logger.error(`모니터링 설정 목록 조회 오류: ${error}`);
+      return {};
+    }
+  }
+
+  /**
+   * 모니터링 설정 삭제
+   * @param keyword 키워드
+   * @returns 삭제 성공 여부
+   */
+  public deleteMonitoringConfig(keyword: string): boolean {
+    try {
+      const key = keyword.toLowerCase().trim();
+      const result = this.monitoringConfigs.delete(key);
+      
+      if (result) {
+        logger.info(`[${keyword}] 모니터링 설정 삭제 완료`);
+      } else {
+        logger.warn(`[${keyword}] 삭제할 모니터링 설정이 없습니다`);
+      }
+      
+      return result;
+    } catch (error) {
+      logger.error(`[${keyword}] 모니터링 설정 삭제 오류: ${error}`);
+      return false;
+    }
+  }
+
+  /**
+   * 경쟁사 기준 데이터 저장
+   * @param keyword 키워드
+   * @param baselineData 기준 데이터
+   */
+  public saveCompetitorBaseline(
+    keyword: string, 
+    baselineData: Record<string, CompetitorProduct[]>
+  ): void {
+    try {
+      const key = keyword.toLowerCase().trim();
+      this.competitorBaselines.set(key, baselineData);
+      logger.info(`[${keyword}] 경쟁사 기준 데이터 저장 완료: ${Object.keys(baselineData).length}개 경쟁사`);
+    } catch (error) {
+      logger.error(`[${keyword}] 경쟁사 기준 데이터 저장 오류: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * 경쟁사 기준 데이터 조회
+   * @param keyword 키워드
+   * @returns 기준 데이터
+   */
+  public getCompetitorBaseline(
+    keyword: string
+  ): Record<string, CompetitorProduct[]> | undefined {
+    try {
+      const key = keyword.toLowerCase().trim();
+      return this.competitorBaselines.get(key);
+    } catch (error) {
+      logger.error(`[${keyword}] 경쟁사 기준 데이터 조회 오류: ${error}`);
+      return undefined;
+    }
+  }
+
+  /**
+   * 모니터링 결과 저장
+   * @param keyword 키워드
+   * @param result 모니터링 결과
+   */
+  public saveMonitoringResult(keyword: string, result: MonitoringResult): void {
+    try {
+      const key = keyword.toLowerCase().trim();
+      const results = this.monitoringResults.get(key) || [];
+      results.push(result);
+      
+      // 최대 20개까지만 저장 (오래된 결과 제거)
+      if (results.length > 20) {
+        results.sort((a, b) => 
+          new Date(b.checkedAt).getTime() - new Date(a.checkedAt).getTime()
+        );
+        results.splice(20);
+      }
+      
+      this.monitoringResults.set(key, results);
+      logger.info(`[${keyword}] 모니터링 결과 저장 완료: 알림 ${result.hasAlerts ? '있음' : '없음'}`);
+    } catch (error) {
+      logger.error(`[${keyword}] 모니터링 결과 저장 오류: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * 모니터링 결과 조회
+   * @param keyword 키워드
+   * @returns 모니터링 결과 목록
+   */
+  public getMonitoringResults(keyword: string): MonitoringResult[] {
+    try {
+      const key = keyword.toLowerCase().trim();
+      return this.monitoringResults.get(key) || [];
+    } catch (error) {
+      logger.error(`[${keyword}] 모니터링 결과 조회 오류: ${error}`);
+      return [];
+    }
+  }
+
+  /**
+   * 모든 모니터링 결과 조회
+   * @returns 모든 모니터링 결과
+   */
+  public getAllMonitoringResults(): Record<string, MonitoringResult[]> {
+    try {
+      const results: Record<string, MonitoringResult[]> = {};
+      this.monitoringResults.forEach((keywordResults, keyword) => {
+        results[keyword] = keywordResults;
+      });
+      return results;
+    } catch (error) {
+      logger.error(`모니터링 결과 목록 조회 오류: ${error}`);
+      return {};
+    }
   }
 }
