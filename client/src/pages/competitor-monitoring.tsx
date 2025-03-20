@@ -9,12 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -78,9 +72,9 @@ import {
   XCircleIcon,
   LoaderIcon
 } from 'lucide-react';
-import ChangeVisualizer from '@/components/monitoring/change-visualizer';
-import AlertConfig from '@/components/monitoring/alert-config';
-import StrengthWeaknessRadar from '@/components/visualization/strength-weakness-radar';
+import ChangeVisualizer from '../components/monitoring/change-visualizer';
+import AlertConfig from '../components/monitoring/alert-config';
+import StrengthWeaknessRadar from '../components/visualization/strength-weakness-radar';
 
 // 타입 정의
 interface CompetitorInsight {

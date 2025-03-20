@@ -1,175 +1,199 @@
 import React from 'react';
-import {
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  Tooltip,
-  Legend
-} from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ShieldIcon, AlertTriangleIcon } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-interface StrengthWeaknessData {
-  subject: string;
-  score: number;
-  fullMark: number;
-  type: 'strength' | 'weakness';
-}
 
 interface StrengthWeaknessRadarProps {
-  competitor: string;
-  strengthsDetails: Record<string, {
-    description: string;
-    score: number;
-    recommendations?: string[];
-  }>;
-  weaknessesDetails: Record<string, {
-    description: string;
-    score: number;
-    recommendations?: string[];
-  }>;
-  className?: string;
+  strengths: Record<string, number>;
+  weaknesses: Record<string, number>;
+  size?: 'small' | 'medium' | 'large';
 }
 
-export default function StrengthWeaknessRadar({
-  competitor,
-  strengthsDetails,
-  weaknessesDetails,
-  className
-}: StrengthWeaknessRadarProps) {
-  // 레이더 차트 데이터 생성
-  const radarData: StrengthWeaknessData[] = [
-    // 강점 데이터
-    ...Object.entries(strengthsDetails).map(([key, details]) => ({
-      subject: key,
-      score: details.score,
-      fullMark: 100,
-      type: 'strength' as const
-    })),
-    // 약점 데이터
-    ...Object.entries(weaknessesDetails).map(([key, details]) => ({
-      subject: key,
-      score: details.score,
-      fullMark: 100,
-      type: 'weakness' as const
-    }))
-  ];
-
-  // 툴팁 커스텀 컴포넌트
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white p-3 rounded shadow-md border text-sm">
-          <p className="font-medium">{data.subject}</p>
-          <p className="text-gray-700">점수: {data.score}</p>
-        </div>
-      );
-    }
-    return null;
+/**
+ * 강점/약점 레이더 차트 컴포넌트
+ * 
+ * 경쟁사의 강점과 약점을 레이더 차트 형태로 시각화합니다.
+ */
+const StrengthWeaknessRadar: React.FC<StrengthWeaknessRadarProps> = ({
+  strengths,
+  weaknesses,
+  size = 'medium'
+}) => {
+  // 사이즈별 SVG 크기 및 스타일 설정
+  const dimensions = {
+    small: { width: 200, height: 170, fontSize: 8, lineWidth: 1, pointSize: 3 },
+    medium: { width: 300, height: 250, fontSize: 10, lineWidth: 1.5, pointSize: 4 },
+    large: { width: 400, height: 350, fontSize: 12, lineWidth: 2, pointSize: 5 }
   };
-
+  
+  const { width, height, fontSize, lineWidth, pointSize } = dimensions[size];
+  
+  // 차트 중심점 및 반지름 계산
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const radius = Math.min(centerX, centerY) * 0.8;
+  
+  // 모든 속성 결합 (강점 + 약점)
+  const allAttributes = { ...strengths, ...weaknesses };
+  const attributeNames = Object.keys(allAttributes);
+  const attributeCount = attributeNames.length;
+  
+  // 각도 계산
+  const getAngle = (index: number) => (Math.PI * 2 * index) / attributeCount;
+  
+  // 점 좌표 계산
+  const getCoordinates = (value: number, angle: number) => {
+    const normalized = value / 100; // 0-100 범위의 값을 0-1로 정규화
+    const x = centerX + radius * normalized * Math.cos(angle - Math.PI / 2);
+    const y = centerY + radius * normalized * Math.sin(angle - Math.PI / 2);
+    return { x, y };
+  };
+  
+  // 레이블 좌표 계산
+  const getLabelCoordinates = (angle: number) => {
+    const x = centerX + (radius + 15) * Math.cos(angle - Math.PI / 2);
+    const y = centerY + (radius + 15) * Math.sin(angle - Math.PI / 2);
+    return { x, y };
+  };
+  
+  // 다각형 경로 생성 함수
+  const createPolygonPath = (attributes: Record<string, number>) => {
+    return attributeNames.map((name, i) => {
+      const value = attributes[name] || 0;
+      const angle = getAngle(i);
+      const { x, y } = getCoordinates(value, angle);
+      return `${i === 0 ? 'M' : 'L'} ${x},${y}`;
+    }).join(' ') + ' Z';
+  };
+  
+  // 강점 경로
+  const strengthPath = createPolygonPath(strengths);
+  
+  // 약점 경로
+  const weaknessPath = createPolygonPath(weaknesses);
+  
   return (
-    <Card className={cn("shadow-sm", className)}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-medium">
-          {competitor} 강점/약점 분석
-        </CardTitle>
-        <CardDescription>
-          경쟁사의 주요 강점과 약점 분석 결과입니다.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {/* 레이더 차트 */}
-        <div className="h-64 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-              <PolarGrid strokeDasharray="3 3" />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: '#888', fontSize: 11 }} />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} />
-              <Radar
-                name="강점"
-                dataKey="score"
-                stroke="#10b981"
-                fill="#10b981"
-                fillOpacity={0.5}
-                activeDot={{ r: 6 }}
-                isAnimationActive={true}
-                animationDuration={500}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* 강점 목록 */}
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-3">
-            <ShieldIcon className="h-5 w-5 text-emerald-500" />
-            <h3 className="font-medium">주요 강점</h3>
-          </div>
-          <div className="space-y-3">
-            {Object.entries(strengthsDetails).map(([key, details]) => (
-              <div key={`strength-${key}`} className="border rounded-md p-3 bg-emerald-50/50">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-sm">{key}</span>
-                  <Badge variant="outline" className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">
-                    {details.score}/100
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-600">{details.description}</p>
-                {details.recommendations && details.recommendations.length > 0 && (
-                  <div className="mt-2">
-                    <span className="text-xs font-medium text-gray-500">대응 전략:</span>
-                    <ul className="mt-1 text-xs text-gray-600 list-disc list-inside">
-                      {details.recommendations.map((rec, idx) => (
-                        <li key={idx} className="ml-1">{rec}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 약점 목록 */}
-        <div className="mt-6">
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangleIcon className="h-5 w-5 text-amber-500" />
-            <h3 className="font-medium">주요 약점</h3>
-          </div>
-          <div className="space-y-3">
-            {Object.entries(weaknessesDetails).map(([key, details]) => (
-              <div key={`weakness-${key}`} className="border rounded-md p-3 bg-amber-50/50">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-medium text-sm">{key}</span>
-                  <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-200">
-                    {details.score}/100
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-600">{details.description}</p>
-                {details.recommendations && details.recommendations.length > 0 && (
-                  <div className="mt-2">
-                    <span className="text-xs font-medium text-gray-500">활용 전략:</span>
-                    <ul className="mt-1 text-xs text-gray-600 list-disc list-inside">
-                      {details.recommendations.map((rec, idx) => (
-                        <li key={idx} className="ml-1">{rec}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      {/* 배경 원 그리기 */}
+      {[0.25, 0.5, 0.75, 1].map((ratio, i) => (
+        <circle
+          key={i}
+          cx={centerX}
+          cy={centerY}
+          r={radius * ratio}
+          fill="none"
+          stroke="#e2e8f0"
+          strokeWidth={0.5}
+          strokeDasharray={i === 0 ? 'none' : '2,2'}
+        />
+      ))}
+      
+      {/* 축 그리기 */}
+      {attributeNames.map((name, i) => {
+        const angle = getAngle(i);
+        const { x, y } = getCoordinates(100, angle);
+        return (
+          <line
+            key={name}
+            x1={centerX}
+            y1={centerY}
+            x2={x}
+            y2={y}
+            stroke="#e2e8f0"
+            strokeWidth={0.5}
+            strokeDasharray="2,2"
+          />
+        );
+      })}
+      
+      {/* 강점 영역 그리기 */}
+      <path
+        d={strengthPath}
+        fill="rgba(34, 197, 94, 0.2)"
+        stroke="#22c55e"
+        strokeWidth={lineWidth}
+      />
+      
+      {/* 약점 영역 그리기 */}
+      <path
+        d={weaknessPath}
+        fill="rgba(239, 68, 68, 0.2)"
+        stroke="#ef4444"
+        strokeWidth={lineWidth}
+      />
+      
+      {/* 강점 점 그리기 */}
+      {Object.entries(strengths).map(([name, value], i) => {
+        const index = attributeNames.indexOf(name);
+        if (index === -1) return null;
+        
+        const angle = getAngle(index);
+        const { x, y } = getCoordinates(value, angle);
+        
+        return (
+          <circle
+            key={`strength-${name}`}
+            cx={x}
+            cy={y}
+            r={pointSize}
+            fill="#22c55e"
+          />
+        );
+      })}
+      
+      {/* 약점 점 그리기 */}
+      {Object.entries(weaknesses).map(([name, value], i) => {
+        const index = attributeNames.indexOf(name);
+        if (index === -1) return null;
+        
+        const angle = getAngle(index);
+        const { x, y } = getCoordinates(value, angle);
+        
+        return (
+          <circle
+            key={`weakness-${name}`}
+            cx={x}
+            cy={y}
+            r={pointSize}
+            fill="#ef4444"
+          />
+        );
+      })}
+      
+      {/* 속성 이름 레이블 */}
+      {attributeNames.map((name, i) => {
+        const angle = getAngle(i);
+        const { x, y } = getLabelCoordinates(angle);
+        
+        // 텍스트 정렬 조정
+        let textAnchor = 'middle';
+        if (x < centerX - radius / 2) textAnchor = 'end';
+        else if (x > centerX + radius / 2) textAnchor = 'start';
+        
+        // 위치 미세 조정
+        let dx = 0;
+        let dy = 0;
+        
+        if (Math.abs(x - centerX) < 10) dx = 0;
+        else if (x < centerX) dx = -5;
+        else dx = 5;
+        
+        if (Math.abs(y - centerY) < 10) dy = 0;
+        else if (y < centerY) dy = -5;
+        else dy = 12;
+        
+        return (
+          <text
+            key={name}
+            x={x + dx}
+            y={y + dy}
+            textAnchor={textAnchor}
+            fontSize={fontSize}
+            fill="#64748b"
+          >
+            {name}
+          </text>
+        );
+      })}
+    </svg>
   );
-}
+};
+
+export default StrengthWeaknessRadar;
