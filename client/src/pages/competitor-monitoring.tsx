@@ -92,13 +92,18 @@ interface CompetitorInsight {
   weaknesses: string[];
   strengthsDetails: Record<string, {
     description: string;
-    score: number;
-    recommendations: string[];
+    metrics?: string;
+    impact?: string;
+    score?: number;
+    recommendations?: string[];
+    examples?: string[];
   }>;
   weaknessesDetails: Record<string, {
     description: string;
-    score: number;
-    recommendations: string[];
+    metrics?: string;
+    impact?: string;
+    score?: number;
+    recommendations?: string[];
   }>;
   representativeProduct: {
     name: string;
@@ -359,44 +364,74 @@ export default function CompetitorMonitoring() {
             ['aggressive', 'premium', 'standard', 'economy'];
           
           // 건강기능식품 분야에 특화된 강점 상세 데이터 매핑
-          const strengthsDetails = {
+          const healthStrengths: Record<string, {
+            description: string;
+            metrics?: string;
+            impact?: string;
+            examples?: string[];
+            score?: number;
+            recommendations?: string[];
+          }> = {
             '기능성 원료 품질': {
               description: `${competitor}는 고품질 원료를 사용하여 제품을 생산합니다. 특히 유효 성분의 함량이 높고 순도가 우수한 원료를 사용하여 효능이 뛰어납니다.`,
               metrics: '원료 품질 점수: 92/100',
               impact: '고객 충성도 증가 및 재구매율 18% 상승',
+              score: 92,
               examples: [
                 `${competitor}의 비타민C 제품은 순도 99.8% 이상의 L-아스코르브산 사용`,
                 `${competitor}의 프로바이오틱스는 생균수 보장 및 특허받은 코팅기술 적용`
+              ],
+              recommendations: [
+                '효능 입증 임상 연구 결과 강조',
+                '원료 공급처 및 생산과정 투명성 공개'
               ]
             },
             '임상 연구 기반': {
               description: `${competitor}는 제품 개발에 임상 연구 결과를 적극 활용합니다. 이는 제품 효능에 대한 과학적 근거를 제공하고 소비자 신뢰도를 높입니다.`,
               metrics: '임상 연구 기반 제품 비율: 75%',
               impact: '소비자 신뢰도 23% 상승 및 전문가 추천 증가',
+              score: 88,
               examples: [
                 `${competitor}의 글루코사민 제품은 12주 임상 시험 후 관절 통증 감소 효과 입증`,
                 `${competitor}의 오메가3는 혈중 중성지방 개선 효과 임상 검증 완료`
+              ],
+              recommendations: [
+                '주요 건강 기능성 효능에 대한 연구 결과 강조',
+                '의학/약학 전문가 추천 확보'
               ]
             },
             '제품 흡수율': {
               description: `${competitor}의 제품은 체내 흡수율을 높이는 특허 기술을 적용하고 있습니다. 이로 인해 적은 용량으로도 효과적인 영양소 공급이 가능합니다.`,
               metrics: '흡수율 개선 기술 적용 제품 비율: 68%',
               impact: '경쟁사 대비 효능 만족도 31% 높음',
+              score: 85,
               examples: [
                 `${competitor}의 비타민D는 지용성 캡슐 기술로 흡수율 2배 향상`,
                 `${competitor}의 철분 제품은 위장 자극이 적은 킬레이트 형태 사용`
+              ],
+              recommendations: [
+                '성분 흡수력 혁신 기술 마케팅 강화',
+                '기존 제품과의 흡수율 비교 데이터 활용'
               ]
             },
             '특허 기술': {
               description: `${competitor}는 다수의 독자적 특허 기술을 보유하고 있어 제품의 차별화와 경쟁력을 확보하고 있습니다.`,
               metrics: '보유 특허 수: 12개, 특허 기술 적용 제품 비율: 60%',
               impact: '시장 점유율 연간 2.5% 증가',
+              score: 90,
               examples: [
                 `${competitor}의 프로바이오틱스 안정화 코팅 기술 특허`,
                 `${competitor}의 식물성 캡슐 제조 기술 특허`
+              ],
+              recommendations: [
+                '특허 기술 차별화 포인트 활용 마케팅',
+                '제품 가격 프리미엄 설정 근거로 활용'
               ]
             }
           };
+          
+          // 타입 호환성을 위해 별도 객체로 할당
+          const strengthsDetails = healthStrengths;
           
           // 건강기능식품 분야에 특화된 약점 상세 데이터 매핑
           const weaknessesDetails = {

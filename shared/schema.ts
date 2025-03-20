@@ -113,6 +113,7 @@ export interface NaverProductResult {
   image: string;
   category: string;
   brandName: string;
+  mall?: string;      // 판매 쇼핑몰 정보 추가
   reviewCount: number;
   rank: number;
   productUrl: string;
