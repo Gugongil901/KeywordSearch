@@ -229,22 +229,39 @@ export default function CompetitorMonitoring() {
       console.log(`${competitor} 제품 데이터 수신 완료: ${productsArray.length}개`);
       
       // 필드명 매핑 처리 (id → productId, reviews → reviewCount 등)
-      const mappedProducts: CompetitorProduct[] = productsArray.map(item => {
-        // 필수값이 없는 경우 필터링을 위해 null 반환
-        if (!item) return null;
-        
-        return {
-          productId: item.productId || item.id || `unknown-${Math.random().toString(36).substring(2, 10)}`,
-          name: item.name || item.title || `${competitor} 제품`,
-          price: typeof item.price === 'number' ? item.price : 0,
-          reviews: typeof item.reviews === 'number' ? item.reviews : 
-                  typeof item.reviewCount === 'number' ? item.reviewCount : 0,
-          rank: typeof item.rank === 'number' ? item.rank : 0,
-          image: item.image || undefined,
-          url: item.url || item.productUrl || undefined,
-          collectedAt: item.collectedAt || new Date().toISOString()
-        };
-      }).filter(item => item !== null) as CompetitorProduct[];
+      interface RawProduct {
+        productId?: string;
+        id?: string;
+        name?: string;
+        title?: string;
+        price?: number;
+        reviews?: number;
+        reviewCount?: number;
+        rank?: number;
+        image?: string;
+        url?: string;
+        productUrl?: string;
+        collectedAt?: string;
+      }
+      
+      const mappedProducts: CompetitorProduct[] = productsArray
+        .map((item: RawProduct) => {
+          // 필수값이 없는 경우 필터링을 위해 null 반환
+          if (!item) return null;
+          
+          return {
+            productId: item.productId || item.id || `unknown-${Math.random().toString(36).substring(2, 10)}`,
+            name: item.name || item.title || `${competitor} 제품`,
+            price: typeof item.price === 'number' ? item.price : 0,
+            reviews: typeof item.reviews === 'number' ? item.reviews : 
+                    typeof item.reviewCount === 'number' ? item.reviewCount : 0,
+            rank: typeof item.rank === 'number' ? item.rank : 0,
+            image: item.image || undefined,
+            url: item.url || item.productUrl || undefined,
+            collectedAt: item.collectedAt || new Date().toISOString()
+          };
+        })
+        .filter((item): item is CompetitorProduct => item !== null);
       
       return mappedProducts;
     } catch (error) {
