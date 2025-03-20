@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DEFAULT_PRODUCT_IMAGES, getCompetitorProductImage } from '@/constants/images';
+import { DEFAULT_PRODUCT_IMAGES, getCompetitorProductImage, BRAND_WEBSITES } from '@/constants/images';
 import { extractProductIdFromUrl } from '@/utils/product-helper';
 import { SiNaver } from 'react-icons/si';
 
@@ -39,6 +39,11 @@ export function ProductImage({
   
   // 제품 URL 생성
   const generateProductUrl = () => {
+    // 경쟁사(브랜드) 웹사이트가 정의되어 있는 경우 우선 사용
+    if (competitor && BRAND_WEBSITES[competitor]) {
+      return BRAND_WEBSITES[competitor];
+    }
+    
     if (!productId) return '#';
     
     // 이미 완전한 URL인 경우
@@ -51,8 +56,13 @@ export function ProductImage({
       return `https://smartstore.naver.com/main/products/${productId}`;
     }
     
-    // 네이버 검색 URL 형식으로 반환
-    return `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(title || productId)}`;
+    // 제품명이 있는 경우 네이버 검색 URL 형식으로 반환
+    if (title) {
+      return `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(title)}`;
+    }
+    
+    // 마지막 대안으로 네이버 쇼핑 메인으로 이동
+    return 'https://shopping.naver.com/';
   };
   
   // 폴백 이미지 선택
@@ -109,6 +119,39 @@ export function ProductImage({
     return <div {...commonProps}>{children}</div>;
   };
   
+  // 브랜드 로고 결정
+  const getBrandLogo = () => {
+    if (competitor && BRAND_WEBSITES[competitor]) {
+      // 브랜드 로고 색상 결정 (브랜드별로 다른 색상 사용)
+      const getLogoColor = () => {
+        if (competitor.includes('닥터린')) return 'text-red-600';
+        if (competitor.includes('내츄럴플러스')) return 'text-blue-600';
+        if (competitor.includes('에스더몰')) return 'text-pink-600';
+        if (competitor.includes('안국건강')) return 'text-green-700';
+        if (competitor.includes('고려은단')) return 'text-yellow-700';
+        if (competitor.includes('뉴트리')) return 'text-blue-500';
+        if (competitor.includes('종근당')) return 'text-red-700';
+        if (competitor.includes('GNM') || competitor.includes('자연의품격')) return 'text-green-600';
+        if (competitor.includes('한미양행')) return 'text-indigo-600';
+        if (competitor.includes('유한양행')) return 'text-blue-800';
+        return 'text-green-600'; // 기본 네이버 색상
+      };
+
+      return (
+        <div className="absolute bottom-0.5 right-0.5 p-1 bg-white bg-opacity-70 rounded-sm">
+          <SiNaver className={`text-xs ${getLogoColor()}`} />
+        </div>
+      );
+    }
+    
+    // 일반 네이버 로고
+    return (
+      <div className="absolute bottom-0.5 right-0.5 p-1 bg-white bg-opacity-70 rounded-sm">
+        <SiNaver className="text-xs text-green-600" />
+      </div>
+    );
+  };
+  
   return (
     <ImageWrapper>
       <img
@@ -130,10 +173,8 @@ export function ProductImage({
         </div>
       )}
       
-      {!error && !loading && src && (
-        <div className="absolute bottom-0 right-0 p-1">
-          <SiNaver className="text-xs text-green-600" />
-        </div>
+      {!error && !loading && (
+        getBrandLogo()
       )}
     </ImageWrapper>
   );
