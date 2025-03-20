@@ -446,9 +446,12 @@ export class NaverDataCollector {
       const products = shoppingResults.products || [];
       
       // 특정 경쟁사(브랜드/판매자)의 상품만 필터링
+      // 네이버 등 플랫폼 자체는 경쟁사에서 제외
       const competitorProducts = products.filter((product: any) => {
         const seller = product.mall || product.brandName || '';
-        return seller.toLowerCase().includes(competitor.toLowerCase());
+        // 플랫폼 필터링 + 경쟁사 매칭
+        return !this.isExcludedSeller(seller) && 
+               seller.toLowerCase().includes(competitor.toLowerCase());
       });
       
       // 결과가 없으면 검색어에 경쟁사 이름 포함해서 다시 검색
@@ -459,10 +462,11 @@ export class NaverDataCollector {
         try {
           const searchResult = await naverApi.searchKeyword(combinedKeyword);
           if (searchResult && searchResult.products) {
-            // 경쟁사 이름이 포함된 상품만 재필터링
+            // 경쟁사 이름이 포함된 상품만 재필터링 (네이버 등 플랫폼 제외)
             const filteredProducts = searchResult.products.filter((product: any) => {
               const seller = product.brandName || '';
-              return seller.toLowerCase().includes(competitor.toLowerCase());
+              return !this.isExcludedSeller(seller) &&
+                     seller.toLowerCase().includes(competitor.toLowerCase());
             });
             
             if (filteredProducts.length > 0) {
@@ -550,12 +554,14 @@ export class NaverDataCollector {
       // 총 제품 수
       const totalProducts = Object.values(mallDistribution).reduce((sum: number, count: any) => sum + (count as number), 0);
       
-      // 경쟁사 정보 생성
-      const competitors = Object.entries(mallDistribution).map(([seller, count]: [string, any]) => ({
-        seller,
-        productCount: count as number,
-        marketShare: totalProducts > 0 ? (count as number) / totalProducts : 0
-      }));
+      // 경쟁사 정보 생성 (네이버 등 플랫폼 제외)
+      const competitors = Object.entries(mallDistribution)
+        .filter(([seller]) => !this.isExcludedSeller(seller))
+        .map(([seller, count]: [string, any]) => ({
+          seller,
+          productCount: count as number,
+          marketShare: totalProducts > 0 ? (count as number) / totalProducts : 0
+        }));
       
       // 상위 경쟁사 정렬
       const topCompetitors = competitors
