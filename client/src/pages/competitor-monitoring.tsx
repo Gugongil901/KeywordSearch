@@ -51,6 +51,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, ArrowDown, ArrowUp, Info, Loader2, RefreshCw, Settings, ShoppingBag, Star, Trash } from "lucide-react";
+import { SiNaver } from "react-icons/si";
 
 // 건강기능식품 브랜드 상수
 const HEALTH_SUPPLEMENT_BRANDS = [
@@ -833,6 +834,7 @@ export default function CompetitorMonitoring() {
         <TabsList className="mb-4">
           <TabsTrigger value="monitoring">모니터링</TabsTrigger>
           <TabsTrigger value="insights">ML 인사이트</TabsTrigger>
+          <TabsTrigger value="keywords">키워드 분석</TabsTrigger>
         </TabsList>
         
         {/* 모니터링 탭 내용 */}
@@ -1123,9 +1125,9 @@ export default function CompetitorMonitoring() {
                     <Badge 
                       variant={
                         COMPETITOR_INSIGHTS_DATA[selectedCompetitor].threatLevel > 80 ? "destructive" : 
-                        COMPETITOR_INSIGHTS_DATA[selectedCompetitor].threatLevel > 60 ? "warning" : "outline"
+                        COMPETITOR_INSIGHTS_DATA[selectedCompetitor].threatLevel > 60 ? "outline" : "outline"
                       }
-                      className="ml-2"
+                      className={`ml-2 ${COMPETITOR_INSIGHTS_DATA[selectedCompetitor].threatLevel > 60 && COMPETITOR_INSIGHTS_DATA[selectedCompetitor].threatLevel <= 80 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" : ""}`}
                     >
                       위협도 {COMPETITOR_INSIGHTS_DATA[selectedCompetitor].threatLevel}%
                     </Badge>
@@ -1331,6 +1333,188 @@ export default function CompetitorMonitoring() {
               </p>
             </div>
           )}
+        </TabsContent>
+        
+        {/* 키워드 분석 탭 내용 */}
+        <TabsContent value="keywords">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-2">키워드 분석</h2>
+            <p className="text-gray-500 text-sm">건강기능식품 관련 키워드 트렌드 및 인사이트 분석</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">인기 검색어</CardTitle>
+                <CardDescription>
+                  최근 인기 건강기능식품 검색어
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {["멀티비타민", "유산균", "오메가3", "홍삼", "비타민D", "콜라겐", "루테인", "마그네슘", "철분", "프로폴리스"].map((kw, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm w-6 text-center">{i+1}</span>
+                        <span>{kw}</span>
+                      </div>
+                      <Badge variant={i < 3 ? "default" : "outline"} className="text-xs">
+                        {i === 0 ? "+12%" : i === 1 ? "+8%" : i === 2 ? "+5%" : 
+                         i === 8 ? "-3%" : i === 9 ? "-5%" : ""}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">계절별 인기 키워드</CardTitle>
+                <CardDescription>
+                  계절에 따른 건강기능식품 트렌드
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium mb-1">봄 (3월-5월)</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {["알레르기 케어", "눈건강", "피로회복", "다이어트", "피부관리"].map((tag, i) => (
+                        <Badge key={i} variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium mb-1">여름 (6월-8월)</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {["유산균", "다이어트", "피부관리", "면역력", "장건강"].map((tag, i) => (
+                        <Badge key={i} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium mb-1">가을 (9월-11월)</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {["면역력", "홍삼", "오메가3", "관절", "눈건강"].map((tag, i) => (
+                        <Badge key={i} variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium mb-1">겨울 (12월-2월)</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {["면역력", "비타민D", "홍삼", "멀티비타민", "수면개선"].map((tag, i) => (
+                        <Badge key={i} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">2025 주목 키워드</CardTitle>
+                <CardDescription>
+                  올해 성장세가 두드러진 건강 키워드
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {[
+                    { name: "항산화 영양제", growth: "+38%" },
+                    { name: "면역력 강화", growth: "+32%" },
+                    { name: "수면 개선", growth: "+27%" },
+                    { name: "슈퍼푸드", growth: "+24%" },
+                    { name: "남성 갱년기", growth: "+21%" },
+                    { name: "탈모 영양제", growth: "+18%" },
+                    { name: "관절 건강", growth: "+16%" },
+                    { name: "뇌 건강", growth: "+15%" }
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <span>{item.name}</span>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        {item.growth}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="md:col-span-3">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">브랜드별 주력 키워드</CardTitle>
+                <CardDescription>
+                  경쟁사 브랜드별 주력 마케팅 키워드 분석
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[
+                    { 
+                      brand: '닥터린',
+                      keywords: ['프리미엄', '스마트 영양', '첨단 기술', '과학적 검증', '효능 중심'],
+                      color: 'blue'
+                    },
+                    { 
+                      brand: '내츄럴플러스',
+                      keywords: ['자연주의', '천연', '유기농', '안전성', '무첨가'],
+                      color: 'green'
+                    },
+                    { 
+                      brand: '에스더몰',
+                      keywords: ['명품', '프리미엄', '고급화', '특허', '엄선된 원료'],
+                      color: 'purple'
+                    },
+                    { 
+                      brand: '안국건강',
+                      keywords: ['전통', '신뢰', '국민 건강', '가성비', '효도'],
+                      color: 'red'
+                    },
+                    { 
+                      brand: '고려은단',
+                      keywords: ['역사', '전통', '믿음', '국민 브랜드', '가족 건강'],
+                      color: 'yellow'
+                    },
+                    { 
+                      brand: '종근당건강',
+                      keywords: ['국내 1위', '검증된', '정직한', '의약학 전문', '품질'],
+                      color: 'indigo'
+                    },
+                    { 
+                      brand: '유한양행',
+                      keywords: ['전통', '신뢰', '국민 건강', '의약품 전문', '품질 관리'],
+                      color: 'cyan'
+                    }
+                  ].map((item, i) => (
+                    <div key={i} className={`p-4 bg-${item.color}-50 rounded-lg`}>
+                      <h3 className={`font-medium text-${item.color}-800 mb-2`}>{item.brand}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {item.keywords.map((keyword, j) => (
+                          <Badge key={j} variant="outline" className={`bg-${item.color}-100 text-${item.color}-700 border-${item.color}-200`}>
+                            {keyword}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
