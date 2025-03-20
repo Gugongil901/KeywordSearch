@@ -1,0 +1,9 @@
+            {!insightsLoading && mlInsights && mlInsights.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ maxHeight: "600px", overflowY: "auto" }}>
+                {mlInsights.slice(0, 10).map((insight) => (
+                  <Card key={insight.competitor}>
+                    <CardHeader>인사이트 카드</CardHeader>
+                  </Card>
+                ))}
+              </div>
+            )}
