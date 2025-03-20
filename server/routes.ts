@@ -12,6 +12,7 @@ import apiRouter from "./api/routes/api-router";
 import mlRoutes from "./api/routes/ml-routes";
 import monitoringRoutes from "./api/routes/monitoring-routes";
 import imageProxyRouter from "./api/proxy/image-proxy";
+import imageAnalysisRoutes from "./api/routes/image-analysis-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // 기본 라우트 - 간단한 HTML 응답 추가 (테스트용)
@@ -121,6 +122,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register image proxy for CORS-free image loading
   app.use('/api/proxy/image', imageProxyRouter);
+  
+  // Register image analysis API routes
+  app.use('/api/image-analysis', imageAnalysisRoutes);
 
   // API routes
   app.get("/api/health", (_req, res) => {
