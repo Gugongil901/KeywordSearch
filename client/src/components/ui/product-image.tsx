@@ -49,7 +49,8 @@ export function ProductImage({
   }[size];
 
   // 기본 이미지 URL (제품 이미지가 없을 경우)
-  const defaultImageUrl = '/placeholder-product.png';
+  // 안정적인 상품 이미지 URL로 변경 (Unsplash에서 제공하는 안정적인 이미지)
+  const defaultImageUrl = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8c2hvZXN8ZW58MHx8MHx8&w=160&q=80';
   
   // product 객체가 제공된 경우와 직접 속성이 제공된 경우 처리
   const imageUrl = product?.image || src || defaultImageUrl;
