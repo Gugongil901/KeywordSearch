@@ -63,19 +63,44 @@ export function ProductImage({
     ? { width: `${width}px`, height: `${height}px` }
     : {};
   
+  // 이미지 URL 프록시 처리
+  const getProxiedImageUrl = (url: string): string => {
+    // 로컬 이미지 또는 이미 프록시된 이미지인 경우 그대로 사용
+    if (url.startsWith('/') || url.startsWith(window.location.origin) || url.includes('/api/proxy/image')) {
+      return url;
+    }
+    
+    // 외부 이미지인 경우 프록시 사용
+    try {
+      // 프록시 API를 통해 이미지 로드
+      return `/api/proxy/image?url=${encodeURIComponent(url)}`;
+    } catch (error) {
+      console.error('이미지 URL 인코딩 오류:', error);
+      return defaultImageUrl;
+    }
+  };
+  
   // 이미지 컨테이너 렌더링
-  const renderImage = () => (
-    <img 
-      src={imageUrl} 
-      alt={imageAlt} 
-      className={`${width && height ? '' : sizeClass} object-cover rounded border border-gray-200`}
-      style={imageStyle}
-      onError={(e) => {
-        // 이미지 로드 실패 시 기본 이미지로 대체
-        (e.target as HTMLImageElement).src = defaultImageUrl;
-      }}
-    />
-  );
+  const renderImage = () => {
+    // 프록시된 이미지 URL 가져오기
+    const proxiedUrl = imageUrl ? getProxiedImageUrl(imageUrl) : defaultImageUrl;
+    
+    return (
+      <img 
+        src={proxiedUrl} 
+        alt={imageAlt} 
+        className={`${width && height ? '' : sizeClass} object-cover rounded border border-gray-200`}
+        style={imageStyle}
+        onError={(e) => {
+          // 이미지 로드 실패 시 기본 이미지로 대체
+          if ((e.target as HTMLImageElement).src !== defaultImageUrl) {
+            console.log('이미지 로드 실패, 기본 이미지 사용:', imageUrl);
+            (e.target as HTMLImageElement).src = defaultImageUrl;
+          }
+        }}
+      />
+    );
+  };
 
   // 제목 렌더링 (있는 경우)
   const renderTitle = () => {

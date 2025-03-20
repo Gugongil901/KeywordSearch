@@ -60,7 +60,9 @@ router.get('/', async (req: Request, res: Response) => {
     // 캐시 크기 관리
     if (imageCache.size > MAX_CACHE_SIZE) {
       // 가장 오래된 항목 제거 (LRU 방식)
-      const oldestEntry = [...imageCache.entries()]
+      // Array.from으로 변환하여 타입 이슈 해결
+      const cacheEntries = Array.from(imageCache.entries());
+      const oldestEntry = cacheEntries
         .sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
 
       if (oldestEntry) {
