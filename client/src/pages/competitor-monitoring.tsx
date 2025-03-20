@@ -814,7 +814,7 @@ export default function CompetitorMonitoringPage() {
                                   <div key={idx} className="flex items-start border rounded-lg p-4">
                                     <div className="flex-shrink-0 mr-4">
                                       <ProductImage 
-                                        src={change.product.image || `DEFAULT_PRODUCT_IMAGE`} 
+                                        src={change.product.image || DEFAULT_PRODUCT_IMAGE} 
                                         alt={change.product.name}
                                         width={80}
                                         height={80}
@@ -868,7 +868,7 @@ export default function CompetitorMonitoringPage() {
                                   <div key={idx} className="border rounded-lg p-4 flex">
                                     <div className="flex-shrink-0 mr-4">
                                       <ProductImage 
-                                        src={newProduct.product.image || `DEFAULT_PRODUCT_IMAGE`} 
+                                        src={newProduct.product.image || DEFAULT_PRODUCT_IMAGE} 
                                         alt={newProduct.product.name}
                                         width={80}
                                         height={80}
@@ -902,7 +902,7 @@ export default function CompetitorMonitoringPage() {
                                   <div key={idx} className="flex items-start border rounded-lg p-4">
                                     <div className="flex-shrink-0 mr-4">
                                       <ProductImage 
-                                        src={change.product.image || `DEFAULT_PRODUCT_IMAGE`} 
+                                        src={change.product.image || DEFAULT_PRODUCT_IMAGE} 
                                         alt={change.product.name}
                                         width={80}
                                         height={80}
@@ -956,7 +956,7 @@ export default function CompetitorMonitoringPage() {
                                   <div key={idx} className="flex items-start border rounded-lg p-4">
                                     <div className="flex-shrink-0 mr-4">
                                       <ProductImage 
-                                        src={change.product.image || `DEFAULT_PRODUCT_IMAGE`} 
+                                        src={change.product.image || DEFAULT_PRODUCT_IMAGE} 
                                         alt={change.product.name}
                                         width={80}
                                         height={80}
@@ -1174,11 +1174,11 @@ export default function CompetitorMonitoringPage() {
                                   >
                                     <div className="w-full h-24 rounded-md overflow-hidden bg-gray-100 mb-2">
                                       <img 
-                                        src={insight.representativeProduct?.image || `/placeholder-product.png`}
+                                        src={insight.representativeProduct?.image || DEFAULT_PRODUCT_IMAGE}
                                         alt={`${insight.competitor} 제품 ${index + 1}`}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                          (e.target as HTMLImageElement).src = `/placeholder-product.png`;
+                                          (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE;
                                         }}
                                       />
                                     </div>
