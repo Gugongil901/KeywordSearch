@@ -434,11 +434,18 @@ export default function CompetitorMonitoring() {
           const strengthsDetails = healthStrengths;
           
           // 건강기능식품 분야에 특화된 약점 상세 데이터 매핑
-          const weaknessesDetails = {
+          const healthWeaknesses: Record<string, {
+            description: string;
+            metrics?: string;
+            impact?: string;
+            score?: number;
+            recommendations?: string[];
+          }> = {
             '제품 가격대': {
               description: `${competitor}의 제품은 유사 성분의 경쟁사 제품과 비교했을 때 가격대가 높게 책정되어 있습니다. 이는 가격 민감도가 높은 소비자층에게 진입 장벽이 될 수 있습니다.`,
               metrics: '경쟁사 대비 평균 가격 프리미엄: 15~30%',
               impact: '가격 민감 소비자층 이탈률 증가, 전환율 8% 하락',
+              score: 55,
               recommendations: [
                 '저가형 라인업 추가로 진입 장벽 낮춤',
                 '가격 대비 가치 포지셔닝 강화를 위한 홍보 전략 개선'
@@ -448,6 +455,7 @@ export default function CompetitorMonitoring() {
               description: `${competitor}는 4050 중장년층에 제품 포지셔닝이 집중되어 있어 2030 젊은 소비자층 확보에 어려움이 있습니다. 이는 장기적인 고객 기반 구축에 불리합니다.`,
               metrics: '2030 연령대 시장 점유율: 12% (경쟁사 평균 22%)',
               impact: '젊은 소비자층의 브랜드 인지도 및 충성도 부족',
+              score: 48,
               recommendations: [
                 '젊은 소비자층을 위한 디자인 및 패키징 리뉴얼',
                 '소셜미디어 채널별 타겟 마케팅 강화'
@@ -457,6 +465,7 @@ export default function CompetitorMonitoring() {
               description: `${competitor}는 전통적인 오프라인 유통에 강점이 있으나, 온라인 판매 채널 다각화가 부족합니다. 이는 디지털 소비자 접근성을 제한합니다.`,
               metrics: '온라인 매출 비중: 25% (업계 평균 45%)',
               impact: '모바일 쇼핑 트렌드 대응 지연으로 인한 기회 손실',
+              score: 42,
               recommendations: [
                 '자사몰 UX/UI 개선 및 모바일 최적화',
                 '주요 온라인 마켓플레이스 입점 확대'
@@ -466,12 +475,16 @@ export default function CompetitorMonitoring() {
               description: `${competitor}는 신제품 출시 주기가 길고, 시장 트렌드 대응이 다소 느린 편입니다. 이는 빠르게 변화하는 건강기능식품 시장에서 경쟁력 약화 요인입니다.`,
               metrics: '신제품 출시 주기: 평균 14.5개월 (경쟁사 평균 8.2개월)',
               impact: '트렌드 대응 지연으로 인한 시장 점유율 하락',
+              score: 52,
               recommendations: [
                 '제품 개발 프로세스 개선으로 출시 주기 단축',
                 '민첩한 시장 대응을 위한 소량 생산 테스트 전략 도입'
               ]
             }
           };
+
+          // 타입 호환성을 위해 별도 객체로 할당
+          const weaknessesDetails = healthWeaknesses;
           
           // 제품 데이터 기반 대표 제품 정보 구성
           let representativeProduct;
@@ -963,7 +976,7 @@ export default function CompetitorMonitoring() {
             <h3 className="text-xl font-semibold mb-4">
               경쟁사 ML 인사이트
               {insightsLoading && <span className="text-sm text-muted-foreground ml-2">(로딩 중...)</span>}
-              {insightsError && <span className="text-sm text-red-500 ml-2">(데이터 로드 실패 - <Button variant="link" size="sm" onClick={() => refetchInsights()} className="p-0 h-auto text-sm text-blue-500">재시도</Button>)</span>}
+              {insightsError && <span className="text-sm text-red-500 ml-2">(데이터 로드 실패 - <Button variant="link" size="sm" onClick={() => refetchInsights && refetchInsights()} className="p-0 h-auto text-sm text-blue-500">재시도</Button>)</span>}
             </h3>
             
             {insightsLoading && (
@@ -980,7 +993,7 @@ export default function CompetitorMonitoring() {
               <div className="text-center p-8 border border-dashed rounded-lg">
                 <InfoIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
                 <p className="text-muted-foreground">ML 인사이트를 생성하는 중 오류가 발생했습니다.</p>
-                <Button variant="outline" size="sm" onClick={() => refetchInsights()} className="mt-2">
+                <Button variant="outline" size="sm" onClick={() => refetchInsights && refetchInsights()} className="mt-2">
                   다시 시도
                 </Button>
               </div>
