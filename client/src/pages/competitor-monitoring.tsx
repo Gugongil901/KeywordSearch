@@ -360,15 +360,28 @@ export default function CompetitorMonitoring() {
     queryFn: async () => {
       if (!activeKeyword) return null;
       
+      // 현재 키워드에 대한 모니터링 설정이 있는지 확인
+      if (!configs || !configs[activeKeyword]) {
+        console.warn(`"${activeKeyword}" 키워드에 대한 모니터링 설정이 없습니다. 먼저 설정을 추가해주세요.`);
+        return null;
+      }
+      
       try {
         const response = await fetch(`/api/monitoring/results/${encodeURIComponent(activeKeyword)}/latest`);
-        if (!response.ok) throw new Error('최근 결과를 가져오는데 실패했습니다');
+        if (!response.ok) {
+          if (response.status === 404) {
+            console.warn(`"${activeKeyword}" 키워드에 대한 모니터링 결과가 없습니다. 먼저 변화 감지를 실행해주세요.`);
+            return null;
+          }
+          throw new Error('최근 결과를 가져오는데 실패했습니다');
+        }
         const data = await response.json();
         // API가 직접 객체를 반환하므로 data.data가 아닌 data 자체를 사용
         return data as MonitoringResult;
       } catch (error) {
         console.error('최근 결과 가져오기 오류:', error);
-        throw error;
+        // 오류를 던지지 않고 null 반환하여 에러 화면 표시
+        return null;
       }
     },
     enabled: !!activeKeyword
@@ -881,14 +894,42 @@ export default function CompetitorMonitoring() {
                 <div className="mb-4 p-4 bg-muted rounded-full">
                   <AlertTriangleIcon className="h-8 w-8 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">결과를 가져올 수 없습니다</h3>
-                <p className="text-muted-foreground text-center mb-6">
-                  경쟁사 모니터링 결과를 불러오는 중 오류가 발생했습니다.
-                </p>
-                <Button onClick={() => latestResultRefetch && latestResultRefetch()}>
-                  <RefreshCcw className="h-4 w-4 mr-2" />
-                  다시 시도
-                </Button>
+                <h3 className="text-xl font-semibold mb-2">모니터링 결과가 없습니다</h3>
+                {(!configs || !configs[activeKeyword]) ? (
+                  <>
+                    <p className="text-muted-foreground text-center mb-6">
+                      이 키워드에 대한 모니터링 설정이 없습니다. 먼저 설정을 구성해주세요.
+                    </p>
+                    <Button onClick={() => {
+                      setActiveKeyword("");
+                      setCompetitors([]);
+                      setSetupStep(1);
+                      setIsSetupDialogOpen(true);
+                    }}>
+                      <PlusCircleIcon className="h-4 w-4 mr-2" />
+                      모니터링 설정 추가
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-muted-foreground text-center mb-6">
+                      이 키워드에 대한 첫 모니터링 데이터가 없습니다. 변화 감지를 실행해주세요.
+                    </p>
+                    <Button onClick={checkForChanges} disabled={isCheckingChanges}>
+                      {isCheckingChanges ? (
+                        <>
+                          <LoaderIcon className="h-4 w-4 mr-2 animate-spin" />
+                          확인 중...
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCcw className="h-4 w-4 mr-2" />
+                          변화 감지 실행
+                        </>
+                      )}
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
           ) : !latestResult.hasAlerts ? (
