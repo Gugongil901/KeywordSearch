@@ -31,6 +31,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { MonitoringConfig, MonitoringResult, CompetitorProduct, PriceChange, RankChange, ReviewChange, NewProductAlert, MonitoringThresholds } from '@shared/schema';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from '@/hooks/use-toast';
@@ -79,7 +80,6 @@ import {
 import ChangeVisualizer from '../components/monitoring/change-visualizer';
 import AlertConfig from '../components/monitoring/alert-config';
 import { StrengthWeaknessChart } from '../components/charts/strength-weakness-radar';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // 타입 정의
 interface CompetitorInsight {
