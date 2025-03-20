@@ -609,7 +609,76 @@ export default function CompetitorMonitoringPage() {
                             <ul className="text-sm space-y-1">
                               {insight.strengths.map((strength, idx) => (
                                 <li key={idx} className="flex items-start">
-                                  <span className="mr-1 text-green-500">•</span> {strength}
+                                  <span className="mr-1 text-green-500">•</span> 
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <span className="cursor-pointer hover:underline flex items-center">
+                                        {strength}
+                                        <InfoIcon className="h-3 w-3 ml-1 text-muted-foreground" />
+                                      </span>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                      <DialogHeader>
+                                        <DialogTitle className="flex items-center">
+                                          <TrendingUpIcon className="h-5 w-5 mr-2 text-green-500" />
+                                          강점 분석: {strength}
+                                        </DialogTitle>
+                                        <DialogDescription>
+                                          {insight.competitor}사의 강점 상세 분석 결과입니다.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      
+                                      <div className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                          <h4 className="font-medium text-sm flex items-center">
+                                            <ShieldAlertIcon className="h-4 w-4 mr-1 text-green-500" />
+                                            설명
+                                          </h4>
+                                          <p className="text-sm">{insight.strengthsDetails[strength]?.description}</p>
+                                        </div>
+                                        
+                                        <Separator />
+                                        
+                                        <div className="space-y-2">
+                                          <h4 className="font-medium text-sm flex items-center">
+                                            <BarChart3Icon className="h-4 w-4 mr-1 text-green-500" />
+                                            지표
+                                          </h4>
+                                          <p className="text-sm">{insight.strengthsDetails[strength]?.metrics}</p>
+                                        </div>
+                                        
+                                        <Separator />
+                                        
+                                        <div className="space-y-2">
+                                          <h4 className="font-medium text-sm flex items-center">
+                                            <ArrowRightIcon className="h-4 w-4 mr-1 text-green-500" />
+                                            비즈니스 영향
+                                          </h4>
+                                          <p className="text-sm">{insight.strengthsDetails[strength]?.impact}</p>
+                                        </div>
+                                        
+                                        <Separator />
+                                        
+                                        <div className="space-y-2">
+                                          <h4 className="font-medium text-sm flex items-center">
+                                            <ListChecksIcon className="h-4 w-4 mr-1 text-green-500" />
+                                            사례
+                                          </h4>
+                                          <ul className="text-sm list-disc list-inside">
+                                            {insight.strengthsDetails[strength]?.examples.map((example, i) => (
+                                              <li key={i}>{example}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      </div>
+                                      
+                                      <DialogFooter>
+                                        <Button variant="outline" type="button">
+                                          확인
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
                                 </li>
                               ))}
                               {insight.strengths.length === 0 && (
@@ -626,7 +695,76 @@ export default function CompetitorMonitoringPage() {
                             <ul className="text-sm space-y-1">
                               {insight.weaknesses.map((weakness, idx) => (
                                 <li key={idx} className="flex items-start">
-                                  <span className="mr-1 text-red-500">•</span> {weakness}
+                                  <span className="mr-1 text-red-500">•</span>
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <span className="cursor-pointer hover:underline flex items-center">
+                                        {weakness}
+                                        <InfoIcon className="h-3 w-3 ml-1 text-muted-foreground" />
+                                      </span>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                      <DialogHeader>
+                                        <DialogTitle className="flex items-center">
+                                          <TrendingDownIcon className="h-5 w-5 mr-2 text-red-500" />
+                                          약점 분석: {weakness}
+                                        </DialogTitle>
+                                        <DialogDescription>
+                                          {insight.competitor}사의 약점 상세 분석 결과입니다.
+                                        </DialogDescription>
+                                      </DialogHeader>
+                                      
+                                      <div className="space-y-4 py-4">
+                                        <div className="space-y-2">
+                                          <h4 className="font-medium text-sm flex items-center">
+                                            <ShieldAlertIcon className="h-4 w-4 mr-1 text-red-500" />
+                                            설명
+                                          </h4>
+                                          <p className="text-sm">{insight.weaknessesDetails[weakness]?.description}</p>
+                                        </div>
+                                        
+                                        <Separator />
+                                        
+                                        <div className="space-y-2">
+                                          <h4 className="font-medium text-sm flex items-center">
+                                            <BarChart3Icon className="h-4 w-4 mr-1 text-red-500" />
+                                            지표
+                                          </h4>
+                                          <p className="text-sm">{insight.weaknessesDetails[weakness]?.metrics}</p>
+                                        </div>
+                                        
+                                        <Separator />
+                                        
+                                        <div className="space-y-2">
+                                          <h4 className="font-medium text-sm flex items-center">
+                                            <ArrowRightIcon className="h-4 w-4 mr-1 text-red-500" />
+                                            비즈니스 영향
+                                          </h4>
+                                          <p className="text-sm">{insight.weaknessesDetails[weakness]?.impact}</p>
+                                        </div>
+                                        
+                                        <Separator />
+                                        
+                                        <div className="space-y-2">
+                                          <h4 className="font-medium text-sm flex items-center">
+                                            <ListChecksIcon className="h-4 w-4 mr-1 text-red-500" />
+                                            개선 제안
+                                          </h4>
+                                          <ul className="text-sm list-disc list-inside">
+                                            {insight.weaknessesDetails[weakness]?.recommendations.map((rec, i) => (
+                                              <li key={i}>{rec}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      </div>
+                                      
+                                      <DialogFooter>
+                                        <Button variant="outline" type="button">
+                                          확인
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
                                 </li>
                               ))}
                               {insight.weaknesses.length === 0 && (
