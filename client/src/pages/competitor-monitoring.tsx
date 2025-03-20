@@ -74,7 +74,7 @@ import {
 } from 'lucide-react';
 import ChangeVisualizer from '../components/monitoring/change-visualizer';
 import AlertConfig from '../components/monitoring/alert-config';
-import StrengthWeaknessRadar from '../components/visualization/strength-weakness-radar';
+import { StrengthWeaknessRadar } from '../components/charts/strength-weakness-radar';
 
 // 타입 정의
 interface CompetitorInsight {
@@ -129,7 +129,8 @@ export default function CompetitorMonitoring() {
       const response = await fetch('/api/monitoring/configs');
       if (!response.ok) throw new Error('설정을 가져오는데 실패했습니다');
       const data = await response.json();
-      return data.data as Record<string, MonitoringConfig>;
+      // API가 직접 객체를 반환하므로 data.data가 아닌 data 자체를 사용
+      return data as Record<string, MonitoringConfig>;
     }
   });
   
@@ -320,7 +321,7 @@ export default function CompetitorMonitoring() {
         try {
           // 실제 API에서 경쟁사 제품 데이터 가져오기 (에러 핸들링 강화)
           console.log(`${competitor} 경쟁사 제품 데이터 요청 중...`);
-          let products = [];
+          let products: CompetitorProduct[] = [];
           let retryCount = 0;
           const maxRetries = 2; // 최대 재시도 횟수
           
