@@ -7,6 +7,8 @@
 import { ProductImage } from "@/components/ui/product-image";
 // 강점/약점 레이더 차트 컴포넌트 임포트
 import { StrengthWeaknessRadar } from "@/components/charts/strength-weakness-radar";
+// 공통 상수 임포트
+import { DEFAULT_PRODUCT_IMAGE } from "@/constants/images";
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
@@ -485,8 +487,7 @@ const checkForChanges = async (keyword: string) => {
   }
 };
 
-// 안정적인 기본 상품 이미지 URL (Unsplash)
-const DEFAULT_PRODUCT_IMAGE = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=160&q=80';
+// DEFAULT_PRODUCT_IMAGE 상수는 이제 constants/images.ts에서 임포트됨
 
 // 컴포넌트
 export default function CompetitorMonitoringPage() {

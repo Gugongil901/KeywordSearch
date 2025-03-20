@@ -1,4 +1,5 @@
 import React from 'react';
+import { DEFAULT_PRODUCT_IMAGE } from '@/constants/images';
 
 interface CompetitorProduct {
   productId: string;
@@ -49,11 +50,10 @@ export function ProductImage({
   }[size];
 
   // 기본 이미지 URL (제품 이미지가 없을 경우)
-  // 안정적인 상품 이미지 URL로 변경 (Unsplash에서 제공하는 안정적인 이미지)
-  const defaultImageUrl = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8c2hvZXN8ZW58MHx8MHx8&w=160&q=80';
+  // 공통 상수에서 가져온 안정적인 이미지 URL 사용
   
   // product 객체가 제공된 경우와 직접 속성이 제공된 경우 처리
-  const imageUrl = product?.image || src || defaultImageUrl;
+  const imageUrl = product?.image || src || DEFAULT_PRODUCT_IMAGE;
   const imageAlt = product?.name || alt || '제품 이미지';
   const linkUrl = product?.url || 
                  (product ? `https://search.shopping.naver.com/product/${product.productId}` : productUrl || '#');
@@ -77,14 +77,14 @@ export function ProductImage({
       return `/api/proxy/image?url=${encodeURIComponent(url)}`;
     } catch (error) {
       console.error('이미지 URL 인코딩 오류:', error);
-      return defaultImageUrl;
+      return DEFAULT_PRODUCT_IMAGE;
     }
   };
   
   // 이미지 컨테이너 렌더링
   const renderImage = () => {
     // 프록시된 이미지 URL 가져오기
-    const proxiedUrl = imageUrl ? getProxiedImageUrl(imageUrl) : defaultImageUrl;
+    const proxiedUrl = imageUrl ? getProxiedImageUrl(imageUrl) : DEFAULT_PRODUCT_IMAGE;
     
     return (
       <img 
@@ -94,9 +94,9 @@ export function ProductImage({
         style={imageStyle}
         onError={(e) => {
           // 이미지 로드 실패 시 기본 이미지로 대체
-          if ((e.target as HTMLImageElement).src !== defaultImageUrl) {
+          if ((e.target as HTMLImageElement).src !== DEFAULT_PRODUCT_IMAGE) {
             console.log('이미지 로드 실패, 기본 이미지 사용:', imageUrl);
-            (e.target as HTMLImageElement).src = defaultImageUrl;
+            (e.target as HTMLImageElement).src = DEFAULT_PRODUCT_IMAGE;
           }
         }}
       />
