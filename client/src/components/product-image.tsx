@@ -18,11 +18,11 @@ interface ProductImageProps {
   showTitle?: boolean;
 }
 
-const ProductImage: React.FC<ProductImageProps> = ({ 
+export function ProductImage({ 
   product, 
   size = 'medium',
   showTitle = false 
-}) => {
+}: ProductImageProps) {
   // 이미지 사이즈 설정
   const sizeClass = {
     small: 'w-12 h-12',
@@ -64,4 +64,3 @@ const ProductImage: React.FC<ProductImageProps> = ({
   );
 };
 
-export default ProductImage;

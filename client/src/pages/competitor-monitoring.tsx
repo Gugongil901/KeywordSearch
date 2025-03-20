@@ -4,7 +4,7 @@
  */
 
 // 제품 이미지 컴포넌트 임포트
-import ProductImage from "../components/product-image";
+import { ProductImage } from "../components/product-image";
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
