@@ -254,25 +254,25 @@ const fetchCompetitorInsights = async (keyword: string, competitors: string[]): 
         '배송 지연'
       ].slice(0, (index % 2) + 1); // 1-2개 약점 선택
       
-      // 실제 제품 정보 데이터 - 네이버 쇼핑 이미지 URL 사용 (CORS 이슈를 위해 서버 프록시 사용)
-      const naverImages = [
-        'https://shopping-phinf.pstatic.net/main_3246576/32465763176.20220420124534.jpg',
-        'https://shopping-phinf.pstatic.net/main_3398199/33981997035.20230508132808.jpg',
-        'https://shopping-phinf.pstatic.net/main_3783494/37834945046.20230531162821.jpg',
-        'https://shopping-phinf.pstatic.net/main_3816141/38161410429.20230613155050.jpg',
-        'https://shopping-phinf.pstatic.net/main_3245375/32453755149.20220417165320.jpg',
-        'https://shopping-phinf.pstatic.net/main_3393727/33937272223.20230502161405.jpg',
-        'https://shopping-phinf.pstatic.net/main_3568390/35683901799.20230208124510.jpg',
-        'https://shopping-phinf.pstatic.net/main_3598592/35985922890.20230223163309.jpg',
-        'https://shopping-phinf.pstatic.net/main_2405992/24059923523.20200925144716.jpg',
-        'https://shopping-phinf.pstatic.net/main_3440789/34407891818.20230302181305.jpg'
+      // 실제 제품 정보 데이터 - 안정적인 Unsplash 이미지 URL 사용 (네이버 이미지 CORS/Referer 이슈 해결)
+      const productImages = [
+        'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=160&q=80', // 신발
+        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=160&q=80', // 스마트워치
+        'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=160&q=80', // 스마트폰
+        'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=160&q=80', // 운동화
+        'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=160&q=80', // 헤드폰
+        'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=160&q=80', // 선글라스
+        'https://images.unsplash.com/photo-1611930022073-84f3bb4caa2b?w=160&q=80', // 백팩
+        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=160&q=80', // 헤드폰2
+        'https://images.unsplash.com/photo-1434056886845-dac89ffe9b56?w=160&q=80', // 운동화2
+        'https://images.unsplash.com/photo-1532298229144-0ec0c57515c7?w=160&q=80'  // 시계
       ];
       
       const representativeProduct = {
         name: `${competitor} - 주요 제품`,
         price: Math.floor(30000 + (Math.random() * 10000)), // 가격 범위 제한
         // 여러 이미지 중 하나를 선택하여 사용 (경쟁사 이름 기준 고정값)
-        image: naverImages[Math.abs(competitor.charCodeAt(0) + competitor.charCodeAt(1)) % naverImages.length],
+        image: productImages[Math.abs(competitor.charCodeAt(0) + competitor.charCodeAt(1)) % productImages.length],
         url: `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(competitor)}`,
         reviews: Math.floor(50 + (Math.random() * 100)), // 리뷰 수 범위 제한
         rank: index + 1
@@ -484,6 +484,9 @@ const checkForChanges = async (keyword: string) => {
     };
   }
 };
+
+// 안정적인 기본 상품 이미지 URL (Unsplash)
+const DEFAULT_PRODUCT_IMAGE = 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=160&q=80';
 
 // 컴포넌트
 export default function CompetitorMonitoringPage() {
