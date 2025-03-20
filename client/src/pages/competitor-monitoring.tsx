@@ -80,7 +80,6 @@ import {
 import ChangeVisualizer from '../components/monitoring/change-visualizer';
 import AlertConfig from '../components/monitoring/alert-config';
 import { StrengthWeaknessChart } from '../components/charts/strength-weakness-radar';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // 타입 정의
 interface CompetitorInsight {
