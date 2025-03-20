@@ -4,7 +4,7 @@
  */
 
 // 제품 이미지 컴포넌트 임포트
-import { ProductImage } from "@/components/product-image";
+import ProductImage from "../components/product-image";
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
@@ -318,14 +318,15 @@ export default function CompetitorMonitoringPage() {
     refetchOnWindowFocus: false
   });
   
-  // ML 인사이트 조회
+  // ML 인사이트 조회 - 모든 경쟁사 표시 (최대 10개)
   const { data: mlInsights, isLoading: insightsLoading } = useQuery({
     queryKey: ['competitorInsights', activeKeyword],
     queryFn: () => {
       if (!activeKeyword || !configs || !configs[activeKeyword]) return null;
+      // 모든 경쟁사 데이터를 가져옴 (최대 10개)
       return fetchCompetitorInsights(
         activeKeyword, 
-        (configs[activeKeyword] as MonitoringConfig).competitors
+        (configs[activeKeyword] as MonitoringConfig).competitors.slice(0, 10)
       );
     },
     enabled: !!activeKeyword && !!configs && !!configs[activeKeyword],

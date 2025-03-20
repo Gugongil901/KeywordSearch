@@ -1,7 +1,7 @@
 import React from 'react';
+import { Link } from 'wouter';
 
-// 제품 타입 정의
-export interface ProductType {
+interface CompetitorProduct {
   productId: string;
   name: string;
   price: number;
@@ -12,25 +12,56 @@ export interface ProductType {
   collectedAt: string;
 }
 
-// ProductImage 컴포넌트: 제품 이미지를 표시하고 클릭 시 제품 URL로 이동
-export const ProductImage = ({ product }: { product: ProductType }) => {
-  if (!product.image) return null;
+interface ProductImageProps {
+  product: CompetitorProduct;
+  size?: 'small' | 'medium' | 'large';
+  showTitle?: boolean;
+}
 
+const ProductImage: React.FC<ProductImageProps> = ({ 
+  product, 
+  size = 'medium',
+  showTitle = false 
+}) => {
+  // 이미지 사이즈 설정
+  const sizeClass = {
+    small: 'w-12 h-12',
+    medium: 'w-16 h-16',
+    large: 'w-24 h-24'
+  }[size];
+
+  // 기본 이미지 URL (제품 이미지가 없을 경우)
+  const defaultImageUrl = '/placeholder-product.png';
+  
+  // 실제 제품 페이지로 연결되는 URL
+  const productUrl = product.url || `https://search.shopping.naver.com/product/${product.productId}`;
+  
   return (
-    <a 
-      href={product.url || '#'} 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className="block relative"
-    >
-      <img 
-        src={product.image} 
-        alt={product.name} 
-        className="w-16 h-16 object-cover rounded hover:opacity-80 transition-opacity"
-      />
-      <span className="absolute bottom-0 right-0 bg-black bg-opacity-70 text-white text-xs px-1 rounded-sm">
-        보기
-      </span>
-    </a>
+    <div className="product-image-container">
+      <a 
+        href={productUrl} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="block transition-all hover:opacity-80 hover:shadow-md rounded"
+      >
+        <img 
+          src={product.image || defaultImageUrl} 
+          alt={product.name} 
+          className={`${sizeClass} object-cover rounded border border-gray-200`}
+          onError={(e) => {
+            // 이미지 로드 실패 시 기본 이미지로 대체
+            (e.target as HTMLImageElement).src = defaultImageUrl;
+          }}
+        />
+        
+        {showTitle && (
+          <div className="mt-1 text-xs text-center text-gray-700 truncate max-w-[150px]">
+            {product.name}
+          </div>
+        )}
+      </a>
+    </div>
   );
 };
+
+export default ProductImage;
