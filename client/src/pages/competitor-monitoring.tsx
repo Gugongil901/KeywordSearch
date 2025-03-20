@@ -490,7 +490,7 @@ export default function CompetitorMonitoringPage() {
                     <div className="flex items-center">
                       <DollarSignIcon className="h-5 w-5 text-orange-500 mr-2" />
                       <div className="text-2xl font-bold">
-                        {Object.values(latestResult.changesDetected).reduce((acc, curr) => 
+                        {Object.values(latestResult.changesDetected).reduce<number>((acc, curr) => 
                           acc + (curr as CompetitorChanges).priceChanges.length, 0
                         )}
                       </div>
@@ -499,7 +499,7 @@ export default function CompetitorMonitoringPage() {
                   </div>
                   <div className="flex justify-between text-xs text-muted-foreground mt-2">
                     <span>최대 변동: {
-                      Object.values(latestResult.changesDetected).reduce((max, curr) => {
+                      Object.values(latestResult.changesDetected).reduce<number>((max, curr) => {
                         const changes = (curr as CompetitorChanges).priceChanges;
                         if (changes.length === 0) return max;
                         const currMax = Math.max(...changes.map(c => Math.abs(c.changePercent)));
@@ -520,7 +520,7 @@ export default function CompetitorMonitoringPage() {
                     <div className="flex items-center">
                       <ShoppingBagIcon className="h-5 w-5 text-green-500 mr-2" />
                       <div className="text-2xl font-bold">
-                        {Object.values(latestResult.changesDetected).reduce((acc, curr) => 
+                        {Object.values(latestResult.changesDetected).reduce<number>((acc, curr) => 
                           acc + (curr as CompetitorChanges).newProducts.length, 0
                         )}
                       </div>
@@ -550,7 +550,7 @@ export default function CompetitorMonitoringPage() {
                     <div className="flex items-center">
                       <StarIcon className="h-5 w-5 text-yellow-500 mr-2" />
                       <div className="text-2xl font-bold">
-                        {Object.values(latestResult.changesDetected).reduce((acc, curr) => 
+                        {Object.values(latestResult.changesDetected).reduce<number>((acc, curr) => 
                           acc + (curr as CompetitorChanges).reviewChanges.length, 0
                         )}
                       </div>
@@ -559,7 +559,7 @@ export default function CompetitorMonitoringPage() {
                   </div>
                   <Progress 
                     className="mt-2" 
-                    value={Object.values(latestResult.changesDetected).reduce((acc, curr) => {
+                    value={Object.values(latestResult.changesDetected).reduce<number>((acc, curr) => {
                       const changes = (curr as CompetitorChanges).reviewChanges;
                       if (changes.length === 0) return acc;
                       return acc + 20; // 각 경쟁사당 최대 20% 기여
@@ -889,6 +889,7 @@ export default function CompetitorMonitoringPage() {
                             {/* 레이더 차트 */}
                             <div className="flex-1">
                               <StrengthWeaknessRadar 
+                                competitor={insight.competitor}
                                 strengthsData={{
                                   "가격 경쟁력": insight.priceStrategy === 'aggressive' ? 90 : 
                                                insight.priceStrategy === 'economy' ? 75 : 
