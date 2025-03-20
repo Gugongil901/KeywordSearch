@@ -148,6 +148,7 @@ interface CompetitorInsight {
     url: string;
     reviews: number;
     rank: number;
+    productId: string;
   };
 }
 
@@ -277,7 +278,8 @@ const fetchCompetitorInsights = async (keyword: string, competitors: string[]): 
         image: productImages[Math.abs(competitor.charCodeAt(0) + competitor.charCodeAt(1)) % productImages.length],
         url: `https://search.shopping.naver.com/search/all?query=${encodeURIComponent(competitor)}`,
         reviews: Math.floor(50 + (Math.random() * 100)), // 리뷰 수 범위 제한
-        rank: index + 1
+        rank: index + 1,
+        productId: `${competitor}-main-product`
       };
       
       return {
@@ -1040,7 +1042,7 @@ export default function CompetitorMonitoringPage() {
                           <div className="flex flex-col md:flex-row gap-6 items-center mb-4">
                             {/* 대표 제품 이미지 */}
                             <div className="flex-shrink-0 w-40">
-                              <ProductImage src={insight.representativeProduct.image} title={insight.representativeProduct.name} productId={insight.representativeProduct.name.productId} width={160} height={160} />
+                              <ProductImage src={insight.representativeProduct.image} title={insight.representativeProduct.name} productId={`${insight.competitor}-main-product`} width={160} height={160} />
                               <div className="text-xs text-center mt-2">
                                 <div className="font-medium">{insight.representativeProduct.name}</div>
                                 <div className="text-muted-foreground">{insight.representativeProduct.price.toLocaleString()}원</div>
@@ -1137,7 +1139,7 @@ export default function CompetitorMonitoringPage() {
                                       <ProductImage 
                                         src={insight.representativeProduct?.image}
                                         title={`${insight.competitor} 제품 ${index + 1}`}
-                                        productId={insight.representativeProduct?.productId}
+                                        productId={`${insight.competitor}-product-${index}`}
                                         className="w-full h-full"
                                       />
                                     </div>
