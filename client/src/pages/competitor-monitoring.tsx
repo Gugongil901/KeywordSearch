@@ -1099,53 +1099,41 @@ export default function CompetitorMonitoringPage() {
                                 size="small"
                               />
                               
-                              {/* 네이버 쇼핑 제품 리스트와 가격 표시 */}
-                              <div className="mt-4">
-                                <h5 className="text-sm font-medium mb-2">네이버 쇼핑 추천 제품</h5>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                  {/* 제품 항목 - 실제 API에서 가져오는 데이터로 대체 */}
-                                  {Array.from({ length: 4 }).map((_, index) => (
-                                    <div key={index} className="flex border rounded-md p-2 hover:bg-gray-50 transition-colors">
-                                      <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 border bg-gray-100 mr-3">
-                                        <img 
-                                          src={`https://via.placeholder.com/160x160?text=${encodeURIComponent(insight.competitor+index)}`}
-                                          alt="제품 이미지"
-                                          className="w-full h-full object-cover"
-                                          onError={(e) => {
-                                            // 이미지 로드 오류 시 기본 이미지로 대체
-                                            (e.target as HTMLImageElement).src = `https://via.placeholder.com/160x160?text=${encodeURIComponent('상품')}`;
-                                          }}
-                                        />
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="text-xs font-medium line-clamp-2 mb-1">
-                                          {insight.competitor} {['프리미엄', '베스트셀러', '인기상품', '신상품'][index % 4]} 제품 {index + 1}
-                                        </div>
-                                        <div className="text-sm font-semibold text-primary">
-                                          {(28900 + (index * 1500 * (insight.priceStrategy === 'premium' ? 3 : 1))).toLocaleString()}원
-                                        </div>
-                                        <div className="flex items-center text-xs text-gray-500 mt-1">
-                                          <StarIcon className="h-3 w-3 text-yellow-500 mr-1" />
-                                          {Math.floor(50 + Math.random() * 500)}
-                                          <span className="mx-1">|</span>
-                                          <span>
-                                            {insight.priceStrategy === 'aggressive' ? '무료배송' : 
-                                             insight.priceStrategy === 'premium' ? '당일배송' : '특급배송'}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
+                              {/* 기존 강점/약점 분석 유지 - 차트와 함께 표시 */}
+                              <div className="flex flex-wrap gap-4 mt-4">
+                                <div className="flex-1 min-w-[150px]">
+                                  <h5 className="text-xs text-muted-foreground mb-1">가격 경쟁력</h5>
+                                  <Progress 
+                                    value={insight.priceStrategy === 'aggressive' ? 90 : 
+                                           insight.priceStrategy === 'economy' ? 75 : 
+                                           insight.priceStrategy === 'standard' ? 60 : 40} 
+                                    className={insight.priceStrategy === 'aggressive' || insight.priceStrategy === 'economy' ? "bg-green-100" : "bg-gray-200"}
+                                  />
                                 </div>
-                                <div className="mt-2 text-xs text-right">
-                                  <a 
-                                    href={`https://search.shopping.naver.com/search/all?query=${encodeURIComponent(insight.competitor)}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-500 hover:underline"
-                                  >
-                                    네이버 쇼핑에서 더 보기 →
-                                  </a>
+                                <div className="flex-1 min-w-[150px]">
+                                  <h5 className="text-xs text-muted-foreground mb-1">제품 품질</h5>
+                                  <Progress 
+                                    value={insight.priceStrategy === 'premium' ? 90 : 
+                                           insight.priceStrategy === 'standard' ? 75 : 65} 
+                                    className={insight.priceStrategy === 'premium' ? "bg-green-100" : "bg-gray-200"}
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-[150px]">
+                                  <h5 className="text-xs text-muted-foreground mb-1">배송 속도</h5>
+                                  <Progress 
+                                    value={insight.growthRate > 15 ? 85 : 
+                                           insight.growthRate > 0 ? 70 : 60} 
+                                    className={insight.growthRate > 10 ? "bg-green-100" : "bg-gray-200"}
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-[150px]">
+                                  <h5 className="text-xs text-muted-foreground mb-1">제품 다양성</h5>
+                                  <Progress 
+                                    value={insight.marketShare > 30 ? 90 : 
+                                           insight.marketShare > 20 ? 75 : 
+                                           insight.marketShare > 10 ? 60 : 45} 
+                                    className={insight.marketShare > 20 ? "bg-green-100" : "bg-gray-200"}
+                                  />
                                 </div>
                               </div>
                             </div>
@@ -1169,11 +1157,11 @@ export default function CompetitorMonitoringPage() {
                                   >
                                     <div className="w-full h-24 rounded-md overflow-hidden bg-gray-100 mb-2">
                                       <img 
-                                        src={`https://via.placeholder.com/240x120?text=${encodeURIComponent(insight.competitor + ' 상품' + (index+1))}`}
-                                        alt="제품 이미지"
+                                        src={insight.representativeProduct?.image || `/placeholder-product.png`}
+                                        alt={`${insight.competitor} 제품 ${index + 1}`}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
-                                          (e.target as HTMLImageElement).src = `https://via.placeholder.com/240x120?text=상품`;
+                                          (e.target as HTMLImageElement).src = `/placeholder-product.png`;
                                         }}
                                       />
                                     </div>
