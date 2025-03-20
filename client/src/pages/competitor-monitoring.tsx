@@ -150,8 +150,36 @@ interface CompetitorInsight {
 
 // API 호출 함수
 const fetchConfigs = async () => {
-  const response = await axios.get('/api/monitoring/configs');
-  return response.data;
+  try {
+    console.log('모니터링 설정 목록 API 호출: /api/monitoring/configs');
+    
+    const response = await axios.get('/api/monitoring/configs', {
+      timeout: 10000,
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    console.log('모니터링 설정 목록 응답 상태:', response.status);
+    console.log('모니터링 설정 목록 응답 데이터 타입:', typeof response.data);
+    console.log('모니터링 설정 목록 응답:', response.data);
+    
+    return response.data;
+  } catch (error: any) {
+    // 상세 에러 정보 출력
+    console.error('모니터링 설정 목록 API 호출 오류:', error);
+    
+    if (error.response) {
+      console.error('응답 상태:', error.response.status);
+      console.error('응답 데이터:', error.response.data);
+    } else if (error.request) {
+      console.error('요청 정보:', error.request);
+    }
+    
+    // 빈 설정 객체 반환 (폴백)
+    return {};
+  }
 };
 
 // ML 인사이트 가져오기 (예시 ML 데이터 생성)
@@ -271,27 +299,51 @@ const fetchLatestResult = async (keyword: string) => {
     console.log('모니터링 결과 API 호출 전 인코딩된 키워드:', encodedKeyword);
     
     // API 호출
-    const response = await axios.get(`/api/monitoring/results/${encodedKeyword}/latest`);
+    const response = await axios.get(`/api/monitoring/results/${encodedKeyword}/latest`, {
+      timeout: 30000, // 타임아웃 30초로 늘림
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
     
     // 응답 로깅
+    console.log('최신 모니터링 결과 응답 상태:', response.status);
+    console.log('최신 모니터링 결과 응답 데이터 타입:', typeof response.data);
     console.log('최신 모니터링 결과 응답:', response.data);
     
     // 결과 반환
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     // 에러 시, 에러 정보를 자세히 출력
     console.error('최신 모니터링 결과 API 호출 오류:', error);
     
+    if (error.response) {
+      // 서버 응답이 있는 경우
+      console.error('응답 상태:', error.response.status);
+      console.error('응답 데이터:', error.response.data);
+      console.error('응답 헤더:', error.response.headers);
+    } else if (error.request) {
+      // 요청이 전송되었지만 응답이 없는 경우
+      console.error('요청 정보:', error.request);
+    }
+    
     // 폴백: 같은 키워드로 새로운 모니터링 검사 시작
+    console.log(`최신 모니터링 결과 없음, 새 변화 감지 요청 시작: ${keyword}`);
+    
     try {
-      console.log(`최신 모니터링 결과 없음, 새 변화 감지 요청 시작: ${keyword}`);
-      const encodedKeyword = encodeURIComponent(keyword);
-      const checkResponse = await axios.get(`/api/monitoring/check/${encodedKeyword}`);
-      console.log('변화 감지 응답:', checkResponse.data);
-      return checkResponse.data;
+      // 직접 변화 감지 실행하여 결과 반환
+      return await checkForChanges(keyword);
     } catch (fallbackError) {
       console.error('변화 감지 폴백 요청 오류:', fallbackError);
-      throw error; // 원래 에러 전파
+      
+      // 비어있는 결과 만들어서 반환 (UI 깨짐 방지)
+      return {
+        keyword,
+        checkedAt: new Date().toISOString(),
+        changesDetected: {},
+        hasAlerts: false
+      };
     }
   }
 };
@@ -300,23 +352,76 @@ const fetchCompetitorProducts = async (keyword: string, competitor: string) => {
   try {
     const encodedKeyword = encodeURIComponent(keyword);
     const encodedCompetitor = encodeURIComponent(competitor);
-    const response = await axios.get(`/api/monitoring/products/${encodedKeyword}/${encodedCompetitor}`);
+    
+    console.log(`경쟁사 제품 API 호출: /api/monitoring/products/${encodedKeyword}/${encodedCompetitor}`);
+    
+    const response = await axios.get(`/api/monitoring/products/${encodedKeyword}/${encodedCompetitor}`, {
+      timeout: 30000, // 타임아웃 30초로 늘림
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    console.log('경쟁사 제품 응답 상태:', response.status);
+    console.log('경쟁사 제품 응답 데이터 타입:', typeof response.data);
     console.log('경쟁사 제품 응답:', response.data);
+    
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
+    // 상세 에러 정보 출력
     console.error('경쟁사 제품 API 호출 오류:', error);
-    throw error;
+    
+    if (error.response) {
+      // 서버 응답이 있는 경우
+      console.error('응답 상태:', error.response.status);
+      console.error('응답 데이터:', error.response.data);
+      console.error('응답 헤더:', error.response.headers);
+    } else if (error.request) {
+      // 요청이 전송되었지만 응답이 없는 경우
+      console.error('요청 정보:', error.request);
+    }
+    
+    // 빈 제품 배열 반환 (폴백)
+    return [];
   }
 };
 
 const setupMonitoring = async (keyword: string, topNCompetitors: number = 5) => {
   try {
     const encodedKeyword = encodeURIComponent(keyword);
-    const response = await axios.post('/api/monitoring/setup', { keyword, topNCompetitors });
+    console.log(`모니터링 설정 API 호출: /api/monitoring/setup (키워드: ${keyword}, 경쟁사 수: ${topNCompetitors})`);
+    
+    const response = await axios.post('/api/monitoring/setup', { 
+      keyword, 
+      topNCompetitors 
+    }, {
+      timeout: 60000, // 타임아웃 60초로 늘림 (초기 설정은 시간이 더 걸릴 수 있음)
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    console.log('모니터링 설정 응답 상태:', response.status);
+    console.log('모니터링 설정 응답 데이터 타입:', typeof response.data);
     console.log('모니터링 설정 응답:', response.data);
+    
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
+    // 상세 에러 정보 출력
     console.error('모니터링 설정 API 호출 오류:', error);
+    
+    if (error.response) {
+      // 서버 응답이 있는 경우
+      console.error('응답 상태:', error.response.status);
+      console.error('응답 데이터:', error.response.data);
+      console.error('응답 헤더:', error.response.headers);
+    } else if (error.request) {
+      // 요청이 전송되었지만 응답이 없는 경우
+      console.error('요청 정보:', error.request);
+    }
+    
     throw error;
   }
 };
