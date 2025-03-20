@@ -165,7 +165,7 @@ router.get('/results/:keyword', (req: Request, res: Response) => {
  * 최신 모니터링 결과 API
  * 키워드의 최신 모니터링 결과 조회
  */
-router.get('/results/:keyword/latest', (req: Request, res: Response) => {
+router.get('/results/:keyword/latest', async (req: Request, res: Response) => {
   try {
     let { keyword } = req.params;
     
@@ -184,7 +184,25 @@ router.get('/results/:keyword/latest', (req: Request, res: Response) => {
     const result = monitoringSystem.getLatestMonitoringResult(keyword);
     
     if (!result) {
-      return res.status(404).json({ error: '해당 키워드의 모니터링 결과를 찾을 수 없습니다.' });
+      // 결과가 없으면 새로운 분석 실행
+      logger.info(`${keyword}의 최신 모니터링 결과가 없어 새로운 변화 감지 실행`);
+      
+      // 설정 유무 확인
+      const config = db.getMonitoringConfig(keyword);
+      if (!config) {
+        return res.status(404).json({ error: '해당 키워드의 모니터링 설정이 없습니다. 먼저 모니터링 설정을 해주세요.' });
+      }
+      
+      try {
+        // 변화 감지 실행
+        const newResult = await monitoringSystem.checkForChanges(keyword);
+        
+        // 결과 반환
+        return res.json(newResult);
+      } catch (checkError) {
+        logger.error(`${keyword} 변화 감지 오류: ${checkError}`);
+        return res.status(500).json({ error: '변화 감지 중 오류가 발생했습니다.' });
+      }
     }
     
     res.json(result);
