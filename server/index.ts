@@ -6,6 +6,26 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// CORS 설정 추가
+app.use((req, res, next) => {
+  // 클라이언트 요청 도메인 허용
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  // 허용할 HTTP 메서드 설정
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  // 허용할 헤더 설정
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  // preflight 요청 캐시 시간 설정 (초 단위)
+  res.setHeader('Access-Control-Max-Age', '3600');
+  
+  // preflight 요청(OPTIONS)에 대한 처리
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  
+  next();
+});
+
 // 모든 응답에 대해 UTF-8 인코딩 설정
 app.use((req, res, next) => {
   if (req.path.startsWith('/api')) {
