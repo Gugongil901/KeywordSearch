@@ -90,8 +90,15 @@ const fetchConfigs = async () => {
 };
 
 const fetchLatestResult = async (keyword: string) => {
-  const response = await axios.get(`/api/monitoring/results/${keyword}/latest`);
-  return response.data;
+  try {
+    const encodedKeyword = encodeURIComponent(keyword);
+    const response = await axios.get(`/api/monitoring/results/${encodedKeyword}/latest`);
+    console.log('최신 모니터링 결과 응답:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('최신 모니터링 결과 API 호출 오류:', error);
+    throw error;
+  }
 };
 
 const fetchCompetitorProducts = async (keyword: string, competitor: string) => {
@@ -100,13 +107,27 @@ const fetchCompetitorProducts = async (keyword: string, competitor: string) => {
 };
 
 const setupMonitoring = async (keyword: string, topNCompetitors: number = 5) => {
-  const response = await axios.post('/api/monitoring/setup', { keyword, topNCompetitors });
-  return response.data;
+  try {
+    const encodedKeyword = encodeURIComponent(keyword);
+    const response = await axios.post('/api/monitoring/setup', { keyword, topNCompetitors });
+    console.log('모니터링 설정 응답:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('모니터링 설정 API 호출 오류:', error);
+    throw error;
+  }
 };
 
 const checkForChanges = async (keyword: string) => {
-  const response = await axios.get(`/api/monitoring/check/${keyword}`);
-  return response.data;
+  try {
+    const encodedKeyword = encodeURIComponent(keyword);
+    const response = await axios.get(`/api/monitoring/check/${encodedKeyword}`);
+    console.log('변화 감지 응답:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('변화 감지 API 호출 오류:', error);
+    throw error;
+  }
 };
 
 // 컴포넌트
