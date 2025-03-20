@@ -571,19 +571,19 @@ export default function CompetitorMonitoring() {
           // 제품 데이터 기반 대표 제품 정보 구성
           let representativeProduct;
           
-          // 바디닥터인 경우 건강기능식품 제품으로 하드코딩
-          if (competitor === '바디닥터') {
-            // 바디닥터의 경우 건강기능식품으로 강제 설정
+          // 유한양행인 경우 건강기능식품 제품으로 하드코딩
+          if (competitor === '유한양행') {
+            // 유한양행의 경우 건강기능식품으로 강제 설정
             representativeProduct = {
-              name: "바디닥터 더블액션 멀티비타민 올인원 종합비타민미네랄",
-              price: 42500,
-              reviews: 1250,
+              name: "유한양행 트루스 종합비타민미네랄 1500mg 90정",
+              price: 23880,
+              reviews: 4520,
               rank: 1,
-              image: "https://shopping-phinf.pstatic.net/main_8280425/82804252193.jpg",
-              url: "https://brand.naver.com/bodydoctors/products/4957545676",
-              productId: "bodydoctors-vitamins"
+              image: "https://shopping-phinf.pstatic.net/main_8230425/82304252193.jpg",
+              url: "https://brand.naver.com/yuhan/products/5008391296",
+              productId: "yuhan-vitamins"
             };
-            console.log(`바디닥터 제품 정보를 건강기능식품으로 설정 완료.`);
+            console.log(`유한양행 제품 정보를 건강기능식품으로 설정 완료.`);
           } else if (products && products.length > 0) {
             try {
               // 실제 제품 데이터에서 첫 번째 제품 사용 (또는 가장 리뷰가 많은/판매량이 높은 제품 선택 가능)

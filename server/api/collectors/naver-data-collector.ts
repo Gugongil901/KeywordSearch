@@ -484,7 +484,7 @@ export class NaverDataCollector {
         // 특정 브랜드명에 대한 매핑 (브랜드명 변형 처리)
         const brandNameMapping: Record<string, string> = {
           '닥터린': '닥터린',
-          '바디닥터': '바디닥터',
+          '유한양행': '유한양행',
           '내츄럴플러스': '내츄럴플러스',
           '에스더몰': '에스더몰',
           '안국건강': '안국건강',
@@ -529,7 +529,7 @@ export class NaverDataCollector {
         // 브랜드별 특수 검색어 전략 추가
         const specialSearchStrategies: Record<string, string[]> = {
           '닥터린': ['닥터린 영양제', '닥터린 건강식품', '닥터린 건강기능식품'],
-          '바디닥터': ['바디닥터 건강기능식품', '바디닥터 영양제', '바디닥터 비타민', '바디닥터 프로바이오틱스', '바디닥터 종합비타민'],
+          '유한양행': ['유한양행 비타민', '유한양행 영양제', '유한양행 건강기능식품', '유한 비타민', '유한 프리미엄'],
           '내츄럴플러스': ['내츄럴플러스 비타민', '내츄럴플러스 건강기능식품', '내츄럴플러스 오메가3'],
           '에스더몰': ['에스더포뮬러', '에스더몰 영양제', '에스더 비타민', '에스더몰 건강기능식품'],
           '안국건강': ['안국 영양제', '안국건강 루테인', '안국건강 비타민', '안국건강 건강기능식품'],
@@ -579,7 +579,7 @@ export class NaverDataCollector {
                 // 브랜드 별칭 (한국어 브랜드명 처리를 위한 추가 매핑)
                 const brandAliases: Record<string, string[]> = {
                   '닥터린': ['닥터린', 'drlin', '닥터l', '닥터엘'],
-                  '바디닥터': ['바디닥터', 'bodydoctor', '바디dr', '바디doctor'],
+                  '유한양행': ['유한양행', '유한', 'yuhan', '유한헬스케어', 'yuhanhealth'],
                   '내츄럴플러스': ['내츄럴플러스', '내추럴플러스', 'naturalplus', '네츄럴플러스'],
                   '에스더몰': ['에스더몰', '에스더포뮬러', 'esthermall', 'estherformula'],
                   '안국건강': ['안국건강', '안국', 'angukhealthcare', 'anguk'],
@@ -613,7 +613,7 @@ export class NaverDataCollector {
               if (filteredProducts.length === 0) {
                 const brandAliases: Record<string, string[]> = {
                   '닥터린': ['닥터린', 'drlin', '닥터l', '닥터엘'],
-                  '바디닥터': ['바디닥터', 'bodydoctor', '바디dr', '바디doctor'],
+                  '유한양행': ['유한양행', '유한', 'yuhan', '유한헬스케어', 'yuhanhealth'],
                   '내츄럴플러스': ['내츄럴플러스', '내추럴플러스', 'naturalplus', '네츄럴플러스'],
                   '에스더몰': ['에스더몰', '에스더포뮬러', 'esthermall', 'estherformula'],
                   '안국건강': ['안국건강', '안국', 'angukhealthcare', 'anguk'],
