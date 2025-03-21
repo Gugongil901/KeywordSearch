@@ -37,12 +37,14 @@ interface GrowthAnalysisProps {
 
 const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
   // 퍼센트 포맷팅
-  const formatPercent = (num: number) => {
+  const formatPercent = (num: number | undefined) => {
+    if (num === undefined || isNaN(num)) return '0.0%';
     return `${num > 0 ? '+' : ''}${num.toFixed(1)}%`;
   };
 
   // 소수점 포맷팅
-  const formatDecimal = (num: number) => {
+  const formatDecimal = (num: number | undefined) => {
+    if (num === undefined || isNaN(num)) return '0.00';
     return num.toFixed(2);
   };
 
@@ -82,7 +84,11 @@ const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
     return months[monthNum - 1];
   };
 
-  const trendInfo = getTrendInfo(data.trendDirection);
+  // 비교 연산을 위한 안전한 접근 방법
+  const safeSeasonalityStrength = data?.seasonalityStrength || 0;
+  const safeTrendDirection = data?.trendDirection || '유지';
+  
+  const trendInfo = getTrendInfo(safeTrendDirection);
 
   return (
     <div className="space-y-6">
@@ -95,9 +101,9 @@ const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
                   <LineChart className="h-4 w-4 mr-2 text-blue-500" />
                   <span className="text-sm font-medium">성장 점수</span>
                 </div>
-                <span className="text-sm font-bold">{data.growthScore}/100</span>
+                <span className="text-sm font-bold">{data?.growthScore || 0}/100</span>
               </div>
-              <Progress value={data.growthScore} className="h-2" />
+              <Progress value={data?.growthScore || 0} className="h-2" />
               <p className="text-sm text-gray-500">
                 키워드의 전반적인 성장 가능성
               </p>
@@ -150,12 +156,12 @@ const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">최근 3개월</span>
-                  <span className={`text-sm font-bold ${data.growthRates['3month'] >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatPercent(data.growthRates['3month'])}
+                  <span className={`text-sm font-bold ${(data?.growthRates?.['3month'] || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {formatPercent(data?.growthRates?.['3month'])}
                   </span>
                 </div>
                 <Progress 
-                  value={50 + (data.growthRates['3month'] / 2)} 
+                  value={50 + ((data?.growthRates?.['3month'] || 0) / 2)} 
                   className="h-2" 
                 />
               </div>
@@ -163,12 +169,12 @@ const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">최근 6개월</span>
-                  <span className={`text-sm font-bold ${data.growthRates['6month'] >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatPercent(data.growthRates['6month'])}
+                  <span className={`text-sm font-bold ${(data?.growthRates?.['6month'] || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {formatPercent(data?.growthRates?.['6month'])}
                   </span>
                 </div>
                 <Progress 
-                  value={50 + (data.growthRates['6month'] / 2)} 
+                  value={50 + ((data?.growthRates?.['6month'] || 0) / 2)} 
                   className="h-2" 
                 />
               </div>
@@ -176,12 +182,12 @@ const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">최근 12개월</span>
-                  <span className={`text-sm font-bold ${data.growthRates['12month'] >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                    {formatPercent(data.growthRates['12month'])}
+                  <span className={`text-sm font-bold ${(data?.growthRates?.['12month'] || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                    {formatPercent(data?.growthRates?.['12month'])}
                   </span>
                 </div>
                 <Progress 
-                  value={50 + (data.growthRates['12month'] / 2)} 
+                  value={50 + ((data?.growthRates?.['12month'] || 0) / 2)} 
                   className="h-2" 
                 />
               </div>
@@ -225,10 +231,10 @@ const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
               </div>
 
               <p className="text-sm text-gray-500 mt-2">
-                계절성이 {data.seasonalityStrength < 0.3 ? '약함' : data.seasonalityStrength < 0.6 ? '보통' : '강함'}
-                : {data.seasonalityStrength < 0.3 
+                계절성이 {safeSeasonalityStrength < 0.3 ? '약함' : safeSeasonalityStrength < 0.6 ? '보통' : '강함'}
+                : {safeSeasonalityStrength < 0.3 
                   ? '연중 안정적인 수요' 
-                  : data.seasonalityStrength < 0.6 
+                  : safeSeasonalityStrength < 0.6 
                     ? '약간의 계절적 변동 있음' 
                     : '뚜렷한 계절적 패턴 있음'}
               </p>
