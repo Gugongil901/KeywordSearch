@@ -212,16 +212,16 @@ const ProfitAnalysis: React.FC<ProfitAnalysisProps> = ({ data }) => {
                   <h3 className="font-medium text-blue-700">수익성 인사이트</h3>
                 </div>
                 <p className="text-sm text-blue-600">
-                  {data.marginToCpcRatio > 5 
+                  {(data?.marginToCpcRatio || 0) > 5 
                     ? '마진이 광고 비용 대비 매우 높아 광고 ROI가 우수합니다.' 
-                    : data.marginToCpcRatio > 3 
+                    : (data?.marginToCpcRatio || 0) > 3 
                       ? '마진이 광고 비용보다 충분히 높아 적절한 ROI를 기대할 수 있습니다.'
                       : '마진이 광고 비용에 비해 낮아 광고 효율성에 주의가 필요합니다.'}
                 </p>
                 <p className="text-sm text-blue-600 mt-2">
-                  {data.ROAS > 4 
+                  {(data?.ROAS || 0) > 4 
                     ? '광고 투자 대비 매출이 매우 좋습니다.' 
-                    : data.ROAS > 2 
+                    : (data?.ROAS || 0) > 2 
                       ? '광고 투자 대비 매출이 적절합니다.'
                       : '광고 투자 대비 매출이 낮아 개선이 필요합니다.'}
                 </p>

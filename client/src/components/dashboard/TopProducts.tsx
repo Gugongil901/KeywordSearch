@@ -40,17 +40,20 @@ interface TopProductsProps {
 
 const TopProducts: React.FC<TopProductsProps> = ({ data }) => {
   // 숫자 포맷팅 (천 단위 콤마)
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | undefined) => {
+    if (num === undefined || isNaN(num)) return '0';
     return new Intl.NumberFormat('ko-KR').format(num);
   };
 
   // 가격 포맷팅
-  const formatCurrency = (num: number) => {
+  const formatCurrency = (num: number | undefined) => {
+    if (num === undefined || isNaN(num)) return '₩0';
     return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(num);
   };
 
   // HTML 태그 제거
-  const removeHtmlTags = (str: string) => {
+  const removeHtmlTags = (str: string | undefined) => {
+    if (!str) return '';
     return str.replace(/<\/?[^>]+(>|$)/g, "");
   };
 
@@ -176,10 +179,10 @@ const TopProducts: React.FC<TopProductsProps> = ({ data }) => {
               <p className="text-sm text-blue-600">
                 {data && data.length > 0 ? (
                   <>
-                    가장 인기 있는 상위 제품들의 가격대는 {formatCurrency(Math.min(...data.map(p => p.price)))} ~ {formatCurrency(Math.max(...data.map(p => p.price)))}로, 
-                    평균 가격은 {formatCurrency(data.reduce((sum, p) => sum + p.price, 0) / data.length)}입니다.
-                    {data.filter(p => p.isRocketDelivery).length > 0 && 
-                      ` 상위 ${data.length}개 제품 중 ${data.filter(p => p.isRocketDelivery).length}개가 로켓배송을 제공합니다.`}
+                    가장 인기 있는 상위 제품들의 가격대는 {formatCurrency(Math.min(...data.map(p => p?.price || 0)))} ~ {formatCurrency(Math.max(...data.map(p => p?.price || 0)))}로, 
+                    평균 가격은 {formatCurrency(data.reduce((sum, p) => sum + (p?.price || 0), 0) / data.length)}입니다.
+                    {data.filter(p => p?.isRocketDelivery).length > 0 && 
+                      ` 상위 ${data.length}개 제품 중 ${data.filter(p => p?.isRocketDelivery).length}개가 로켓배송을 제공합니다.`}
                   </>
                 ) : "제품 데이터를 불러오는 중입니다..."}
               </p>

@@ -61,7 +61,7 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
   const renderSuccessProbability = () => {
     if (!mlData || !mlData.ml_analysis?.success_probability) return null;
     
-    const { score, important_factors } = mlData.ml_analysis.success_probability;
+    const { score = 0, important_factors = [] } = mlData.ml_analysis.success_probability || {};
     
     let scoreCategory = '낮음';
     let scoreColor = 'bg-red-600';
@@ -91,10 +91,10 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
     }
 
     // 요인 데이터 준비
-    const factorsData = important_factors.map(factor => ({
-      name: factor.factor,
-      value: Math.round(factor.importance * 100)
-    }));
+    const factorsData = important_factors?.map(factor => ({
+      name: factor.factor || '',
+      value: Math.round((factor.importance || 0) * 100)
+    })) || [];
 
     return (
       <div className="space-y-6">
@@ -136,15 +136,15 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
               </ResponsiveContainer>
             </div>
             <div className="space-y-3">
-              {important_factors.map((factor, index) => (
+              {important_factors?.map((factor, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-3 w-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                    <span className="text-sm">{factor.factor}</span>
+                    <span className="text-sm">{factor?.factor || ''}</span>
                   </div>
-                  <span className="text-sm font-medium">{Math.round(factor.importance * 100)}%</span>
+                  <span className="text-sm font-medium">{Math.round((factor?.importance || 0) * 100)}%</span>
                 </div>
-              ))}
+              )) || null}
             </div>
           </div>
         </div>
@@ -155,15 +155,15 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
   const renderSearchForecast = () => {
     if (!mlData || !mlData.ml_analysis?.search_forecast) return null;
     
-    const { search_forecast } = mlData.ml_analysis;
+    const { search_forecast = [] } = mlData.ml_analysis;
     
     // 차트 데이터 준비
-    const chartData = search_forecast.map(item => ({
-      name: `${item.month}개월 후`,
-      예측치: Math.round(item.forecast),
-      최소: Math.round(item.lower),
-      최대: Math.round(item.upper)
-    }));
+    const chartData = search_forecast?.map(item => ({
+      name: `${item?.month || 0}개월 후`,
+      예측치: Math.round(item?.forecast || 0),
+      최소: Math.round(item?.lower || 0),
+      최대: Math.round(item?.upper || 0)
+    })) || [];
     
     const currentValue = chartData[0]?.예측치 || 0;
     const lastValue = chartData[chartData.length - 1]?.예측치 || 0;
