@@ -58,8 +58,41 @@ router.get('/keywords/:keyword', async (req: Request, res: Response) => {
     // 로깅을 통해 데이터 존재 여부 확인
     if (existingAnalysis) {
       logger.info(`기존 분석 데이터 발견: "${decodedKeyword}"`);
+      
+      // 완료된 분석 데이터가 있으면 즉시 반환 (태스크 상태와 관계없이)
+      if (!refresh) {
+        logger.info(`"${decodedKeyword}"에 대한 완료된 분석 데이터 반환`);
+        return res.status(200).json({
+          keyword: decodedKeyword,
+          status: 'completed',
+          data: existingAnalysis
+        });
+      }
     } else {
       logger.info(`기존 분석 데이터 없음: "${decodedKeyword}"`);
+    }
+    
+    // 태스크가 완료되었는지 확인
+    if (backgroundTasks[decodedKeyword] && backgroundTasks[decodedKeyword].status === 'completed') {
+      // 태스크는 완료되었지만 데이터가 없는 경우 (동기화 문제)
+      if (!existingAnalysis) {
+        logger.info(`"${decodedKeyword}" 태스크는 완료되었으나 데이터가 없습니다. 새 분석 시작`);
+        // 태스크 상태 초기화 후 새 분석 시작
+        delete backgroundTasks[decodedKeyword];
+      } else if (refresh) {
+        // 강제 갱신 요청인 경우
+        logger.info(`"${decodedKeyword}" 강제 갱신 요청으로 새 분석 시작`);
+        // 태스크 상태 초기화 후 새 분석 시작
+        delete backgroundTasks[decodedKeyword];
+      } else {
+        // 기존 데이터 반환
+        logger.info(`"${decodedKeyword}" 완료된 태스크의 데이터 반환`);
+        return res.status(200).json({
+          keyword: decodedKeyword,
+          status: 'completed',
+          data: existingAnalysis
+        });
+      }
     }
     
     // 분석 작업 중인지 확인
@@ -73,7 +106,7 @@ router.get('/keywords/:keyword', async (req: Request, res: Response) => {
       });
     }
     
-    // 신선한 데이터가 있고, 강제 갱신이 아니면 기존 데이터 반환
+    // 강제 갱신이 아니고 신선한 데이터가 있으면 기존 데이터 반환
     if (existingAnalysis && isAnalysisFresh(existingAnalysis) && !refresh) {
       logger.info(`"${decodedKeyword}"에 대한 신선한 분석 데이터 반환`);
       return res.status(200).json({
@@ -157,9 +190,58 @@ router.get('/categories/:categoryId', async (req: Request, res: Response) => {
     // 분석 시스템 인스턴스 가져오기
     const analysisSystem = getKeywordAnalysisSystem();
     
-    // 분석 작업 중인지 확인
+    // 로깅 추가
+    logger.info(`카테고리 결과 조회 요청: "${categoryId}", 강제 새로고침: ${refresh}`);
+    
+    // 기존 분석 데이터 확인
+    const analysisDataKey = `market_analysis_${categoryId}`;
+    logger.info(`데이터베이스에서 키 조회: "${analysisDataKey}"`);
+    const existingAnalysis = analysisSystem.db.getKeywordData(analysisDataKey);
+    
+    // 로깅을 통해 데이터 존재 여부 확인
+    if (existingAnalysis) {
+      logger.info(`기존 분석 데이터 발견: "${categoryId}"`);
+      
+      // 완료된 분석 데이터가 있으면 즉시 반환 (태스크 상태와 관계없이)
+      if (!refresh) {
+        logger.info(`"${categoryId}"에 대한 완료된 분석 데이터 반환`);
+        return res.status(200).json({
+          categoryId,
+          status: 'completed',
+          data: existingAnalysis
+        });
+      }
+    } else {
+      logger.info(`기존 분석 데이터 없음: "${categoryId}"`);
+    }
+    
+    // 태스크가 완료되었는지 확인
     const taskKey = `category_${categoryId}`;
+    if (backgroundTasks[taskKey] && backgroundTasks[taskKey].status === 'completed') {
+      // 태스크는 완료되었지만 데이터가 없는 경우 (동기화 문제)
+      if (!existingAnalysis) {
+        logger.info(`"${categoryId}" 태스크는 완료되었으나 데이터가 없습니다. 새 분석 시작`);
+        // 태스크 상태 초기화 후 새 분석 시작
+        delete backgroundTasks[taskKey];
+      } else if (refresh) {
+        // 강제 갱신 요청인 경우
+        logger.info(`"${categoryId}" 강제 갱신 요청으로 새 분석 시작`);
+        // 태스크 상태 초기화 후 새 분석 시작
+        delete backgroundTasks[taskKey];
+      } else {
+        // 기존 데이터 반환
+        logger.info(`"${categoryId}" 완료된 태스크의 데이터 반환`);
+        return res.status(200).json({
+          categoryId,
+          status: 'completed',
+          data: existingAnalysis
+        });
+      }
+    }
+    
+    // 분석 작업 중인지 확인
     if (backgroundTasks[taskKey] && backgroundTasks[taskKey].status === 'processing') {
+      logger.info(`"${categoryId}" 카테고리에 대한 분석 작업이 진행 중입니다.`);
       return res.status(202).json({
         categoryId,
         status: 'processing',
@@ -168,11 +250,9 @@ router.get('/categories/:categoryId', async (req: Request, res: Response) => {
       });
     }
     
-    // 기존 분석 데이터 확인
-    const existingAnalysis = analysisSystem.db.getKeywordData(`market_analysis_${categoryId}`);
-    
-    // 신선한 데이터가 있고, 강제 갱신이 아니면 기존 데이터 반환
+    // 강제 갱신이 아니고 신선한 데이터가 있으면 기존 데이터 반환
     if (existingAnalysis && isAnalysisFresh(existingAnalysis) && !refresh) {
+      logger.info(`"${categoryId}"에 대한 신선한 분석 데이터 반환`);
       return res.status(200).json({
         categoryId,
         status: 'completed',
@@ -182,6 +262,8 @@ router.get('/categories/:categoryId', async (req: Request, res: Response) => {
     
     // 배경에서 분석 작업 시작
     const taskId = `category_${categoryId}_${Date.now()}`;
+    logger.info(`"${categoryId}"에 대한 새 분석 작업 시작, 태스크 ID: ${taskId}`);
+    
     backgroundTasks[taskKey] = {
       status: 'processing',
       taskId,

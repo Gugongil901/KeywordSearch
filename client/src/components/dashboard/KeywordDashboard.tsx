@@ -208,28 +208,71 @@ const KeywordDashboard: React.FC = () => {
               // 분석은 완료되었지만 데이터가 없는 경우 직접 다시 가져오기 시도
               console.log('태스크는 완료되었지만 데이터가 없습니다. 직접 로드 시도...');
               
-              const forceResponse = await fetch(`${window.location.origin}/api/v1/keywords/${encodeURIComponent(currentKeyword)}?refresh=true`, {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json'
+              try {
+                // 3번까지 재시도
+                let retryCount = 0;
+                let forceData = null;
+                
+                while (retryCount < 3 && !forceData) {
+                  if (retryCount > 0) {
+                    console.log(`재시도 ${retryCount}...`);
+                    // 잠시 대기 (500ms)
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                  }
+                  
+                  const forceResponse = await fetch(`${window.location.origin}/api/v1/keywords/${encodeURIComponent(currentKeyword)}?refresh=${retryCount > 0}`, {
+                    method: 'GET',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json'
+                    }
+                  });
+                  
+                  if (!forceResponse.ok) {
+                    const errorText = await forceResponse.text();
+                    console.error(`강제 조회 API 오류: ${forceResponse.status}`, errorText);
+                    retryCount++;
+                    continue;
+                  }
+                  
+                  const responseData = await forceResponse.json();
+                  
+                  // 완료된 데이터 확인
+                  if (responseData.status === 'completed' && responseData.data && responseData.data.dashboard) {
+                    forceData = responseData;
+                    break;
+                  }
+                  
+                  retryCount++;
                 }
-              });
-              
-              if (!forceResponse.ok) {
-                const errorText = await forceResponse.text();
-                console.error(`강제 조회 API 오류: ${forceResponse.status}`, errorText);
-                throw new Error(`강제 조회 실패: ${forceResponse.status}`);
-              }
-              
-              const forceData = await forceResponse.json();
-              
-              if (forceData.data && forceData.data.dashboard) {
-                setDashboardData(forceData.data.dashboard);
-                setLoading(false);
-              } else {
+                
+                if (forceData && forceData.data && forceData.data.dashboard) {
+                  console.log('재시도 후 데이터 가져오기 성공:', forceData.data.dashboard);
+                  setDashboardData(forceData.data.dashboard);
+                  setLoading(false);
+                  setShowConfetti(true);
+                  
+                  toast({
+                    title: "분석 완료",
+                    description: `"${currentKeyword}" 키워드 분석이 완료되었습니다.`,
+                  });
+                  
+                  setTimeout(() => {
+                    setShowConfetti(false);
+                  }, 3000);
+                } else {
+                  throw new Error('재시도 후에도 데이터를 가져오지 못했습니다.');
+                }
+              } catch (retryErr) {
+                console.error('데이터 재시도 중 오류:', retryErr);
                 setError('데이터를 불러오는데 실패했습니다. 페이지를 새로고침하고 다시 시도해주세요.');
                 setLoading(false);
+                
+                toast({
+                  title: "데이터 로드 실패",
+                  description: "분석은 완료되었으나 데이터를 불러오지 못했습니다. 다시 시도해주세요.",
+                  variant: "destructive",
+                });
               }
             }
           } catch (resultErr) {
