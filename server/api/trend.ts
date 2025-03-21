@@ -1,6 +1,7 @@
 import { CategoryTrendResponse } from "@shared/schema";
 import { getHotKeywords, getTopSellingProducts } from "./naver";
-import { crawlShoppingInsightKeywords, getFallbackKeywords } from "./crawler/shopping-insight-crawler";
+import { crawlKeywords, getFallbackKeywords } from "./crawler";
+import { logger } from "../utils/logger";
 
 // 키워드 순위 변동 설정을 위한 상수 (네이버 쇼핑인사이트 형식과 비슷하게)
 const TREND_PATTERNS: Record<string, Record<string, "up" | "down" | "same">> = {
@@ -70,11 +71,11 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
     let hotKeywords: string[] = [];
     let keywordSource = "API";
     
-    // 기존 접근 방식을 바꿔서 크롤링을 우선 시도
+    // 기존 접근 방식을 바꿔서 향상된 크롤링을 우선 시도
     try {
-      // 1. 먼저 크롤링 시도
-      console.log(`1. 쇼핑인사이트 웹페이지 크롤링 시도 (카테고리: ${category})`);
-      hotKeywords = await crawlShoppingInsightKeywords(category, "daily", 10);
+      // 1. 먼저 고급 통합 크롤링 시도
+      logger.info(`1. 고급 통합 크롤링 시도 (카테고리: ${category})`);
+      hotKeywords = await crawlKeywords(category, "daily", 10);
       
       if (hotKeywords && hotKeywords.length > 0) {
         // 키워드 품질 검증 - UI 요소를 필터링
@@ -90,36 +91,36 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
         // 필터링된 키워드가 너무 적거나 한글 비율이 낮으면 백업 데이터 사용
         if (filteredKeywords.length >= 5 && koreanRatio >= 0.5) {
           hotKeywords = filteredKeywords;
-          keywordSource = "크롤링";
-          console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+          keywordSource = "고급 크롤링";
+          logger.info(`✅ 고급 통합 크롤링 성공: ${hotKeywords.length}개 키워드`);
         } else {
-          console.log(`⚠️ 크롤링된 키워드 품질 낮음 (한글 비율: ${(koreanRatio * 100).toFixed(1)}%), 필터링 후: ${filteredKeywords.length}개`);
+          logger.warn(`⚠️ 크롤링된 키워드 품질 낮음 (한글 비율: ${(koreanRatio * 100).toFixed(1)}%), 필터링 후: ${filteredKeywords.length}개`);
           throw new Error("크롤링된 키워드 품질이 낮아 사용할 수 없습니다");
         }
       } else {
         throw new Error("크롤링으로 키워드를 찾을 수 없습니다");
       }
     } catch (crawlingError) {
-      console.log(`크롤링 실패: ${crawlingError}`);
+      logger.error(`크롤링 실패: ${crawlingError}`);
 
       // 2. 크롤링 실패 시 API 호출 시도
       try {
-        console.log(`2. 네이버 API로 일간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
+        logger.info(`2. 네이버 API로 일간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
         hotKeywords = await getHotKeywords(category, "daily");
         
         if (hotKeywords && hotKeywords.length > 0) {
           keywordSource = "API";
-          console.log(`✅ 네이버 API 호출 성공: ${hotKeywords.length}개 키워드`);
+          logger.info(`✅ 네이버 API 호출 성공: ${hotKeywords.length}개 키워드`);
         } else {
           throw new Error("API에서 키워드를 찾을 수 없습니다");
         }
       } catch (apiError) {
-        console.log(`API 호출 실패, 백업 데이터 사용: ${apiError}`);
+        logger.error(`API 호출 실패, 백업 데이터 사용: ${apiError}`);
         
         // 3. 모두 실패하면 백업 데이터 사용
         hotKeywords = getFallbackKeywords(category);
         keywordSource = "백업 데이터";
-        console.log(`ℹ️ 백업 키워드 사용: ${hotKeywords.length}개 키워드`);
+        logger.info(`ℹ️ 백업 키워드 사용: ${hotKeywords.length}개 키워드`);
       }
     }
     
@@ -135,7 +136,7 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
     // 상품 정보 가져오기
     const topProducts = await getTopSellingProducts(category, 7);
     
-    console.log(`✅ 일간 트렌드 반환 성공 (${keywordSource}): 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
+    logger.info(`✅ 일간 트렌드 반환 성공 (${keywordSource}): 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
     
     return {
       category,
@@ -143,7 +144,7 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
       products: topProducts
     };
   } catch (error) {
-    console.error("❌ 일간 트렌드 조회 실패:", error);
+    logger.error("❌ 일간 트렌드 조회 실패: " + error);
     
     // 모든 방법이 실패했을 때도 클라이언트에 빈 응답 대신 기본 정보 반환
     return {
@@ -160,11 +161,11 @@ export async function getWeeklyTrends(category: string = "all"): Promise<Categor
     let hotKeywords: string[] = [];
     let keywordSource = "API";
     
-    // 기존 접근 방식을 바꿔서 크롤링을 우선 시도
+    // 기존 접근 방식을 바꿔서 향상된 크롤링을 우선 시도
     try {
-      // 1. 먼저 크롤링 시도
-      console.log(`1. 쇼핑인사이트 웹페이지 크롤링 시도 (카테고리: ${category})`);
-      hotKeywords = await crawlShoppingInsightKeywords(category, "weekly", 10);
+      // 1. 먼저 고급 통합 크롤링 시도
+      logger.info(`1. 고급 통합 크롤링 시도 (카테고리: ${category})`);
+      hotKeywords = await crawlKeywords(category, "weekly", 10);
       
       if (hotKeywords && hotKeywords.length > 0) {
         // 키워드 품질 검증 - UI 요소를 필터링
@@ -180,36 +181,36 @@ export async function getWeeklyTrends(category: string = "all"): Promise<Categor
         // 필터링된 키워드가 너무 적거나 한글 비율이 낮으면 백업 데이터 사용
         if (filteredKeywords.length >= 5 && koreanRatio >= 0.5) {
           hotKeywords = filteredKeywords;
-          keywordSource = "크롤링";
-          console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+          keywordSource = "고급 크롤링";
+          logger.info(`✅ 고급 통합 크롤링 성공: ${hotKeywords.length}개 키워드`);
         } else {
-          console.log(`⚠️ 크롤링된 키워드 품질 낮음 (한글 비율: ${(koreanRatio * 100).toFixed(1)}%), 필터링 후: ${filteredKeywords.length}개`);
+          logger.warn(`⚠️ 크롤링된 키워드 품질 낮음 (한글 비율: ${(koreanRatio * 100).toFixed(1)}%), 필터링 후: ${filteredKeywords.length}개`);
           throw new Error("크롤링된 키워드 품질이 낮아 사용할 수 없습니다");
         }
       } else {
         throw new Error("크롤링으로 키워드를 찾을 수 없습니다");
       }
     } catch (crawlingError) {
-      console.log(`크롤링 실패: ${crawlingError}`);
+      logger.error(`크롤링 실패: ${crawlingError}`);
 
       // 2. 크롤링 실패 시 API 호출 시도
       try {
-        console.log(`2. 네이버 API로 주간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
+        logger.info(`2. 네이버 API로 주간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
         hotKeywords = await getHotKeywords(category, "weekly");
         
         if (hotKeywords && hotKeywords.length > 0) {
           keywordSource = "API";
-          console.log(`✅ 네이버 API 호출 성공: ${hotKeywords.length}개 키워드`);
+          logger.info(`✅ 네이버 API 호출 성공: ${hotKeywords.length}개 키워드`);
         } else {
           throw new Error("API에서 키워드를 찾을 수 없습니다");
         }
       } catch (apiError) {
-        console.log(`API 호출 실패, 백업 데이터 사용: ${apiError}`);
+        logger.error(`API 호출 실패, 백업 데이터 사용: ${apiError}`);
         
         // 3. 모두 실패하면 백업 데이터 사용
         hotKeywords = getFallbackKeywords(category);
         keywordSource = "백업 데이터";
-        console.log(`ℹ️ 백업 키워드 사용: ${hotKeywords.length}개 키워드`);
+        logger.info(`ℹ️ 백업 키워드 사용: ${hotKeywords.length}개 키워드`);
       }
     }
     
@@ -225,7 +226,7 @@ export async function getWeeklyTrends(category: string = "all"): Promise<Categor
     // 상품 정보 가져오기
     const topProducts = await getTopSellingProducts(category, 7);
     
-    console.log(`✅ 주간 트렌드 반환 성공 (${keywordSource}): 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
+    logger.info(`✅ 주간 트렌드 반환 성공 (${keywordSource}): 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
     
     return {
       category,
@@ -233,7 +234,7 @@ export async function getWeeklyTrends(category: string = "all"): Promise<Categor
       products: topProducts
     };
   } catch (error) {
-    console.error("❌ 주간 트렌드 조회 실패:", error);
+    logger.error("❌ 주간 트렌드 조회 실패: " + error);
     
     // 모든 방법이 실패했을 때도 클라이언트에 빈 응답 대신 기본 정보 반환
     return {
