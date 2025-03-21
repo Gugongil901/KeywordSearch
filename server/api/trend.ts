@@ -70,32 +70,36 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
     let hotKeywords: string[] = [];
     let keywordSource = "API";
     
-    // 먼저 기존 API로 데이터 가져오기 시도
+    // 기존 접근 방식을 바꿔서 크롤링을 우선 시도
     try {
-      console.log(`네이버 API로 일간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
-      hotKeywords = await getHotKeywords(category, "daily");
+      // 1. 먼저 크롤링 시도
+      console.log(`1. 쇼핑인사이트 웹페이지 크롤링 시도 (카테고리: ${category})`);
+      hotKeywords = await crawlShoppingInsightKeywords(category, "daily", 10);
       
-      if (!hotKeywords || hotKeywords.length === 0) {
-        throw new Error("No keywords found from Naver API");
+      if (hotKeywords && hotKeywords.length > 0) {
+        keywordSource = "크롤링";
+        console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+      } else {
+        throw new Error("크롤링으로 키워드를 찾을 수 없습니다");
       }
-    } catch (apiError) {
-      console.log(`네이버 API 호출 실패, 크롤링 시도: ${apiError}`);
+    } catch (crawlingError) {
+      console.log(`크롤링 실패: ${crawlingError}`);
 
-      // API 실패 시 크롤링 시도
+      // 2. 크롤링 실패 시 API 호출 시도
       try {
-        console.log(`쇼핑인사이트 웹페이지 크롤링 시도 (카테고리: ${category})`);
-        hotKeywords = await crawlShoppingInsightKeywords(category, "daily", 10);
+        console.log(`2. 네이버 API로 일간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
+        hotKeywords = await getHotKeywords(category, "daily");
         
         if (hotKeywords && hotKeywords.length > 0) {
-          keywordSource = "크롤링";
-          console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+          keywordSource = "API";
+          console.log(`✅ 네이버 API 호출 성공: ${hotKeywords.length}개 키워드`);
         } else {
-          throw new Error("No keywords found from crawling");
+          throw new Error("API에서 키워드를 찾을 수 없습니다");
         }
-      } catch (crawlingError) {
-        console.log(`크롤링 실패, 백업 데이터 사용: ${crawlingError}`);
+      } catch (apiError) {
+        console.log(`API 호출 실패, 백업 데이터 사용: ${apiError}`);
         
-        // 크롤링도 실패하면 백업 데이터 사용
+        // 3. 모두 실패하면 백업 데이터 사용
         hotKeywords = getFallbackKeywords(category);
         keywordSource = "백업 데이터";
         console.log(`ℹ️ 백업 키워드 사용: ${hotKeywords.length}개 키워드`);
@@ -139,32 +143,36 @@ export async function getWeeklyTrends(category: string = "all"): Promise<Categor
     let hotKeywords: string[] = [];
     let keywordSource = "API";
     
-    // 먼저 기존 API로 데이터 가져오기 시도
+    // 기존 접근 방식을 바꿔서 크롤링을 우선 시도
     try {
-      console.log(`네이버 API로 주간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
-      hotKeywords = await getHotKeywords(category, "weekly");
+      // 1. 먼저 크롤링 시도
+      console.log(`1. 쇼핑인사이트 웹페이지 크롤링 시도 (카테고리: ${category})`);
+      hotKeywords = await crawlShoppingInsightKeywords(category, "weekly", 10);
       
-      if (!hotKeywords || hotKeywords.length === 0) {
-        throw new Error("No keywords found from Naver API");
+      if (hotKeywords && hotKeywords.length > 0) {
+        keywordSource = "크롤링";
+        console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+      } else {
+        throw new Error("크롤링으로 키워드를 찾을 수 없습니다");
       }
-    } catch (apiError) {
-      console.log(`네이버 API 호출 실패, 크롤링 시도: ${apiError}`);
+    } catch (crawlingError) {
+      console.log(`크롤링 실패: ${crawlingError}`);
 
-      // API 실패 시 크롤링 시도
+      // 2. 크롤링 실패 시 API 호출 시도
       try {
-        console.log(`쇼핑인사이트 웹페이지 크롤링 시도 (카테고리: ${category})`);
-        hotKeywords = await crawlShoppingInsightKeywords(category, "weekly", 10);
+        console.log(`2. 네이버 API로 주간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
+        hotKeywords = await getHotKeywords(category, "weekly");
         
         if (hotKeywords && hotKeywords.length > 0) {
-          keywordSource = "크롤링";
-          console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+          keywordSource = "API";
+          console.log(`✅ 네이버 API 호출 성공: ${hotKeywords.length}개 키워드`);
         } else {
-          throw new Error("No keywords found from crawling");
+          throw new Error("API에서 키워드를 찾을 수 없습니다");
         }
-      } catch (crawlingError) {
-        console.log(`크롤링 실패, 백업 데이터 사용: ${crawlingError}`);
+      } catch (apiError) {
+        console.log(`API 호출 실패, 백업 데이터 사용: ${apiError}`);
         
-        // 크롤링도 실패하면 백업 데이터 사용
+        // 3. 모두 실패하면 백업 데이터 사용
         hotKeywords = getFallbackKeywords(category);
         keywordSource = "백업 데이터";
         console.log(`ℹ️ 백업 키워드 사용: ${hotKeywords.length}개 키워드`);
