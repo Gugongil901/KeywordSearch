@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 interface KeywordTrend {
@@ -15,10 +15,16 @@ interface CategoryData {
 
 interface CategoryKeywordsProps {
   period: "daily" | "weekly";
+  category?: string;
 }
 
-const CategoryKeywords: React.FC<CategoryKeywordsProps> = ({ period }) => {
-  const [activeCategory, setActiveCategory] = useState<string>("all");
+const CategoryKeywords: React.FC<CategoryKeywordsProps> = ({ period, category = "all" }) => {
+  const [activeCategory, setActiveCategory] = useState<string>(category);
+  
+  // 부모로부터 받은 category가 변경될 때 activeCategory 업데이트
+  useEffect(() => {
+    setActiveCategory(category);
+  }, [category]);
 
   // 네이버 쇼핑 인사이트 카테고리 목록
   const categories: CategoryData[] = [

@@ -108,21 +108,21 @@ const HeroSearch: React.FC<HeroSearchProps> = ({
             <div className="flex mt-4 justify-center space-x-4">
               <button
                 className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  trendType === "daily"
+                  selectedTrendType === "daily"
                     ? "bg-white shadow-sm text-primary border border-gray-200"
                     : "bg-gray-50 text-gray-900"
                 }`}
-                onClick={() => setTrendType("daily")}
+                onClick={() => onTrendTypeChange("daily")}
               >
                 일간 트렌드
               </button>
               <button
                 className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  trendType === "weekly"
+                  selectedTrendType === "weekly"
                     ? "bg-white shadow-sm text-primary border border-gray-200"
                     : "bg-gray-50 text-gray-900"
                 }`}
-                onClick={() => setTrendType("weekly")}
+                onClick={() => onTrendTypeChange("weekly")}
               >
                 주간 트렌드
               </button>
@@ -134,11 +134,11 @@ const HeroSearch: React.FC<HeroSearchProps> = ({
                 <span
                   key={cat}
                   className={`px-3 py-1 rounded-full text-xs cursor-pointer transition ${
-                    category === cat
+                    selectedCategory === cat
                       ? "bg-primary text-white"
                       : "bg-white text-gray-900 hover:bg-primary hover:text-white"
                   }`}
-                  onClick={() => setCategory(cat)}
+                  onClick={() => onCategoryChange(cat)}
                 >
                   {cat}
                 </span>

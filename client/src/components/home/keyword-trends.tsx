@@ -10,13 +10,19 @@ interface KeywordTrend {
 
 interface KeywordTrendsProps {
   period: "daily" | "weekly";
+  category?: string;
 }
 
-const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period }) => {
-  const [category, setCategory] = useState<string>("all");
+const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period, category = "all" }) => {
+  const [activeCategory, setActiveCategory] = useState<string>(category);
+  
+  // 부모로부터 받은 category가 변경될 때 activeCategory 업데이트
+  useEffect(() => {
+    setActiveCategory(category);
+  }, [category]);
 
   const { data, isLoading } = useQuery({
-    queryKey: [`/api/trends/${period}?category=${category}`],
+    queryKey: [`/api/trends/${period}?category=${activeCategory}`],
     refetchOnWindowFocus: false,
   });
 
