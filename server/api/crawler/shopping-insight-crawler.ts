@@ -310,35 +310,144 @@ export async function crawlShoppingInsightKeywords(
                              response.data.slice(response.data.length - 500);
             console.log(`HTML 샘플: ${htmlSample}`);
             
-            // 키워드가 포함될 수 있는 텍스트 노드 검색
+            // 키워드가 포함될 수 있는 텍스트 노드 검색 (고급 필터링)
+            // 3-20자 사이의 텍스트 노드 추출 (한글과 영문 혼합 허용)
             const textNodePattern = />([^<]{3,20})</g;
             let match;
             const textNodes: string[] = [];
             
             while ((match = textNodePattern.exec(response.data)) !== null) {
               const text = match[1].trim();
-              if (text && !text.includes('네이버') && !text.includes('검색') && text.length >= 2) {
+              // 텍스트 필터링 강화
+              if (text && 
+                  text.length >= 2 && 
+                  // 일반적인 UI 요소, 메뉴, 버튼 텍스트 제외
+                  !text.includes('네이버') && 
+                  !text.includes('NAVER') && 
+                  !text.includes('검색') && 
+                  !text.includes('메뉴') && 
+                  !text.includes('설정') && 
+                  !text.includes('선택') && 
+                  !text.includes('안내') && 
+                  !text.includes('뉴스') &&
+                  !text.includes('new') &&
+                  !text.includes('업데이트') &&
+                  !text.includes('클릭') &&
+                  !text.includes('보기') && 
+                  !text.includes('닫기') &&
+                  // 상품 카테고리 키워드 우선 찾기: 대표적인 제품/카테고리 키워드
+                  (
+                    // 패션/의류 관련 키워드
+                    /패딩|청바지|원피스|티셔츠|자켓|코트|스커트|슬랙스|가디건|바지/.test(text) ||
+                    // 전자제품 관련 키워드
+                    /노트북|스마트폰|태블릿|에어팟|갤럭시|아이폰|이어폰|스피커|모니터|키보드/.test(text) ||
+                    // 뷰티/화장품 관련 키워드
+                    /선크림|립밤|토너|에센스|립스틱|파운데이션|쿠션|팩트|마스크팩|썬크림/.test(text) ||
+                    // 식품 관련 키워드
+                    /과자|라면|음료|간식|커피|우유|치킨|피자|음식|한우/.test(text) ||
+                    // 생활용품 관련 키워드 
+                    /샴푸|치약|비누|휴지|세제|바디워시|로션|수건|화장지|물티슈/.test(text) ||
+                    // 건강 제품 관련 키워드
+                    /비타민|유산균|오메가3|칼슘|콜라겐|프로폴리스|루테인|홍삼|헬스|영양제/.test(text) ||
+                    // 가구/인테리어 관련 키워드
+                    /소파|침대|책상|의자|조명|쇼파|서랍장|화장대|커튼|거실장/.test(text) ||
+                    // 자동차 관련 키워드
+                    /타이어|엔진오일|와이퍼|차량용|매트|블랙박스|핸들|주차|내비게이션|세차/.test(text) ||
+                    // 유아용품 관련 키워드
+                    /기저귀|분유|유모차|젖병|아기|물티슈|이유식|장난감|아기옷|아기과자/.test(text) ||
+                    // 스포츠/레저 관련 키워드
+                    /운동화|자전거|등산|골프|요가|러닝|아령|테니스|수영|캠핑/.test(text) ||
+                    // 디지털/가전 관련 키워드
+                    /냉장고|세탁기|TV|에어컨|청소기|전자레인지|건조기|밥솥|가스레인지|제습기/.test(text) ||
+                    // 기타 인기 제품 키워드 있는지 검사
+                    /가방|구두|신발|부츠|지갑|목걸이|반지|시계|모자|벨트/.test(text)
+                  )
+              ) {
                 textNodes.push(text);
               }
             }
             
-            // 텍스트 노드에서 찾은 내용 중 가장 많이 등장하는 것들을 키워드로 간주
+            // 추출된 텍스트 노드가 없다면 더 넓은 필터로 다시 시도
+            if (textNodes.length < 5) {
+              // 보다 완화된 패턴으로 재시도
+              const allTextNodesPattern = />([^<]{2,30})</g;
+              while ((match = allTextNodesPattern.exec(response.data)) !== null) {
+                const text = match[1].trim();
+                if (text && 
+                    text.length >= 2 && 
+                    // 기본 필터만 적용
+                    !text.includes('네이버') && 
+                    !text.includes('NAVER') && 
+                    !text.includes('검색') &&
+                    !text.includes('메뉴') &&
+                    !text.includes('버튼') &&
+                    text !== 'new' &&
+                    // 한글 포함 단어 우선
+                    /[가-힣]/.test(text)) {
+                  textNodes.push(text);
+                }
+              }
+            }
+            
+            // 텍스트 노드에서 찾은 내용 중 중복 제거하고 선별하기
             if (textNodes.length > 0) {
-              // 빈도 계산
+              // 중복 제거 및 빈도 계산
               const frequency: Record<string, number> = {};
               textNodes.forEach(text => {
                 frequency[text] = (frequency[text] || 0) + 1;
               });
               
-              // 빈도별로 정렬
-              const sortedByFreq = Object.entries(frequency)
-                .sort((a, b) => b[1] - a[1])
-                .map(entry => entry[0]);
+              // 복수의 조건을 이용한 스코어 계산
+              const scoredKeywords = Object.entries(frequency).map(([keyword, count]) => {
+                // 기본 점수 = 출현 빈도
+                let score = count;
+                
+                // 한글이 포함된 키워드에 가중치 부여
+                if (/[가-힣]/.test(keyword)) {
+                  score += 3;
+                }
+                
+                // 2글자 이상의 단어에 가중치 부여
+                if (keyword.length >= 2) {
+                  score += 2;
+                }
+                
+                // 1개 이상의 숫자가 포함된 경우 감점
+                if (/\d/.test(keyword)) {
+                  score -= 1;
+                }
+                
+                // 대문자로만 된 경우 감점 (UI 요소일 가능성)
+                if (keyword === keyword.toUpperCase() && keyword.length > 2) {
+                  score -= 2;
+                }
+                
+                return { keyword, score };
+              });
               
-              if (sortedByFreq.length > 0) {
-                console.log(`텍스트 노드에서 ${sortedByFreq.length}개 키워드 후보 발견`);
-                keywords = sortedByFreq.slice(0, limit);
-                console.log(`첫 5개 키워드 후보: ${keywords.slice(0, 5).join(', ')}`);
+              // 점수 기준으로 정렬
+              const sortedKeywords = scoredKeywords
+                .sort((a, b) => b.score - a.score)
+                .map(item => item.keyword);
+              
+              // 백업 키워드에서 해당 카테고리의 키워드 가져오기
+              const backupCategoryKeywords = getFallbackKeywords(category);
+              
+              // 찾은 키워드가 충분하지 않으면 백업 키워드로 보충
+              if (sortedKeywords.length < limit) {
+                const missingCount = limit - sortedKeywords.length;
+                // 백업 키워드 중 아직 포함되지 않은 키워드 추가
+                const additionalKeywords = backupCategoryKeywords
+                  .filter(keyword => !sortedKeywords.includes(keyword))
+                  .slice(0, missingCount);
+                  
+                sortedKeywords.push(...additionalKeywords);
+              }
+              
+              if (sortedKeywords.length > 0) {
+                console.log(`텍스트 노드 분석 후 ${sortedKeywords.length}개 키워드 후보 발견`);
+                keywords = sortedKeywords.slice(0, limit);
+                console.log(`우선순위가 높은 5개 키워드: ${keywords.slice(0, 5).join(', ')}`);
                 return keywords;
               }
             }
