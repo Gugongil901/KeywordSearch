@@ -384,7 +384,20 @@ export async function getKeywordMeaning(keyword: string): Promise<KeywordMeaning
  */
 export async function getSemanticRelatedKeywords(keyword: string, limit: number = 20): Promise<SemanticRelatedKeyword[]> {
   try {
-    const response = await apiRequest("GET", `/api/ml/semantic-related/${encodeURIComponent(keyword)}?limit=${limit}`, undefined);
+    // 전체 URL로 변경하여 상대 경로 문제 해결
+    const fullUrl = `${window.location.origin}/api/ml/semantic-related/${encodeURIComponent(keyword)}?limit=${limit}`;
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`의미적 연관 키워드 조회 실패: ${response.status}`);
+    }
+    
     const data = await response.json();
     return data.related_keywords;
   } catch (error) {
@@ -400,7 +413,20 @@ export async function getSemanticRelatedKeywords(keyword: string, limit: number 
  */
 export async function getMarketSegments(keyword: string): Promise<MarketSegment[]> {
   try {
-    const response = await apiRequest("GET", `/api/ml/market-segments/${encodeURIComponent(keyword)}`, undefined);
+    // 전체 URL로 변경하여 상대 경로 문제 해결
+    const fullUrl = `${window.location.origin}/api/ml/market-segments/${encodeURIComponent(keyword)}`;
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`시장 세그먼트 조회 실패: ${response.status}`);
+    }
+    
     const data = await response.json();
     return data.segments;
   } catch (error) {
