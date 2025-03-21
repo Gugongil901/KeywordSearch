@@ -86,7 +86,7 @@ const MinimalApp = () => {
         <p>서버: Express + Vite</p>
         <p>클라이언트: React + TypeScript</p>
         <p>로드 시간: {new Date().toString()}</p>
-        {apiResporesponse && (
+        {apiResponse && (
           <div className="mt-3 p-3 bg-blue-900 rounded-md">
             <h3 className="font-bold">API 응답:</h3>
             <pre className="mt-2 text-xs overflow-auto">
@@ -98,29 +98,8 @@ const MinimalApp = () => {
     </div>
   );
 };
-            <h3 className="font-bold">API 응답:</h3>
-            <pre className="mt-2 text-xs overflow-auto">
-              {JSON.stringify(apiResponse, null, 2)}
-            </pre>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
-console.log("React 앱 초기화 중...");
-
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './index.css';
-
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);기화 중... (디버깅 모드)");
+console.log("React 앱 초기화 중... (디버깅 모드)");
 
 // Root 요소 찾기 및 렌더링
 const rootElement = document.getElementById("root");
