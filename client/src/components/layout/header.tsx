@@ -17,9 +17,7 @@ const Header = () => {
         <div className="flex items-center space-x-10">
           <Logo />
           <nav className="hidden md:flex space-x-6">
-            <Link href="/discover" className={`text-sm font-medium ${isActive('/discover') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
-              아이템발굴
-            </Link>
+
             <Link href="/keyword" className={`text-sm font-medium ${isActive('/keyword') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
               키워드분석
             </Link>
@@ -29,12 +27,8 @@ const Header = () => {
             <Link href="/" className={`text-sm font-medium ${isActive('/') && !location.includes('/') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
               트렌드분석
             </Link>
-            <Link href="/competition" className={`text-sm font-medium ${isActive('/competition') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
-              경쟁/입점
-            </Link>
-            <Link href="/tracking" className={`text-sm font-medium ${isActive('/tracking') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
-              판매/재고
-            </Link>
+
+
             <Link href="/monitoring" className={`text-sm font-medium ${isActive('/monitoring') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
               경쟁사모니터링
             </Link>

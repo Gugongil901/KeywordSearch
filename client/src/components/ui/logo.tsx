@@ -24,7 +24,7 @@ const Logo: React.FC<LogoProps> = ({ className = "h-8" }) => {
           <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
         </svg>
       </div>
-      <span className="text-lg font-semibold text-gray-900">키워드 스카우터</span>
+      <span className="text-lg font-semibold text-gray-900">GUGONGIL</span>
     </Link>
   );
 };
