@@ -30,12 +30,12 @@ const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
   // 숫자 포맷팅 함수
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ko-KR').format(num);
-  };
+  }
   
   // 가격 포맷팅 함수
   const formatCurrency = (num: number) => {
     return new Intl.NumberFormat('ko-KR').format(num);
-  };
+  }
 
   return (
     <Card>
@@ -106,6 +106,6 @@ const ProductSearchResults: React.FC<ProductSearchResultsProps> = ({
       </CardContent>
     </Card>
   );
-};
+}
 
 export default ProductSearchResults;

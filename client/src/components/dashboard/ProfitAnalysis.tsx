@@ -34,7 +34,7 @@ interface ProfitData {
       count: number;
       percentage: number;
     }[];
-  };
+  }
 }
 
 interface ProfitAnalysisProps {

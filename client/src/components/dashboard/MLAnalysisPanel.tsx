@@ -38,14 +38,14 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
         setMlData(data);
         
         // 성공 확률이 높은 경우 축하 효과 표시
-        if (data.ml_analysis.success_probability.score >= 80) {
+        if (data?.ml_analysis?.success_probability?.score >= 80) {
           setShowConfetti(true);
           setTimeout(() => setShowConfetti(false), 3000);
         }
         
         if (onLoad) onLoad(data);
-      } catch (err) {
-        console.error('ML 분석 데이터 로드 실패:', err);
+      } catch (error) {
+        console.error('ML 분석 데이터 로드 실패:', error);
         setError('머신러닝 분석 결과를 불러오는 중 오류가 발생했습니다.');
       } finally {
         setIsLoading(false);
@@ -55,12 +55,15 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
     fetchData();
   }, [keyword, onLoad]);
 
+  // 파이 차트 색상
+  const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+
   const renderSuccessProbability = () => {
     if (!mlData || !mlData.ml_analysis?.success_probability) return null;
     
     const { score, important_factors } = mlData.ml_analysis.success_probability;
     
-    let scoreCategory = 'low';
+    let scoreCategory = '낮음';
     let scoreColor = 'bg-red-600';
     let scoreText = '낮음';
     let scoreIcon = <AlertTriangle className="h-5 w-5" />;

@@ -887,6 +887,7 @@ export default function CompetitorMonitoring() {
         <TabsList className="mb-4">
           <TabsTrigger value="monitoring">모니터링</TabsTrigger>
           <TabsTrigger value="insights">ML 인사이트</TabsTrigger>
+          <TabsTrigger value="keywords">키워드 분석</TabsTrigger>
         </TabsList>
         
         {/* 모니터링 탭 내용 */}

@@ -41,7 +41,7 @@ const KeywordDashboard: React.FC = () => {
       if (pollingTask) {
         clearInterval(pollingTask);
       }
-    };
+    }
   }, [pollingTask]);
   
   // 키워드 검색 처리
