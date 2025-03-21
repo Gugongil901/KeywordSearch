@@ -28,6 +28,7 @@ const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping
 
 // 쇼핑인사이트 인기검색어 API (실시간 인기 키워드)
 const NAVER_DATALAB_KEYWORDS_AGE_API = "https://openapi.naver.com/v1/datalab/shopping/categories/keywords/age";
+const NAVER_SHOPPING_INSIGHT_API = "https://openapi.naver.com/v1/datalab/shopping/categories/keywords";
 
 // 네이버 통합검색어 트렌드 API
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
@@ -679,7 +680,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
           ages: ["10", "20", "30", "40", "50", "60"]  // 전 연령대 포함
         };
 
-        apiEndpoint = NAVER_SHOPPING_INSIGHT_API;
+        apiEndpoint = NAVER_SHOPPING_INSIGHT_API; // 쇼핑인사이트 인기검색어 API
         console.log("1. 쇼핑인사이트 인기검색어 API 요청:", JSON.stringify(insightBody).substring(0, 300) + "...");
         console.log("쇼핑인사이트 인기검색어 API 엔드포인트:", apiEndpoint);
 
