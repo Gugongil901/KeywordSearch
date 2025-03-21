@@ -1,5 +1,6 @@
 import { CategoryTrendResponse } from "@shared/schema";
 import { getHotKeywords, getTopSellingProducts } from "./naver";
+import { crawlShoppingInsightKeywords, getFallbackKeywords } from "./crawler/shopping-insight-crawler";
 
 // 키워드 순위 변동 설정을 위한 상수 (네이버 쇼핑인사이트 형식과 비슷하게)
 const TREND_PATTERNS: Record<string, Record<string, "up" | "down" | "same">> = {
@@ -66,11 +67,39 @@ function getChangeStatus(keyword: string, period: "daily" | "weekly"): "up" | "d
 // Get daily trends
 export async function getDailyTrends(category: string = "all"): Promise<CategoryTrendResponse> {
   try {
-    // 일간 트렌드용 키워드 가져오기 (최신 네이버 API 사용)
-    const hotKeywords = await getHotKeywords(category, "daily");
+    let hotKeywords: string[] = [];
+    let keywordSource = "API";
     
-    if (!hotKeywords || hotKeywords.length === 0) {
-      throw new Error("No keywords found for daily trends");
+    // 먼저 기존 API로 데이터 가져오기 시도
+    try {
+      console.log(`네이버 API로 일간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
+      hotKeywords = await getHotKeywords(category, "daily");
+      
+      if (!hotKeywords || hotKeywords.length === 0) {
+        throw new Error("No keywords found from Naver API");
+      }
+    } catch (apiError) {
+      console.log(`네이버 API 호출 실패, 크롤링 시도: ${apiError}`);
+
+      // API 실패 시 크롤링 시도
+      try {
+        console.log(`쇼핑인사이트 웹페이지 크롤링 시도 (카테고리: ${category})`);
+        hotKeywords = await crawlShoppingInsightKeywords(category, "daily", 10);
+        
+        if (hotKeywords && hotKeywords.length > 0) {
+          keywordSource = "크롤링";
+          console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+        } else {
+          throw new Error("No keywords found from crawling");
+        }
+      } catch (crawlingError) {
+        console.log(`크롤링 실패, 백업 데이터 사용: ${crawlingError}`);
+        
+        // 크롤링도 실패하면 백업 데이터 사용
+        hotKeywords = getFallbackKeywords(category);
+        keywordSource = "백업 데이터";
+        console.log(`ℹ️ 백업 키워드 사용: ${hotKeywords.length}개 키워드`);
+      }
     }
     
     // 키워드에 메타데이터 추가 (순위, 변화 상태)
@@ -85,7 +114,7 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
     // 상품 정보 가져오기
     const topProducts = await getTopSellingProducts(category, 7);
     
-    console.log(`✅ 일간 트렌드 반환 성공: 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
+    console.log(`✅ 일간 트렌드 반환 성공 (${keywordSource}): 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
     
     return {
       category,
@@ -95,7 +124,7 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
   } catch (error) {
     console.error("❌ 일간 트렌드 조회 실패:", error);
     
-    // 오류 발생 시에도 클라이언트에 빈 응답 대신 기본 정보라도 반환
+    // 모든 방법이 실패했을 때도 클라이언트에 빈 응답 대신 기본 정보 반환
     return {
       category,
       keywords: [],
@@ -107,11 +136,39 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
 // Get weekly trends
 export async function getWeeklyTrends(category: string = "all"): Promise<CategoryTrendResponse> {
   try {
-    // 주간 트렌드용 키워드 가져오기 (최신 네이버 API 사용)
-    const hotKeywords = await getHotKeywords(category, "weekly");
+    let hotKeywords: string[] = [];
+    let keywordSource = "API";
     
-    if (!hotKeywords || hotKeywords.length === 0) {
-      throw new Error("No keywords found for weekly trends");
+    // 먼저 기존 API로 데이터 가져오기 시도
+    try {
+      console.log(`네이버 API로 주간 트렌드 키워드 가져오기 시도 (카테고리: ${category})`);
+      hotKeywords = await getHotKeywords(category, "weekly");
+      
+      if (!hotKeywords || hotKeywords.length === 0) {
+        throw new Error("No keywords found from Naver API");
+      }
+    } catch (apiError) {
+      console.log(`네이버 API 호출 실패, 크롤링 시도: ${apiError}`);
+
+      // API 실패 시 크롤링 시도
+      try {
+        console.log(`쇼핑인사이트 웹페이지 크롤링 시도 (카테고리: ${category})`);
+        hotKeywords = await crawlShoppingInsightKeywords(category, "weekly", 10);
+        
+        if (hotKeywords && hotKeywords.length > 0) {
+          keywordSource = "크롤링";
+          console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+        } else {
+          throw new Error("No keywords found from crawling");
+        }
+      } catch (crawlingError) {
+        console.log(`크롤링 실패, 백업 데이터 사용: ${crawlingError}`);
+        
+        // 크롤링도 실패하면 백업 데이터 사용
+        hotKeywords = getFallbackKeywords(category);
+        keywordSource = "백업 데이터";
+        console.log(`ℹ️ 백업 키워드 사용: ${hotKeywords.length}개 키워드`);
+      }
     }
     
     // 키워드에 메타데이터 추가 (순위, 변화 상태)
@@ -126,7 +183,7 @@ export async function getWeeklyTrends(category: string = "all"): Promise<Categor
     // 상품 정보 가져오기
     const topProducts = await getTopSellingProducts(category, 7);
     
-    console.log(`✅ 주간 트렌드 반환 성공: 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
+    console.log(`✅ 주간 트렌드 반환 성공 (${keywordSource}): 카테고리=${category}, 키워드=${keywordsWithMeta.length}개, 상품=${topProducts.length}개`);
     
     return {
       category,
@@ -136,7 +193,7 @@ export async function getWeeklyTrends(category: string = "all"): Promise<Categor
   } catch (error) {
     console.error("❌ 주간 트렌드 조회 실패:", error);
     
-    // 오류 발생 시에도 클라이언트에 빈 응답 대신 기본 정보라도 반환
+    // 모든 방법이 실패했을 때도 클라이언트에 빈 응답 대신 기본 정보 반환
     return {
       category,
       keywords: [],
