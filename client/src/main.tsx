@@ -97,7 +97,7 @@ const MinimalApp = () => {
       </div>
     </div>
   );
-};d-md">
+};
             <h3 className="font-bold">API 응답:</h3>
             <pre className="mt-2 text-xs overflow-auto">
               {JSON.stringify(apiResponse, null, 2)}
