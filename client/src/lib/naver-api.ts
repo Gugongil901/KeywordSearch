@@ -403,7 +403,7 @@ export async function getMarketSegments(keyword: string): Promise<MarketSegment[
  */
 export async function getMLAnalysis(keyword: string): Promise<MLAnalysisResult> {
   try {
-    const response = await apiRequest("GET", `/api/ml/analyze/${encodeURIComponent(keyword)}`, undefined);
+    const response = await apiRequest("GET", `/api/v1/ml/analyze/${encodeURIComponent(keyword)}`, undefined);
     return await response.json();
   } catch (error) {
     console.error("ML 분석 조회 실패:", error);
