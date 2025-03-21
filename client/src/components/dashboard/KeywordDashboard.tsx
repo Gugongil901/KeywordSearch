@@ -21,8 +21,8 @@ import { Badge } from '@/components/ui/badge';
 import { ConfettiEffect } from '@/components/ui/confetti-effect';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// API 주소 설정
-const API_BASE_URL = '/api/v1';
+// API 주소 설정 - 전체 URL로 변경하여 상대 경로 문제 해결
+const API_BASE_URL = `${window.location.origin}/api/v1`;
 
 const KeywordDashboard: React.FC = () => {
   const [keyword, setKeyword] = useState<string>('');

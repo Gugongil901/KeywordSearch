@@ -354,7 +354,20 @@ export async function getSuccessProbability(keyword: string): Promise<SuccessPro
  */
 export async function getKeywordMeaning(keyword: string): Promise<KeywordMeaning> {
   try {
-    const response = await apiRequest("GET", `/api/ml/meaning/${encodeURIComponent(keyword)}`, undefined);
+    // 전체 URL로 변경하여 상대 경로 문제 해결
+    const fullUrl = `${window.location.origin}/api/ml/meaning/${encodeURIComponent(keyword)}`;
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`키워드 의미 분석 조회 실패: ${response.status}`);
+    }
+    
     const data = await response.json();
     return data.meaning;
   } catch (error) {
@@ -403,7 +416,20 @@ export async function getMarketSegments(keyword: string): Promise<MarketSegment[
  */
 export async function getMLAnalysis(keyword: string): Promise<MLAnalysisResult> {
   try {
-    const response = await apiRequest("GET", `/api/v1/ml/analyze/${encodeURIComponent(keyword)}`, undefined);
+    // 전체 URL로 변경하여 상대 경로 문제 해결
+    const fullUrl = `${window.location.origin}/api/v1/ml/analyze/${encodeURIComponent(keyword)}`;
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`ML 분석 조회 실패: ${response.status}`);
+    }
+    
     return await response.json();
   } catch (error) {
     console.error("ML 분석 조회 실패:", error);
