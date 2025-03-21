@@ -21,8 +21,10 @@ const NAVER_CATEGORY_MAP: Record<string, string> = {
   health: "50000008", // 생활/건강 (동일한 코드 사용)
 };
 
-// 네이버 쇼핑인사이트 웹 URL
+// 네이버 쇼핑인사이트 웹 URL (2025년 3월 업데이트)
 const SHOPPING_INSIGHT_URL = 'https://datalab.naver.com/shoppingInsight/sKeyword.naver';
+const SHOPPING_API_URL = 'https://datalab.naver.com/shoppingInsight/getKeywordList.naver';
+const SHOPPING_API_URL_ALT = 'https://datalab.naver.com/shopping/getKeywordRank.naver';
 
 /**
  * 네이버 쇼핑인사이트 페이지에서 인기 키워드 추출
@@ -43,47 +45,151 @@ export async function crawlShoppingInsightKeywords(
     // 카테고리 코드 매핑
     const categoryCode = NAVER_CATEGORY_MAP[category] || NAVER_CATEGORY_MAP.all;
     
-    // 기간 파라미터 매핑
+    // 기간 파라미터 매핑 (업데이트됨)
     const periodParam = period === 'daily' ? 'P1D' : period === 'weekly' ? 'P7D' : 'P30D';
     
-    // POST 요청 파라미터 생성
-    const params = new URLSearchParams();
-    params.append('cid', categoryCode);
-    params.append('timeUnit', periodParam);
-    params.append('age', ''); // 모든 연령대
-    params.append('gender', ''); // 모든 성별
-    params.append('device', ''); // 모든 기기
-    params.append('page', '1');
-    params.append('count', limit.toString());
-
-    // User-Agent 헤더 설정 (네이버가 봇 차단을 할 수 있으므로)
-    const headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      'Accept': 'application/json, text/javascript, */*; q=0.01',
-      'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-      'Referer': 'https://datalab.naver.com/shoppingInsight/sKeyword.naver',
-      'X-Requested-With': 'XMLHttpRequest'
+    // 현재 날짜 기준으로 날짜 계산
+    const endDate = new Date();
+    const startDate = new Date();
+    
+    // 기간에 따라 시작일 설정
+    if (period === 'daily') {
+      startDate.setDate(endDate.getDate() - 1);
+    } else if (period === 'weekly') {
+      startDate.setDate(endDate.getDate() - 7);
+    } else {
+      startDate.setDate(endDate.getDate() - 30);
+    }
+    
+    // 날짜 형식 변환 (YYYY-MM-DD)
+    const formatDate = (date: Date) => {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     };
-
-    // AJAX 요청을 모방하여 POST 요청 전송
-    const response = await axios.post(
-      'https://datalab.naver.com/shoppingInsight/getKeywordList.naver',
-      params.toString(),
-      { headers }
-    );
-
-    console.log(`✅ 쇼핑인사이트 크롤링 응답 코드: ${response.status}`);
-
-    // 응답 데이터 확인 및 파싱
-    if (response.data && response.data.success) {
-      const keywords = response.data.ranks.map((item: any) => item.keyword);
+    
+    // 다양한 접근 방식을 시도하기 위한 매개변수 세트
+    const paramsList = [
+      // 방법 1: 기존 접근 방식
+      {
+        url: SHOPPING_API_URL,
+        method: 'post',
+        data: new URLSearchParams({
+          cid: categoryCode,
+          timeUnit: periodParam,
+          age: '',
+          gender: '',
+          device: '',
+          page: '1',
+          count: limit.toString()
+        }).toString(),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'Referer': SHOPPING_INSIGHT_URL,
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      },
       
-      console.log(`✅ 쇼핑인사이트 크롤링 성공: ${keywords.length}개 키워드 추출`);
-      console.log(`첫 5개 키워드: ${keywords.slice(0, 5).join(', ')}`);
+      // 방법 2: 대체 API 엔드포인트 및 JSON 형식
+      {
+        url: SHOPPING_API_URL_ALT,
+        method: 'post',
+        data: JSON.stringify({
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+          category: categoryCode,
+          timeUnit: period,
+          limit: limit
+        }),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36',
+          'Accept': 'application/json, text/plain, */*',
+          'Content-Type': 'application/json',
+          'Origin': 'https://datalab.naver.com',
+          'Referer': SHOPPING_INSIGHT_URL,
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      },
       
-      return keywords.slice(0, limit);
-    } else if (response.data) {
-      console.error(`⚠️ 쇼핑인사이트 크롤링 응답 에러: ${JSON.stringify(response.data)}`);
+      // 방법 3: 웹페이지 직접 파싱
+      {
+        url: `${SHOPPING_INSIGHT_URL}?cid=${categoryCode}&timeUnit=${periodParam}`,
+        method: 'get',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Referer': 'https://datalab.naver.com',
+          'Upgrade-Insecure-Requests': '1',
+          'Cache-Control': 'max-age=0'
+        }
+      }
+    ];
+    
+    // 각 접근 방식 순차적으로 시도
+    let lastError = null;
+    
+    for (const [index, params] of paramsList.entries()) {
+      try {
+        console.log(`🔄 크롤링 방법 ${index + 1} 시도 중...`);
+        
+        const response = params.method === 'post' 
+          ? await axios.post(params.url, params.data, { headers: params.headers })
+          : await axios.get(params.url, { headers: params.headers });
+        
+        console.log(`✅ 방법 ${index + 1} 응답 코드: ${response.status}`);
+        
+        // 방법 1 응답 처리
+        if (params.url === SHOPPING_API_URL && response.data && response.data.success) {
+          const keywords = response.data.ranks.map((item: any) => item.keyword);
+          console.log(`✅ 방법 1 성공: ${keywords.length}개 키워드 추출`);
+          console.log(`첫 5개 키워드: ${keywords.slice(0, 5).join(', ')}`);
+          return keywords.slice(0, limit);
+        }
+        
+        // 방법 2 응답 처리
+        if (params.url === SHOPPING_API_URL_ALT && response.data && response.data.results) {
+          const keywords = response.data.results.map((item: any) => item.keyword);
+          console.log(`✅ 방법 2 성공: ${keywords.length}개 키워드 추출`);
+          console.log(`첫 5개 키워드: ${keywords.slice(0, 5).join(', ')}`);
+          return keywords.slice(0, limit);
+        }
+        
+        // 방법 3: HTML 파싱 시도
+        if (params.method === 'get' && response.data) {
+          // HTML에서 키워드 테이블 파싱 (정규식 사용)
+          const keywordMatches = response.data.match(/"keyword":"([^"]+)"/g);
+          
+          if (keywordMatches && keywordMatches.length > 0) {
+            const keywords = keywordMatches
+              .map(match => match.replace(/"keyword":"([^"]+)"/, '$1'))
+              .filter((value, index, self) => self.indexOf(value) === index); // 중복 제거
+              
+            console.log(`✅ 방법 3 성공: ${keywords.length}개 키워드 추출`);
+            console.log(`첫 5개 키워드: ${keywords.slice(0, 5).join(', ')}`);
+            return keywords.slice(0, limit);
+          } else {
+            console.log(`⚠️ 방법 3: HTML에서 키워드를 찾을 수 없습니다.`);
+          }
+        }
+      } catch (error: any) {
+        console.error(`❌ 방법 ${index + 1} 실패:`, error.message);
+        lastError = error;
+        
+        // 네트워크 응답이 있는 경우 응답 상태 로깅
+        if (error.response) {
+          console.error(`응답 상태: ${error.response.status}`);
+          // 응답 데이터 로깅 (너무 길지 않은 경우)
+          try {
+            if (typeof error.response.data === 'string' && error.response.data.length < 500) {
+              console.error(`응답 데이터: ${error.response.data}`);
+            } else {
+              console.error(`응답 데이터: (너무 길어서 생략)`);
+            }
+          } catch (e) {
+            console.error(`응답 데이터 파싱 실패`);
+          }
+        }
+      }
     }
 
     throw new Error('네이버 쇼핑인사이트 데이터 추출 실패');
