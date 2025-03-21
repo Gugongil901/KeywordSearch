@@ -84,18 +84,18 @@ const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period }) => {
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-medium text-gray-900">
           인기 키워드
         </h2>
-        <span className="text-xs text-gray-500">{formatDate()}({period === 'daily' ? '일' : '주'}) 기준</span>
+        <span className="text-xs text-gray-500">{formatDate()} 기준</span>
       </div>
 
       {isLoading ? (
         <div className="py-10 text-center text-gray-500">로딩 중...</div>
       ) : (
-        <div className="grid grid-cols-1 gap-6">
-          <div className="bg-gray-50 rounded p-4">
+        <div className="grid grid-cols-1 gap-4">
+          <div className="bg-gray-50 rounded p-3">
             <ul className="space-y-1">
               {keywords.map((keyword, index) => (
                 <li 
