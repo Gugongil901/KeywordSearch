@@ -22,7 +22,7 @@ import { ConfettiEffect } from '@/components/ui/confetti-effect';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // API 주소 설정
-const API_BASE_URL = '/api/v1';
+const API_BASE_URL = '/api';
 
 const KeywordDashboard: React.FC = () => {
   const [keyword, setKeyword] = useState<string>('');
