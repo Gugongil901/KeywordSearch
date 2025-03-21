@@ -120,22 +120,6 @@ const CategoryKeywords: React.FC<CategoryKeywordsProps> = ({ period }) => {
         </h2>
         <span className="text-xs text-gray-500">{formatDate()}({period === 'daily' ? '일' : '주'}) 기준</span>
       </div>
-
-      <div className="flex flex-wrap gap-2 mb-6">
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            className={`px-3 py-2 rounded-md text-sm transition ${
-              activeCategory === cat.id
-                ? "bg-primary text-white font-medium"
-                : "bg-gray-50 text-gray-700 hover:bg-gray-100"
-            }`}
-            onClick={() => setActiveCategory(cat.id)}
-          >
-            {cat.name}
-          </button>
-        ))}
-      </div>
       
       {isLoading ? (
         <div className="py-10 text-center text-gray-500">로딩 중...</div>
