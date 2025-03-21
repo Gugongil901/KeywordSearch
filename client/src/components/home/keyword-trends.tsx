@@ -11,9 +11,10 @@ interface KeywordTrend {
 interface KeywordTrendsProps {
   period: "daily" | "weekly";
   category?: string;
+  categoryName?: string;
 }
 
-const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period, category = "all" }) => {
+const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period, category = "all", categoryName = "전체" }) => {
   const [activeCategory, setActiveCategory] = useState<string>(category);
   
   // 부모로부터 받은 category가 변경될 때 activeCategory 업데이트
@@ -92,7 +93,7 @@ const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period, category = "all" 
     <div className="bg-white rounded-lg shadow p-4">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-base font-medium text-gray-900">
-          인기 키워드
+          {categoryName} 인기 키워드
         </h2>
         <span className="text-xs text-gray-500">{formatDate()} 기준</span>
       </div>

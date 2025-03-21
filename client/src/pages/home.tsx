@@ -21,6 +21,19 @@ const categoryCodeMap: Record<string, string> = {
   "생활/건강": "50000008",
 };
 
+// 카테고리 이름 매핑 객체 추가 (코드 -> 이름)
+const categoryNameMap: Record<string, string> = {
+  "all": "전체",
+  "50000167": "패션의류",
+  "50000002": "패션잡화", 
+  "50000003": "디지털/가전",
+  "50000004": "가구/인테리어",
+  "50000005": "출산/육아",
+  "50000006": "식품",
+  "50000007": "스포츠/레저",
+  "50000008": "생활/건강"
+};
+
 const Home: React.FC = () => {
   const [category, setCategory] = useState<string>("전체");
   const [trendType, setTrendType] = useState<"daily" | "weekly">("daily");
@@ -28,6 +41,11 @@ const Home: React.FC = () => {
   // 카테고리 코드 가져오기
   const getCategoryCode = (categoryName: string): string => {
     return categoryCodeMap[categoryName] || "all";
+  };
+  
+  // 카테고리 이름 가져오기
+  const getCategoryName = (categoryCode: string): string => {
+    return categoryNameMap[categoryCode] || "전체";
   };
   
   return (
@@ -44,8 +62,16 @@ const Home: React.FC = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8 pt-4">
-              <KeywordTrends period={trendType} category={getCategoryCode(category)} />
-              <CategoryKeywords period={trendType} category={getCategoryCode(category)} />
+              <KeywordTrends 
+                period={trendType} 
+                category={getCategoryCode(category)} 
+                categoryName={category}
+              />
+              <CategoryKeywords 
+                period={trendType} 
+                category={getCategoryCode(category)} 
+                categoryName={category}
+              />
             </div>
           </div>
         </div>
