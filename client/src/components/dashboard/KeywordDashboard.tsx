@@ -65,7 +65,13 @@ const KeywordDashboard: React.FC = () => {
       console.log(`키워드 분석 요청: "${searchKeyword}"`);
       
       // 키워드 분석 요청 (fetch API 사용)
-      const response = await fetch(`${API_BASE_URL}/keywords/${encodeURIComponent(searchKeyword)}`);
+      const response = await fetch(`${window.location.origin}/api/v1/keywords/${encodeURIComponent(searchKeyword)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -141,7 +147,13 @@ const KeywordDashboard: React.FC = () => {
     const intervalId = setInterval(async () => {
       try {
         console.log(`태스크 상태 확인 중: ${taskId}`);
-        const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`);
+        const response = await fetch(`${window.location.origin}/api/v1/tasks/${taskId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
         
         if (!response.ok) {
           console.error(`태스크 조회 API 오류: ${response.status} ${response.statusText}`);
@@ -156,7 +168,13 @@ const KeywordDashboard: React.FC = () => {
           // 작업 완료, 결과 조회
           try {
             // fetch API를 사용하여 명시적으로 JSON 응답을 처리
-            const resultResponse = await fetch(`${API_BASE_URL}/keywords/${encodeURIComponent(keyword)}`);
+            const resultResponse = await fetch(`${window.location.origin}/api/v1/keywords/${encodeURIComponent(keyword)}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+              }
+            });
             
             if (!resultResponse.ok) {
               const errorText = await resultResponse.text();
@@ -186,7 +204,13 @@ const KeywordDashboard: React.FC = () => {
               // 분석은 완료되었지만 데이터가 없는 경우 직접 다시 가져오기 시도
               console.log('태스크는 완료되었지만 데이터가 없습니다. 직접 로드 시도...');
               
-              const forceResponse = await fetch(`${API_BASE_URL}/keywords/${encodeURIComponent(keyword)}?refresh=true`);
+              const forceResponse = await fetch(`${window.location.origin}/api/v1/keywords/${encodeURIComponent(keyword)}?refresh=true`, {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json'
+                }
+              });
               
               if (!forceResponse.ok) {
                 const errorText = await forceResponse.text();
