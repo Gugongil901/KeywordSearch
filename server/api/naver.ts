@@ -607,8 +607,8 @@ export async function getHotKeywords(category: string = "all", period: string = 
 
     // 네이버 DataLab API 요청에 필요한 카테고리 ID 매핑
     const categoryMap: Record<string, string> = {
-      all: "ALL", // 전체
-      fashion: "50000000", // 패션의류
+      all: "50000000", // 전체 카테고리 - API가 ALL을 받지 않고 특정 카테고리 코드를 요구함
+      fashion: "50000000", // 패션의류 
       accessory: "50000001", // 패션잡화
       beauty: "50000002", // 화장품/미용
       digital: "50000003", // 디지털/가전
@@ -619,7 +619,8 @@ export async function getHotKeywords(category: string = "all", period: string = 
       life: "50000008", // 생활/건강
     };
 
-    const categoryCode = categoryMap[category] || "ALL";
+    // all 카테고리일 경우 패션의류(50000000)를 기본값으로 사용
+    const categoryCode = categoryMap[category] || "50000000";
 
     // API 요청 날짜 범위 설정
     const endDate = new Date();
@@ -672,15 +673,12 @@ export async function getHotKeywords(category: string = "all", period: string = 
 
       // 첫 번째 시도: 쇼핑인사이트 인기검색어 API (실시간 데이터)
       try {
-        // 쇼핑인사이트 인기검색어 API 호출 - 네이버 공식 API 문서 기반
+        // 쇼핑인사이트 인기검색어 API 호출 - 네이버 API 오류 메시지 기반 수정
         const insightBody = {
           startDate: formatDate(startDate),
           endDate: formatDate(endDate),
           timeUnit: period === "daily" ? "date" : "week",
-          category: [{
-            name: "전체",
-            param: [categoryCode]
-          }],
+          category: categoryCode, // 문자열로 변경 (배열 대신)
           device: "",
           gender: "",
           ages: ["10", "20", "30", "40", "50", "60"]  // 전 연령대 포함
@@ -728,19 +726,13 @@ export async function getHotKeywords(category: string = "all", period: string = 
 
         // 다른 형식으로 한번 더 시도
         try {
-          // 단순화된 형식으로 다시 시도 (패션의류 카테고리) - 네이버 API 문서 형식에 맞춤
+          // 단순화된 형식으로 다시 시도 (패션의류 카테고리) - 네이버 API 오류 메시지 기반 수정
           const retryBody = {
             startDate: formatDate(startDate),
             endDate: formatDate(endDate),
             timeUnit: period === "daily" ? "date" : "month",
-            category: [{
-              name: "패션의류",
-              param: ["50000167"]
-            }],
-            keyword: [{ 
-              name: "원피스", 
-              param: ["원피스"] 
-            }],
+            category: "50000167", // 문자열로 수정
+            keyword: "원피스", // 문자열로 수정
             device: "",
             gender: "",
             ages: []
