@@ -77,8 +77,25 @@ export async function getDailyTrends(category: string = "all"): Promise<Category
       hotKeywords = await crawlShoppingInsightKeywords(category, "daily", 10);
       
       if (hotKeywords && hotKeywords.length > 0) {
-        keywordSource = "크롤링";
-        console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+        // 키워드 품질 검증 - UI 요소를 필터링
+        const uiElements = ['업데이트', '선택됨', '권장', '브라우저', '안내', '본문', '바로가기', '데이터랩', '홈'];
+        const filteredKeywords = hotKeywords.filter(keyword => 
+          !uiElements.some(element => keyword.includes(element))
+        );
+        
+        // 한글 포함 키워드 비율 계산
+        const koreanKeywords = hotKeywords.filter(keyword => /[가-힣]/.test(keyword));
+        const koreanRatio = koreanKeywords.length / hotKeywords.length;
+        
+        // 필터링된 키워드가 너무 적거나 한글 비율이 낮으면 백업 데이터 사용
+        if (filteredKeywords.length >= 5 && koreanRatio >= 0.5) {
+          hotKeywords = filteredKeywords;
+          keywordSource = "크롤링";
+          console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+        } else {
+          console.log(`⚠️ 크롤링된 키워드 품질 낮음 (한글 비율: ${(koreanRatio * 100).toFixed(1)}%), 필터링 후: ${filteredKeywords.length}개`);
+          throw new Error("크롤링된 키워드 품질이 낮아 사용할 수 없습니다");
+        }
       } else {
         throw new Error("크롤링으로 키워드를 찾을 수 없습니다");
       }
@@ -150,8 +167,25 @@ export async function getWeeklyTrends(category: string = "all"): Promise<Categor
       hotKeywords = await crawlShoppingInsightKeywords(category, "weekly", 10);
       
       if (hotKeywords && hotKeywords.length > 0) {
-        keywordSource = "크롤링";
-        console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+        // 키워드 품질 검증 - UI 요소를 필터링
+        const uiElements = ['업데이트', '선택됨', '권장', '브라우저', '안내', '본문', '바로가기', '데이터랩', '홈'];
+        const filteredKeywords = hotKeywords.filter(keyword => 
+          !uiElements.some(element => keyword.includes(element))
+        );
+        
+        // 한글 포함 키워드 비율 계산
+        const koreanKeywords = hotKeywords.filter(keyword => /[가-힣]/.test(keyword));
+        const koreanRatio = koreanKeywords.length / hotKeywords.length;
+        
+        // 필터링된 키워드가 너무 적거나 한글 비율이 낮으면 백업 데이터 사용
+        if (filteredKeywords.length >= 5 && koreanRatio >= 0.5) {
+          hotKeywords = filteredKeywords;
+          keywordSource = "크롤링";
+          console.log(`✅ 쇼핑인사이트 크롤링 성공: ${hotKeywords.length}개 키워드`);
+        } else {
+          console.log(`⚠️ 크롤링된 키워드 품질 낮음 (한글 비율: ${(koreanRatio * 100).toFixed(1)}%), 필터링 후: ${filteredKeywords.length}개`);
+          throw new Error("크롤링된 키워드 품질이 낮아 사용할 수 없습니다");
+        }
       } else {
         throw new Error("크롤링으로 키워드를 찾을 수 없습니다");
       }
