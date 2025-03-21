@@ -57,6 +57,7 @@ const KeywordDashboard: React.FC = () => {
     }
     
     try {
+      // 검색어를 상태에 우선 저장
       setKeyword(searchKeyword);
       setLoading(true);
       setError(null);
@@ -107,8 +108,8 @@ const KeywordDashboard: React.FC = () => {
       } else if (responseData.status === 'processing') {
         // 진행 중인 작업 폴링
         const taskId = responseData.taskId;
-        console.log(`키워드 진행 중, 태스크 ID: ${taskId}`);
-        startPolling(taskId);
+        console.log(`키워드 진행 중, 태스크 ID: ${taskId}, 키워드: ${searchKeyword}`);
+        startPolling(taskId, searchKeyword);
         
         toast({
           title: "분석 진행 중",
@@ -135,13 +136,16 @@ const KeywordDashboard: React.FC = () => {
   };
   
   // 작업 상태 폴링
-  const startPolling = (taskId: string) => {
+  const startPolling = (taskId: string, searchKeyword: string) => {
     // 이전 폴링 중지
     if (pollingTask) {
       clearInterval(pollingTask);
     }
     
-    console.log(`태스크 ID로 폴링 시작: ${taskId}, 키워드: ${keyword}`);
+    // 현재 검색 중인 키워드를 로컬 변수로 저장
+    const currentKeyword = searchKeyword || keyword;
+    
+    console.log(`태스크 ID로 폴링 시작: ${taskId}, 키워드: ${currentKeyword}`);
     
     // 새 폴링 시작 (3초 간격)
     const intervalId = setInterval(async () => {
@@ -164,11 +168,11 @@ const KeywordDashboard: React.FC = () => {
         console.log('태스크 응답:', responseData);
         
         if (responseData.status === 'completed') {
-          console.log(`작업 완료됨, 결과 조회 중: ${keyword}`);
+          console.log(`작업 완료됨, 결과 조회 중: ${currentKeyword}`);
           // 작업 완료, 결과 조회
           try {
             // fetch API를 사용하여 명시적으로 JSON 응답을 처리
-            const resultResponse = await fetch(`${window.location.origin}/api/v1/keywords/${encodeURIComponent(keyword)}`, {
+            const resultResponse = await fetch(`${window.location.origin}/api/v1/keywords/${encodeURIComponent(currentKeyword)}`, {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -194,7 +198,7 @@ const KeywordDashboard: React.FC = () => {
               
               toast({
                 title: "분석 완료",
-                description: `"${keyword}" 키워드 분석이 완료되었습니다.`,
+                description: `"${currentKeyword}" 키워드 분석이 완료되었습니다.`,
               });
               
               setTimeout(() => {
@@ -204,7 +208,7 @@ const KeywordDashboard: React.FC = () => {
               // 분석은 완료되었지만 데이터가 없는 경우 직접 다시 가져오기 시도
               console.log('태스크는 완료되었지만 데이터가 없습니다. 직접 로드 시도...');
               
-              const forceResponse = await fetch(`${window.location.origin}/api/v1/keywords/${encodeURIComponent(keyword)}?refresh=true`, {
+              const forceResponse = await fetch(`${window.location.origin}/api/v1/keywords/${encodeURIComponent(currentKeyword)}?refresh=true`, {
                 method: 'GET',
                 headers: {
                   'Content-Type': 'application/json',
