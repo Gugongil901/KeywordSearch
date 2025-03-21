@@ -45,42 +45,59 @@ router.get('/keywords/:keyword', async (req: Request, res: Response) => {
     
     // 분석 시스템 인스턴스 가져오기
     const analysisSystem = getKeywordAnalysisSystem();
+    const decodedKeyword = decodeURIComponent(keyword);
+    
+    // 로깅 추가
+    logger.info(`키워드 결과 조회 요청: "${decodedKeyword}", 강제 새로고침: ${refresh}`);
+    
+    // 기존 분석 데이터 확인 - 정확한 키 이름 로깅
+    const analysisDataKey = `${decodedKeyword}_full_analysis`;
+    logger.info(`데이터베이스에서 키 조회: "${analysisDataKey}"`);
+    const existingAnalysis = analysisSystem.db.getKeywordData(analysisDataKey);
+    
+    // 로깅을 통해 데이터 존재 여부 확인
+    if (existingAnalysis) {
+      logger.info(`기존 분석 데이터 발견: "${decodedKeyword}"`);
+    } else {
+      logger.info(`기존 분석 데이터 없음: "${decodedKeyword}"`);
+    }
     
     // 분석 작업 중인지 확인
-    if (backgroundTasks[keyword] && backgroundTasks[keyword].status === 'processing') {
+    if (backgroundTasks[decodedKeyword] && backgroundTasks[decodedKeyword].status === 'processing') {
+      logger.info(`"${decodedKeyword}" 키워드에 대한 분석 작업이 진행 중입니다.`);
       return res.status(202).json({
-        keyword,
+        keyword: decodedKeyword,
         status: 'processing',
         message: '분석이 진행 중입니다. 잠시 후 다시 시도해주세요.',
-        taskId: backgroundTasks[keyword].taskId
+        taskId: backgroundTasks[decodedKeyword].taskId
       });
     }
     
-    // 기존 분석 데이터 확인
-    const existingAnalysis = analysisSystem.db.getKeywordData(`${keyword}_full_analysis`);
-    
     // 신선한 데이터가 있고, 강제 갱신이 아니면 기존 데이터 반환
     if (existingAnalysis && isAnalysisFresh(existingAnalysis) && !refresh) {
+      logger.info(`"${decodedKeyword}"에 대한 신선한 분석 데이터 반환`);
       return res.status(200).json({
-        keyword,
+        keyword: decodedKeyword,
         status: 'completed',
         data: existingAnalysis
       });
     }
     
     // 배경에서 분석 작업 시작
-    const taskId = `${keyword}_${Date.now()}`;
-    backgroundTasks[keyword] = {
+    const taskId = `${decodedKeyword}_${Date.now()}`;
+    logger.info(`"${decodedKeyword}"에 대한 새 분석 작업 시작, 태스크 ID: ${taskId}`);
+    
+    backgroundTasks[decodedKeyword] = {
       status: 'processing',
       taskId,
       startedAt: new Date().toISOString()
     };
     
     // 배경 작업으로 분석 실행 (비동기 처리)
-    processKeywordAnalysis(keyword, taskId);
+    processKeywordAnalysis(decodedKeyword, taskId);
     
     return res.status(202).json({
-      keyword,
+      keyword: decodedKeyword,
       status: 'processing',
       message: '분석이 시작되었습니다. 잠시 후 다시 조회해주세요.',
       taskId
