@@ -132,8 +132,8 @@ const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">현재 시즌 상태</span>
-              <span className={`text-sm font-bold ${getSeasonStatusColor(data.currentSeasonStatus)}`}>
-                {data.currentSeasonStatus}
+              <span className={`text-sm font-bold ${getSeasonStatusColor(data?.currentSeasonStatus || '보통')}`}>
+                {data?.currentSeasonStatus || '보통'}
               </span>
             </div>
             <p className="text-sm text-gray-500">
@@ -206,7 +206,7 @@ const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2 mb-2">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => {
-                  const isPeakMonth = data.peakMonths && data.peakMonths.includes(month);
+                  const isPeakMonth = data?.peakMonths ? data.peakMonths.includes(month) : false;
                   return (
                     <Badge 
                       key={month}
