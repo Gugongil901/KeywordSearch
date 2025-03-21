@@ -16,55 +16,31 @@ const Home: React.FC = () => {
     <div>
       <HeroSearch />
       
-      {/* 네이버 DataLab 스타일 상단바 */}
-      <div className="bg-[#f5f7f8] w-full pt-4 mt-8">
-        <div className="container mx-auto px-4">
-          <h2 className="text-xl font-medium mb-2">쇼핑인사이트</h2>
-          <p className="text-sm text-gray-500 mb-6">
-            쇼핑 분야별 검색 추이와 분야별 검색어 통계를 확인할 수 있습니다.
+      <section className="bg-[#f5f7f8] w-full pt-6 mt-8 pb-12">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-xl font-medium mb-2">실시간 키워드 분석</h2>
+          <p className="text-sm text-gray-500 mb-6 max-w-2xl mx-auto">
+            최신 트렌드와 인기 키워드를 분석하여 성공적인 마케팅 전략을 수립하세요.
           </p>
           
-          {/* 메인 탭 */}
-          <div className="border-b border-gray-200">
-            <div className="flex space-x-8 text-base">
-              <a className={`pb-4 px-1 border-b-2 border-primary font-medium text-primary`}>
-                분야별 인기 검색어
-              </a>
-              <a className={`pb-4 px-1 text-gray-500 hover:text-gray-800`}>
-                인기분야
-              </a>
-            </div>
-          </div>
-          
-          {/* 일간/주간 선택 탭 */}
-          <div className="pt-6 pb-4 flex justify-between items-center">
+          {/* 일간/주간 선택 탭 - 중앙 정렬 */}
+          <div className="pb-6 flex justify-center items-center">
             <div className="flex space-x-4">
               <button 
-                className={`px-3 py-2 rounded-md text-sm ${trendPeriod === 'daily' ? 'bg-white border shadow-sm font-medium' : 'text-gray-500'}`}
+                className={`px-5 py-2 rounded-md text-sm ${trendPeriod === 'daily' ? 'bg-primary text-white font-medium' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
                 onClick={() => setTrendPeriod('daily')}
               >
                 일간 트렌드
               </button>
               <button 
-                className={`px-3 py-2 rounded-md text-sm ${trendPeriod === 'weekly' ? 'bg-white border shadow-sm font-medium' : 'text-gray-500'}`}
+                className={`px-5 py-2 rounded-md text-sm ${trendPeriod === 'weekly' ? 'bg-primary text-white font-medium' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
                 onClick={() => setTrendPeriod('weekly')}
               >
                 주간 트렌드
               </button>
             </div>
-            <div className="text-sm text-gray-500">
-              {new Date().toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              })} 기준
-            </div>
           </div>
-        </div>
-      </div>
-
-      <section className="bg-[#f5f7f8] pt-4 pb-12">
-        <div className="container mx-auto px-4">
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <KeywordTrends period={trendPeriod} />
             <CategoryKeywords period={trendPeriod} />
@@ -80,9 +56,7 @@ const Home: React.FC = () => {
         <ProductRanking />
       </section>
 
-      <section className="container mx-auto px-4 py-8 mb-12">
-        <HelpSection />
-      </section>
+      {/* 도움말 섹션 삭제 - 사용자 요청에 따라 빨간색 영역 제거 */}
 
       <section className="container mx-auto px-4 py-8 mb-12">
         <FAQSection />
