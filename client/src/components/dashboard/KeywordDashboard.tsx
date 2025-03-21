@@ -32,6 +32,7 @@ const KeywordDashboard: React.FC = () => {
   const [pollingTask, setPollingTask] = useState<NodeJS.Timeout | null>(null);
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('summary');
+  const [pollingErrorCount, setPollingErrorCount] = useState<number>(0);
   
   const { toast } = useToast();
   
@@ -59,19 +60,28 @@ const KeywordDashboard: React.FC = () => {
       setKeyword(searchKeyword);
       setLoading(true);
       setError(null);
+      setPollingErrorCount(0);
       
       console.log(`키워드 분석 요청: "${searchKeyword}"`);
       
-      // 키워드 분석 요청
-      const response = await axios.get(`${API_BASE_URL}/keywords/${encodeURIComponent(searchKeyword)}`);
-      console.log('키워드 분석 응답:', response.data);
+      // 키워드 분석 요청 (fetch API 사용)
+      const response = await fetch(`${API_BASE_URL}/keywords/${encodeURIComponent(searchKeyword)}`);
       
-      if (response.data.status === 'completed') {
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`키워드 분석 API 오류: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`키워드 분석 요청 실패: ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      console.log('키워드 분석 응답:', responseData);
+      
+      if (responseData.status === 'completed') {
         // 이미 완료된 분석 결과
-        console.log('이미 완료된 분석 결과:', response.data.data);
+        console.log('이미 완료된 분석 결과:', responseData.data);
         
-        if (response.data.data && response.data.data.dashboard) {
-          setDashboardData(response.data.data.dashboard);
+        if (responseData.data && responseData.data.dashboard) {
+          setDashboardData(responseData.data.dashboard);
           setLoading(false);
           setShowConfetti(true);
           
@@ -84,13 +94,13 @@ const KeywordDashboard: React.FC = () => {
             setShowConfetti(false);
           }, 3000);
         } else {
-          console.error('대시보드 데이터가 없음:', response.data);
+          console.error('대시보드 데이터가 없음:', responseData);
           setError('분석 결과를 불러오는데 실패했습니다. 다시 시도해주세요.');
           setLoading(false);
         }
-      } else if (response.data.status === 'processing') {
+      } else if (responseData.status === 'processing') {
         // 진행 중인 작업 폴링
-        const taskId = response.data.taskId;
+        const taskId = responseData.taskId;
         console.log(`키워드 진행 중, 태스크 ID: ${taskId}`);
         startPolling(taskId);
         
@@ -100,7 +110,7 @@ const KeywordDashboard: React.FC = () => {
         });
       } else {
         // 예상치 못한 상태
-        console.error('예상치 못한 응답 상태:', response.data);
+        console.error('예상치 못한 응답 상태:', responseData);
         setError('서버에서 예상치 못한 응답이 반환되었습니다.');
         setLoading(false);
       }
@@ -131,19 +141,36 @@ const KeywordDashboard: React.FC = () => {
     const intervalId = setInterval(async () => {
       try {
         console.log(`태스크 상태 확인 중: ${taskId}`);
-        const response = await axios.get(`${API_BASE_URL}/tasks/${taskId}`);
-        console.log('태스크 응답:', response.data);
+        const response = await fetch(`${API_BASE_URL}/tasks/${taskId}`);
         
-        if (response.data.status === 'completed') {
+        if (!response.ok) {
+          console.error(`태스크 조회 API 오류: ${response.status} ${response.statusText}`);
+          throw new Error(`태스크 조회 실패: ${response.status}`);
+        }
+        
+        const responseData = await response.json();
+        console.log('태스크 응답:', responseData);
+        
+        if (responseData.status === 'completed') {
           console.log(`작업 완료됨, 결과 조회 중: ${keyword}`);
           // 작업 완료, 결과 조회
           try {
-            const resultResponse = await axios.get(`${API_BASE_URL}/keywords/${encodeURIComponent(keyword)}`);
-            console.log('결과 응답:', resultResponse.data);
+            // fetch API를 사용하여 명시적으로 JSON 응답을 처리
+            const resultResponse = await fetch(`${API_BASE_URL}/keywords/${encodeURIComponent(keyword)}`);
             
-            if (resultResponse.data.status === 'completed' && resultResponse.data.data) {
-              console.log('대시보드 데이터 설정:', resultResponse.data.data.dashboard);
-              setDashboardData(resultResponse.data.data.dashboard);
+            if (!resultResponse.ok) {
+              const errorText = await resultResponse.text();
+              console.error(`결과 조회 API 오류: ${resultResponse.status} ${resultResponse.statusText}`, errorText);
+              throw new Error(`결과 조회 실패: ${resultResponse.status}`);
+            }
+            
+            // 명시적 JSON 파싱
+            const resultData = await resultResponse.json();
+            console.log('결과 응답:', resultData);
+            
+            if (resultData.status === 'completed' && resultData.data) {
+              console.log('대시보드 데이터 설정:', resultData.data.dashboard);
+              setDashboardData(resultData.data.dashboard);
               setLoading(false);
               setShowConfetti(true);
               
@@ -158,9 +185,19 @@ const KeywordDashboard: React.FC = () => {
             } else {
               // 분석은 완료되었지만 데이터가 없는 경우 직접 다시 가져오기 시도
               console.log('태스크는 완료되었지만 데이터가 없습니다. 직접 로드 시도...');
-              const forceResponse = await axios.get(`${API_BASE_URL}/keywords/${encodeURIComponent(keyword)}?refresh=true`);
-              if (forceResponse.data.data && forceResponse.data.data.dashboard) {
-                setDashboardData(forceResponse.data.data.dashboard);
+              
+              const forceResponse = await fetch(`${API_BASE_URL}/keywords/${encodeURIComponent(keyword)}?refresh=true`);
+              
+              if (!forceResponse.ok) {
+                const errorText = await forceResponse.text();
+                console.error(`강제 조회 API 오류: ${forceResponse.status}`, errorText);
+                throw new Error(`강제 조회 실패: ${forceResponse.status}`);
+              }
+              
+              const forceData = await forceResponse.json();
+              
+              if (forceData.data && forceData.data.dashboard) {
+                setDashboardData(forceData.data.dashboard);
                 setLoading(false);
               } else {
                 setError('데이터를 불러오는데 실패했습니다. 페이지를 새로고침하고 다시 시도해주세요.');
@@ -169,15 +206,15 @@ const KeywordDashboard: React.FC = () => {
             }
           } catch (resultErr) {
             console.error('결과 조회 중 오류:', resultErr);
-            setError('결과를 조회하는 중 오류가 발생했습니다.');
+            setError('결과를 조회하는 중 오류가 발생했습니다. API 응답 형식이 올바르지 않을 수 있습니다.');
             setLoading(false);
           }
           
           clearInterval(intervalId);
           setPollingTask(null);
-        } else if (response.data.status === 'failed') {
+        } else if (responseData.status === 'failed') {
           // 작업 실패
-          const errorMessage = response.data.error || '키워드 분석 작업이 실패했습니다.';
+          const errorMessage = responseData.error || '키워드 분석 작업이 실패했습니다.';
           console.error('분석 작업 실패:', errorMessage);
           setError(errorMessage);
           setLoading(false);
@@ -191,10 +228,23 @@ const KeywordDashboard: React.FC = () => {
           clearInterval(intervalId);
           setPollingTask(null);
         } else {
-          console.log(`작업 진행 중: ${response.data.status}`);
+          console.log(`작업 진행 중: ${responseData.status}`);
         }
       } catch (err) {
         console.error('폴링 오류:', err);
+        
+        // 5회 이상 오류 발생 시 폴링 중단
+        setPollingErrorCount(prevCount => {
+          const newCount = prevCount + 1;
+          if (newCount >= 5) {
+            console.error('폴링 오류가 여러 번 발생하여 중단합니다.');
+            clearInterval(intervalId);
+            setPollingTask(null);
+            setError('서버 응답 처리 중 연속 오류가 발생했습니다. 새로고침 후 다시 시도해주세요.');
+            setLoading(false);
+          }
+          return newCount;
+        });
       }
     }, 3000);
     
