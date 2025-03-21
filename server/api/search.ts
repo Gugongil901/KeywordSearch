@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
-const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
+const NAVER_CLIENT_ID = "ErTaCUGQWfhKvcEnftat";
+const NAVER_CLIENT_SECRET = "Xoq9VSewrv";
 
 if (!NAVER_CLIENT_ID || !NAVER_CLIENT_SECRET) {
   console.error("네이버 API 키가 설정되지 않았습니다. Secrets에서 API 키를 설정해주세요.");

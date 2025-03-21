@@ -3,8 +3,8 @@ import { NaverKeywordResult, NaverProductResult, NaverTrendResult, KeywordSearch
 import * as metrics from "./metrics";
 
 // Naver API Credentials
-const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID;
-const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET;
+const NAVER_CLIENT_ID = "ErTaCUGQWfhKvcEnftat";
+const NAVER_CLIENT_SECRET = "Xoq9VSewrv";
 const NAVER_AD_API_CUSTOMER_ID = process.env.NAVER_AD_API_CUSTOMER_ID || "";
 const NAVER_AD_API_ACCESS_LICENSE = process.env.NAVER_AD_API_ACCESS_LICENSE || "";
 const NAVER_AD_API_SECRET_KEY = process.env.NAVER_AD_API_SECRET_KEY || "";
@@ -78,7 +78,7 @@ export function setupNaverAPI() {
     // 타임아웃 설정 추가
     timeout: 10000
   });
-  
+
   // API 초기화 상태 로그
   console.log("네이버 API 클라이언트 초기화 완료 (ID: " + (NAVER_CLIENT_ID ? "설정됨" : "미설정") + ")");
 }
@@ -87,7 +87,7 @@ export function setupNaverAPI() {
 export async function searchKeyword(keyword: string): Promise<KeywordSearchResponse> {
   try {
     console.log(`🔍 네이버 쇼핑 검색 API 요청: "${keyword}"`);
-    
+
     // Get search results
     const searchResponse = await naverSearchClient.get(NAVER_SEARCH_API, {
       params: {
@@ -109,16 +109,16 @@ export async function searchKeyword(keyword: string): Promise<KeywordSearchRespo
     // 문자열 정규화 및 HTML 태그 제거 함수
     const cleanText = (text: string): string => {
       if (!text) return "";
-      
+
       // HTML 태그 제거
       const withoutHtml = text.replace(/<[^>]*>?/gm, '');
-      
+
       // 이상한 인코딩 문자 수정 (깨진 UTF-8 문자를 감지하고 대체)
       const normalizedText = withoutHtml
         .replace(/Ã«|Ã¬|Â´|Ã­|Â¤/g, '') // 깨진 한글 제거
         .replace(/\\u[\dA-F]{4}/gi, '') // 유니코드 이스케이프 시퀀스 제거
         .replace(/[^a-zA-Z0-9\s.,\-_()가-힣ㄱ-ㅎㅏ-ㅣ]/g, ''); // 비정상 문자 제거 (한글, 영문, 숫자, 일부 특수문자만 허용)
-      
+
       return normalizedText;
     };
 
@@ -166,7 +166,7 @@ export async function searchKeyword(keyword: string): Promise<KeywordSearchRespo
     // 실거래 상품 비율과 해외 상품 비율 계산
     const realProductRatio = metrics.calculateRealProductRatio(products);
     const foreignProductRatio = metrics.calculateForeignProductRatio(products);
-    
+
     return {
       keyword: keywordResultObj.keyword,
       searchCount: keywordResultObj.searchCount, 
@@ -220,13 +220,13 @@ export async function testCategoryAPI(): Promise<any> {
     // 2017년 예제와 같은 날짜로 요청
     const startDate = new Date("2017-08-01");
     const endDate = new Date("2017-09-30");
-    
+
     const formatDate = (date: Date) => {
       return date.toISOString().split('T')[0];
     };
-    
+
     console.log("네이버 데이터랩 카테고리 API 테스트");
-    
+
     // Java 예제와 정확히 동일한 요청 본문
     const requestBody = {
       startDate: formatDate(startDate),
@@ -240,14 +240,14 @@ export async function testCategoryAPI(): Promise<any> {
       gender: "",
       ages: []
     };
-    
+
     console.log("카테고리 API 요청 본문:", JSON.stringify(requestBody));
     console.log("카테고리 API 엔드포인트:", NAVER_DATALAB_CATEGORY_API);
-    
+
     const response = await naverDataLabClient.post(NAVER_DATALAB_CATEGORY_API, requestBody);
-    
+
     console.log("✅ 카테고리 API 테스트 성공:", JSON.stringify(response.data).substring(0, 200) + "...");
-    
+
     return response.data;
   } catch (error) {
     console.error("❌ 카테고리 API 테스트 실패:", error);
@@ -265,13 +265,13 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
     // 문자열 정규화 및 인코딩 처리 함수
     const cleanText = (text: string): string => {
       if (!text) return "";
-      
+
       // 이상한 인코딩 문자 수정 (깨진 UTF-8 문자를 감지하고 대체)
       const normalizedText = text
         .replace(/Ã«|Ã¬|Â´|Ã­|Â¤/g, '') // 깨진 한글 제거
         .replace(/\\u[\dA-F]{4}/gi, '') // 유니코드 이스케이프 시퀀스 제거
         .replace(/[^a-zA-Z0-9\s.,\-_()가-힣ㄱ-ㅎㅏ-ㅣ]/g, ''); // 비정상 문자 제거 (한글, 영문, 숫자, 일부 특수문자만 허용)
-      
+
       return normalizedText;
     };
 
@@ -285,7 +285,7 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
 
     const endDate = new Date();
     const startDate = new Date();
-    
+
     if (period === "daily") {
       startDate.setDate(endDate.getDate() - 7); // 일간은 7일 범위
     } else if (period === "weekly") {
@@ -293,11 +293,11 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
     } else {
       startDate.setMonth(endDate.getMonth() - 6); // 월간은 6개월 범위
     }
-    
+
     const formatDate = (date: Date) => {
       return date.toISOString().split('T')[0];
     };
-    
+
     // 키워드 트렌드 API용 키워드 그룹 생성
     const keywordGroups = [
       {
@@ -305,11 +305,11 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
         keywords: [normalizedKeyword]
       }
     ];
-    
+
     // 먼저 자바 예제 형식으로 데이터랩 API 시도 (POST 방식)
     try {
       console.log(`네이버 데이터랩 쇼핑인사이트 API 요청 (키워드: ${normalizedKeyword})`);
-      
+
       // 네이버 개발자 센터 문서 기반 형식으로 수정 
       // 카테고리별 트렌드 조회 API 포맷으로 변경
       const requestBody = {
@@ -324,27 +324,27 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
         gender: "",  // 모든 성별
         ages: []     // 모든 연령대
       };
-      
+
       console.log("데이터랩 API 요청 본문:", JSON.stringify(requestBody));
       console.log("데이터랩 API 엔드포인트:", NAVER_DATALAB_CATEGORY_API);
-      
+
       // 카테고리 API 요청 (실제로 동작 확인됨)
       const response = await naverDataLabClient.post(NAVER_DATALAB_CATEGORY_API, requestBody);
-      
+
       if (response.data && response.data.results) {
         console.log(`✅ 네이버 데이터랩 키워드 트렌드 API 성공 (${normalizedKeyword})`);
         console.log(`응답 데이터:`, JSON.stringify(response.data).substring(0, 200) + "...");
-        
+
         // 실제 API 응답 데이터 파싱
         const result = response.data.results[0];
-        
+
         // 응답에 데이터가 있는지 확인
         if (result && result.data && result.data.length > 0) {
           const trendData = result.data.map((item: any) => ({
             date: item.period,
             count: item.ratio
           }));
-          
+
           console.log(`✅ 트렌드 데이터 파싱 성공: ${trendData.length}개 항목`);
           return {
             keyword: normalizedKeyword,
@@ -352,7 +352,7 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
           };
         } else {
           console.log("⚠️ API 응답에 데이터가 없습니다. 백업 데이터 생성");
-          
+
           // API는 성공했지만 데이터가 없는 경우 (비인기 키워드일 수 있음)
           const backupTrendData = generateMockTrendData(normalizedKeyword, period);
           return {
@@ -364,25 +364,25 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
     } catch (apiError: any) {
       console.log(`네이버 데이터랩 API 실패: ${apiError.message}`);
       console.log(`응답 상태: ${apiError.response?.status || '알 수 없음'}`);
-      
+
       // 두 번째로 쇼핑 검색 API 시도 (GET 방식)
       try {
         console.log(`네이버 쇼핑 검색 API 요청 (키워드: ${normalizedKeyword})`);
-        
+
         const response = await naverSearchClient.get(NAVER_SEARCH_API, {
           params: {
             query: normalizedKeyword,
             display: 5
           }
         });
-        
+
         if (response.data && response.data.items) {
           console.log(`✅ 네이버 쇼핑 검색 API 성공 (${normalizedKeyword}): ${response.data.total}개 결과 발견`);
           console.log(`✅ API 연결 성공 확인. 백업 트렌드 데이터 사용.`);
-          
+
           // API 연결이 성공했으므로 백업 데이터로 트렌드 정보 생성
           const trendData = generateMockTrendData(normalizedKeyword, period);
-          
+
           // 검색 결과 데이터의 총 개수를 기반으로 트렌드 조정
           if (response.data.total > 0) {
             // 검색 결과가 많을수록 트렌드 점수를 높게 조정
@@ -391,7 +391,7 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
               item.count = Math.round(item.count * factor);
             });
           }
-          
+
           return {
             keyword: normalizedKeyword,
             trends: trendData
@@ -401,21 +401,21 @@ export async function getKeywordTrends(keyword: string, period: string): Promise
         console.log(`네이버 쇼핑 검색 API 실패: ${searchError.message}`);
       }
     }
-    
+
     // API 연결 실패 시 백업 데이터 사용
     console.log(`키워드 '${normalizedKeyword}'의 트렌드 데이터 생성 중...`);
     const trendData = generateMockTrendData(normalizedKeyword, period);
-    
+
     return {
       keyword: normalizedKeyword,
       trends: trendData,
     };
   } catch (error) {
     console.error("Error getting keyword trends:", error);
-    
+
     // 인코딩 정규화 시도
     const normalizedKeyword = keyword.replace(/Ã«|Ã¬|Â´|Ã­|Â¤/g, '');
-    
+
     // 모든 오류 발생 시 백업 데이터 반환
     return {
       keyword: normalizedKeyword || keyword,
@@ -450,12 +450,12 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
     };
 
     const categoryCode = categoryMap[categoryId] || "ALL";
-    
+
     // API 요청 날짜 범위 설정
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - (period === "date" ? 7 : 30)); // 일간은 7일, 주간은 30일 범위
-    
+
     // 네이버 데이터랩 API는 'yyyy-mm-dd' 형식의 날짜를 요구합니다
     const formatDate = (date: Date) => {
       return date.toISOString().split('T')[0]; // 'yyyy-mm-dd' 형식
@@ -465,7 +465,7 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
 
     // 카테고리별 인기 키워드 (백업 데이터에서 가져와서 API 요청에 사용)
     const categoryKeywords = getBackupKeywords(categoryId).slice(0, 5);
-    
+
     // 네이버 데이터랩 쇼핑인사이트 API 문서와 Java 예제 형식에 맞춰 요청 본문 구성
     // https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#%EC%87%BC%ED%95%91%EC%9D%B8%EC%82%AC%EC%9D%B4%ED%8A%B8-%EC%B9%B4%ED%85%8C%EA%B3%A0%EB%A6%AC%EB%B3%84-%ED%82%A4%EC%9B%8C%EB%93%9C-%ED%8A%B8%EB%A0%8C%EB%93%9C-%EC%A1%B0%ED%9A%8C
     const requestBody = {
@@ -480,7 +480,7 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
       gender: "",  // 모든 성별
       ages: []     // 모든 연령대
     };
-    
+
     console.log("데이터랩 API 요청 본문:", JSON.stringify(requestBody));
     console.log("데이터랩 API 엔드포인트:", NAVER_DATALAB_CATEGORY_API);
     console.log("데이터랩 API 헤더:", JSON.stringify({
@@ -488,15 +488,15 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
       "X-Naver-Client-Secret": NAVER_CLIENT_SECRET ? "설정됨" : "미설정",
       "Content-Type": "application/json"
     }));
-    
+
     // 네이버 데이터랩 API 호출
     try {
       const response = await naverDataLabClient.post(NAVER_DATALAB_CATEGORY_API, requestBody);
-      
+
       // 실제 API 호출이 성공하면 데이터 파싱
       if (response.data && response.data.results) {
         console.log("✅ 네이버 데이터랩 API 응답 성공:", JSON.stringify(response.data).substring(0, 200) + "...");
-        
+
         try {
           // API 요청에 사용한 키워드 그대로 반환 (원래 요청했던 키워드들)
           // 이 키워드들은 실제 네이버 API로 통해 트렌드를 확인한 키워드들임
@@ -516,12 +516,12 @@ export async function getDataLabKeywords(categoryId: string, period: string = "d
       console.error("응답 내용:", apiError.response?.data ? JSON.stringify(apiError.response.data).substring(0, 300) : "응답 데이터 없음");
       console.error("응답 상태:", apiError.response?.status || "상태 코드 없음");
       console.error("응답 헤더:", apiError.response?.headers ? JSON.stringify(apiError.response.headers) : "헤더 정보 없음");
-      
+
       throw apiError; // 오류를 상위로 전파
     }
   } catch (error: any) {
     console.error("❌ DataLab API Error:", error.message);
-    
+
     // API 호출 실패 시 백업 데이터 반환
     return getBackupKeywords(categoryId);
   }
@@ -575,7 +575,7 @@ function getBackupKeywords(category: string = "all"): string[] {
   };
 
   console.log(`백업 키워드 사용: ${category}`);
-  
+
   // 해당 카테고리의 키워드 반환, 없으면 전체 카테고리 키워드 반환
   return categoryKeywords[category] || categoryKeywords.all;
 }
@@ -591,9 +591,9 @@ export async function getHotKeywords(category: string = "all", period: string = 
       console.error(`네이버 클라이언트 시크릿: ${NAVER_CLIENT_SECRET ? "설정됨" : "미설정"}`);
       throw new Error("네이버 API 키가 설정되지 않았습니다");
     }
-    
+
     console.log(`네이버 API 인증 정보: 클라이언트 ID=${NAVER_CLIENT_ID ? "설정됨" : "미설정"}, 시크릿=${NAVER_CLIENT_SECRET ? "설정됨" : "미설정"}`);
-    
+
     // 요청 헤더 로깅 (디버깅용)
     console.log("요청 헤더:", JSON.stringify({
       "X-Naver-Client-Id": "***",
@@ -616,21 +616,21 @@ export async function getHotKeywords(category: string = "all", period: string = 
     };
 
     const categoryCode = categoryMap[category] || "ALL";
-    
+
     // API 요청 날짜 범위 설정
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - (period === "daily" ? 7 : 30)); // 일간은 7일, 주간은 30일 범위
-    
+
     // 날짜 형식 - YYYY-MM-DD
     const formatDate = (date: Date) => {
       return date.toISOString().split('T')[0];
     };
 
     console.log(`쇼핑인사이트 인기검색어 API 요청: 카테고리=${categoryCode}, 기간=${formatDate(startDate)}~${formatDate(endDate)}`);
-    
+
     // 2023년 최신 버전 API에 Java 예제 형식으로 맞춘 요청 본문
-    // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#%EC%87%BC%ED%95%91%EC%9D%B8%EC%82%AC%EC%9D%B4%ED%8A%B8-%EC%A0%90%EC%9C%A0%EC%9C%A8-%ED%82%A4%EC%9B%8C%EB%93%9C-%EC%83%81%EC%9C%84%EB%8B%A4
+    // 참고: https://developers.naver.com/docs/serviceapi/datalab/shopping/shopping.md#%EC%87%BC%ED%95%91%EC%9D%B8%EC%82%AC%EC%9D%A4%ED%8A%B8-%EC%A0%90%EC%9C%A0%EC%9C%A8-%ED%82%A4%EC%9B%8C%EB%93%9C-%EC%83%81%EC%9C%84%EB%8B%A4
     const requestBody = {
       startDate: formatDate(startDate),
       endDate: formatDate(endDate),
@@ -643,12 +643,12 @@ export async function getHotKeywords(category: string = "all", period: string = 
       gender: "",  // 모든 성별
       ages: []     // 모든 연령대
     };
-    
+
     console.log("쇼핑인사이트 인기검색어 API 요청 본문:", JSON.stringify(requestBody));
-    
+
     // API 실패시 호출할 백업 데이터
     const backupData = getBackupKeywords(category);
-    
+
     // 데이터 소스 접근 방식 변경: 
     // 1. 먼저 키워드별 트렌드 API 호출 
     // 2. 실패시 백업 키워드 사용
@@ -660,12 +660,12 @@ export async function getHotKeywords(category: string = "all", period: string = 
         groupName: keyword,
         keywords: [keyword]
       }));
-      
+
       // 여러 API 엔드포인트와 요청 형식을 시도
       let response;
       let apiEndpoint;
       let requestSucceeded = false;
-      
+
       // 첫 번째 시도: 쇼핑인사이트 인기검색어 API (실시간 데이터)
       try {
         // 쇼핑인사이트 인기검색어 API 호출
@@ -678,14 +678,14 @@ export async function getHotKeywords(category: string = "all", period: string = 
           gender: "",
           ages: ["10", "20", "30", "40", "50", "60"]  // 전 연령대 포함
         };
-        
+
         apiEndpoint = NAVER_SHOPPING_INSIGHT_API;
         console.log("1. 쇼핑인사이트 인기검색어 API 요청:", JSON.stringify(insightBody).substring(0, 300) + "...");
         console.log("쇼핑인사이트 인기검색어 API 엔드포인트:", apiEndpoint);
-        
+
         response = await naverDataLabClient.post(apiEndpoint, insightBody);
         requestSucceeded = true;
-        
+
         // 응답이 유효한지 확인
         if (response.data && response.data.results && response.data.results.length > 0) {
           // 인기 키워드 추출
@@ -695,7 +695,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
             return keywordList.slice(0, 10); // 상위 10개 키워드 반환
           }
         }
-        
+
         // 데이터가 없거나 형식이 맞지 않으면 키워드 트렌드 API 시도
         const keywordBody = {
           startDate: formatDate(startDate),
@@ -707,18 +707,18 @@ export async function getHotKeywords(category: string = "all", period: string = 
           gender: "",
           ages: []
         };
-        
+
         apiEndpoint = NAVER_DATALAB_KEYWORD_API;
         console.log("1-2. 키워드 트렌드 API 요청 (수정된 형식):", JSON.stringify(keywordBody).substring(0, 300) + "...");
         console.log("키워드 트렌드 API 엔드포인트:", apiEndpoint);
-        
+
         response = await naverDataLabClient.post(apiEndpoint, keywordBody);
         requestSucceeded = true;
       } catch (error: any) {
         console.log(`첫 번째 API 시도 실패 (${apiEndpoint}): ${error.message}`);
         console.log(`응답 상태: ${error.response?.status || "알 수 없음"}`);
         console.log(`응답 데이터: ${JSON.stringify(error.response?.data || {})}`);
-        
+
         // 다른 형식으로 한번 더 시도
         try {
           // 단순화된 형식으로 다시 시도 (패션의류 카테고리)
@@ -732,7 +732,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
             gender: "",
             ages: []
           };
-          
+
           console.log("1-2. 다른 카테고리로 재시도:", JSON.stringify(retryBody).substring(0, 300));
           const testResponse = await naverDataLabClient.post(apiEndpoint, retryBody);
           console.log("✅ 두 번째 시도 성공:", JSON.stringify(testResponse.data).substring(0, 100));
@@ -742,7 +742,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
           console.log(`재시도 실패: ${retryError.message}`);
           console.log(`재시도 응답 데이터: ${JSON.stringify(retryError.response?.data || {})}`);
         }
-        
+
         // 두 번째 시도: 통합 검색어 트렌드 API
         try {
           // 네이버 개발자 센터 문서에 맞게 수정된 형식
@@ -759,25 +759,25 @@ export async function getHotKeywords(category: string = "all", period: string = 
             ages: [],    // 빈 배열로 설정
             gender: ""   // 빈 문자열로 설정
           };
-          
+
           apiEndpoint = NAVER_DATALAB_SEARCH_API;
           console.log("2. 통합검색어 트렌드 API 요청:", JSON.stringify(searchRequestBody).substring(0, 300) + "...");
           console.log("통합검색어 트렌드 API 엔드포인트:", apiEndpoint);
-          
+
           response = await naverDataLabClient.post(apiEndpoint, searchRequestBody);
           requestSucceeded = true;
         } catch (error2: any) {
           console.log(`두 번째 API 시도 실패 (${apiEndpoint}): ${error2.message}`);
-          
+
           // 세 번째 시도: 네이버 쇼핑 검색 API (GET 요청)
           try {
             // 각 키워드에 대한 검색 결과를 가져오는 방식으로 변경
             const firstKeyword = backupData[0]; // 첫 번째 키워드 사용
-            
+
             apiEndpoint = NAVER_SEARCH_API;
             console.log("3. 네이버 쇼핑 검색 API 요청 (키워드: " + firstKeyword + ")");
             console.log("네이버 쇼핑 검색 API 엔드포인트:", apiEndpoint);
-            
+
             // GET 요청으로 변경 (쿼리 파라미터 사용)
             response = await naverSearchClient.get(apiEndpoint, {
               params: {
@@ -787,10 +787,10 @@ export async function getHotKeywords(category: string = "all", period: string = 
                 sort: "sim" // 정확도순
               }
             });
-            
+
             console.log("네이버 쇼핑 검색 API 응답 형식:", Object.keys(response.data || {}).join(", "));
             requestSucceeded = true;
-            
+
             // 응답이 성공했지만 형식이 다르므로 백업 데이터를 사용하도록 처리
             if (response.data) {
               console.log("✅ 네이버 쇼핑 검색 API 응답 성공 - 백업 키워드를 사용합니다");
@@ -802,11 +802,11 @@ export async function getHotKeywords(category: string = "all", period: string = 
           }
         }
       }
-      
+
       // API 응답 형식에 따라 다양한 필드 확인
       if (response && response.data) {
         console.log("✅ 네이버 API 응답 성공:", JSON.stringify(response.data).substring(0, 200) + "...");
-        
+
         // 여러 API 응답 형식 처리
         if (response.data.results && apiEndpoint === NAVER_DATALAB_SEARCH_API) {
           // 통합검색어 트렌드 API 응답 처리 (실시간 데이터)
@@ -814,26 +814,26 @@ export async function getHotKeywords(category: string = "all", period: string = 
           try {
             // 키워드 그룹 제목을 추출하여 실시간 데이터로 사용
             const realTimeKeywords = response.data.results.map((result: any) => result.title);
-            
+
             if (realTimeKeywords.length > 0) {
               console.log("✅ 실시간 키워드 추출 성공:", realTimeKeywords.join(", "));
-              
+
               // 백업 키워드로 부족한 수를 채움
               if (realTimeKeywords.length < 10) {
                 const additionalKeywords = backupData
                   .filter(kw => !realTimeKeywords.includes(kw))
                   .slice(0, 10 - realTimeKeywords.length);
-                
+
                 console.log("실시간 키워드 부족, 백업 데이터로 보충:", additionalKeywords.join(", "));
                 return [...realTimeKeywords, ...additionalKeywords];
               }
-              
+
               return realTimeKeywords.slice(0, 10);
             }
           } catch (extractError) {
             console.error("실시간 키워드 추출 실패:", extractError);
           }
-          
+
           console.log("실시간 키워드 추출 실패, 백업 키워드 사용");
           return backupData.slice(0, 10);
         } else if (requestSucceeded) {
@@ -865,7 +865,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
       console.error("⚠️ 네이버 API 호출 실패:", apiError.message);
       console.error("응답 상태:", apiError.response?.status || "상태 코드 없음");
       console.error("응답 내용:", apiError.response?.data ? JSON.stringify(apiError.response.data).substring(0, 300) : "응답 데이터 없음");
-      
+
       // API 호출 실패시 백업 데이터 반환
       return backupData;
     }
@@ -1066,13 +1066,13 @@ function generateMockTrendData(keyword: string, period: string = "daily"): Array
   const result = [];
   const now = new Date();
   const dataPoints = period === "daily" ? 7 : period === "weekly" ? 10 : 6;
-  
+
   // Base value influenced by keyword length to make it somewhat deterministic
   const baseValue = keyword.length * 500 + 1000;
-  
+
   for (let i = 0; i < dataPoints; i++) {
     const date = new Date();
-    
+
     if (period === "daily") {
       date.setDate(now.getDate() - (dataPoints - i - 1));
     } else if (period === "weekly") {
@@ -1080,18 +1080,18 @@ function generateMockTrendData(keyword: string, period: string = "daily"): Array
     } else { // monthly
       date.setMonth(now.getMonth() - (dataPoints - i - 1));
     }
-    
+
     // Generate a somewhat random but trending value
     const randomFactor = Math.random() * 0.5 + 0.75; // 0.75 to 1.25
     const trendFactor = 1 + (i / dataPoints) * 0.5; // Increasing trend
     const count = Math.floor(baseValue * randomFactor * trendFactor);
-    
+
     result.push({
       date: date.toISOString().split('T')[0],
       count
     });
   }
-  
+
   return result;
 }
 
@@ -1109,35 +1109,35 @@ function calculateKeywordStats(products: NaverProductResult[]) {
   // 평균 가격 계산
   const totalPrice = products.reduce((sum, product) => sum + product.price, 0);
   const averagePrice = Math.floor(totalPrice / products.length);
-  
+
   // 검색량 추정 - 상품 개수와 리뷰 수 기반
   // 실제로는 네이버 API에서 가져와야 하나, 예시로 구현
   const totalReviews = products.reduce((sum, product) => sum + product.reviewCount, 0);
   const estimatedSearchCount = Math.max(5000, 
     Math.floor(products.length * 50 + totalReviews * 2)
   );
-  
+
   // 매출 추정 - 랭킹과 가격 기반 알고리즘
   let totalSales = 0;
   let totalSalesCount = 0;
-  
+
   products.forEach(product => {
     // 랭킹이 높을수록(숫자가 낮을수록) 더 많이 판매
     // 리뷰 수가 많을수록 더 많이 판매됨을 고려한 알고리즘
     const reviewFactor = Math.sqrt(product.reviewCount + 1); // 리뷰 개수의 제곱근을 사용하여 스케일링
     const rankFactor = Math.pow(0.9, product.rank); // 지수적으로 감소하는 랭크 영향력
-    
+
     // 판매량 계산식: 기본 판매량 * 리뷰 요소 * 랭크 요소
     const estimatedSalesCount = Math.floor(100 * reviewFactor * rankFactor);
     const estimatedSales = estimatedSalesCount * product.price;
-    
+
     totalSalesCount += estimatedSalesCount;
     totalSales += estimatedSales;
   });
-  
+
   // Convert to 10,000 KRW units (만원)
   totalSales = Math.floor(totalSales / 10000);
-  
+
   return {
     averagePrice,
     totalSales,
@@ -1152,10 +1152,10 @@ async function getRelatedKeywords(keyword: string): Promise<string[]> {
   const commonKeywords = [
     "가격", "후기", "추천", "브랜드", "할인", "최저가", "인기", "사용법", "비교"
   ];
-  
+
   // Generate related keywords by combining the input keyword with common suffixes
   const related = commonKeywords.map(suffix => `${keyword} ${suffix}`);
-  
+
   // Add some general related terms
   if (keyword.includes("의류") || keyword.includes("옷")) {
     related.push("여름옷", "가을옷", "브랜드의류", "세일");
@@ -1164,7 +1164,7 @@ async function getRelatedKeywords(keyword: string): Promise<string[]> {
   } else if (keyword.includes("식품") || keyword.includes("음식")) {
     related.push("건강식품", "유기농", "다이어트", "식단");
   }
-  
+
   // Shuffle and limit the array
   return related.sort(() => 0.5 - Math.random()).slice(0, 10);
 }
