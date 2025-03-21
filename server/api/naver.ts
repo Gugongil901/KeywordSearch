@@ -679,6 +679,9 @@ export async function getHotKeywords(category: string = "all", period: string = 
           endDate: formatDate(endDate),
           timeUnit: period === "daily" ? "date" : "week",
           category: categoryCode, // 문자열로 변경 (배열 대신)
+          keyword: [ // 필수 필드 추가
+            { name: "인기검색어", param: ["인기검색어"] }
+          ],
           device: "",
           gender: "",
           ages: ["10", "20", "30", "40", "50", "60"]  // 전 연령대 포함
@@ -732,7 +735,10 @@ export async function getHotKeywords(category: string = "all", period: string = 
             endDate: formatDate(endDate),
             timeUnit: period === "daily" ? "date" : "month",
             category: "50000167", // 문자열로 수정
-            keyword: "원피스", // 문자열로 수정
+            keyword: [{ 
+              name: "원피스", 
+              param: ["원피스"] 
+            }], // 형식 수정 (배열 객체로)
             device: "",
             gender: "",
             ages: []

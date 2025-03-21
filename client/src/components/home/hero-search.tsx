@@ -16,10 +16,20 @@ const categories = [
   "생활/건강",
 ];
 
-const HeroSearch: React.FC = () => {
+interface HeroSearchProps {
+  selectedCategory: string;
+  onCategoryChange: (category: string) => void;
+  selectedTrendType: "daily" | "weekly";
+  onTrendTypeChange: (type: "daily" | "weekly") => void;
+}
+
+const HeroSearch: React.FC<HeroSearchProps> = ({
+  selectedCategory,
+  onCategoryChange,
+  selectedTrendType,
+  onTrendTypeChange
+}) => {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [trendType, setTrendType] = useState<"daily" | "weekly">("daily");
-  const [category, setCategory] = useState<string>("전체");
   const [_, navigate] = useLocation();
 
   const handleSearch = () => {
