@@ -181,20 +181,21 @@ const CompetitionAnalysis: React.FC<CompetitionAnalysisProps> = ({ data }) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {data.topCompetitors.slice(0, 5).map((competitor, index) => (
-                <div key={index} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{competitor.seller}</span>
-                    <span className="text-sm text-gray-500">{formatPercent(competitor.marketShare)} 점유율</span>
+              {data.topCompetitors && data.topCompetitors.length > 0 ? (
+                data.topCompetitors.slice(0, 5).map((competitor, index) => (
+                  <div key={index} className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{competitor.seller}</span>
+                      <span className="text-sm text-gray-500">{formatPercent(competitor.marketShare)} 점유율</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span>상품 {formatNumber(competitor.productCount)}개</span>
+                      <span>평균 {formatCurrency(competitor.averagePrice)}</span>
+                    </div>
+                    {index < (data.topCompetitors?.length || 0) - 1 && <Separator className="my-2" />}
                   </div>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>상품 {formatNumber(competitor.productCount)}개</span>
-                    <span>평균 {formatCurrency(competitor.averagePrice)}</span>
-                  </div>
-                  {index < data.topCompetitors.length - 1 && <Separator className="my-2" />}
-                </div>
-              ))}
-              {data.topCompetitors.length === 0 && (
+                ))
+              ) : (
                 <p className="text-sm text-gray-500">경쟁 판매자 데이터가 없습니다.</p>
               )}
             </div>

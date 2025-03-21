@@ -200,7 +200,7 @@ const GrowthAnalysis: React.FC<GrowthAnalysisProps> = ({ data }) => {
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2 mb-2">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((month) => {
-                  const isPeakMonth = data.peakMonths.includes(month);
+                  const isPeakMonth = data.peakMonths && data.peakMonths.includes(month);
                   return (
                     <Badge 
                       key={month}

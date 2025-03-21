@@ -174,10 +174,14 @@ const TopProducts: React.FC<TopProductsProps> = ({ data }) => {
             <div>
               <h4 className="font-medium text-blue-700 mb-1">상위 제품 인사이트</h4>
               <p className="text-sm text-blue-600">
-                가장 인기 있는 상위 제품들의 가격대는 {formatCurrency(Math.min(...data.map(p => p.price)))} ~ {formatCurrency(Math.max(...data.map(p => p.price)))}로, 
-                평균 가격은 {formatCurrency(data.reduce((sum, p) => sum + p.price, 0) / data.length)}입니다.
-                {data.filter(p => p.isRocketDelivery).length > 0 && 
-                  ` 상위 ${data.length}개 제품 중 ${data.filter(p => p.isRocketDelivery).length}개가 로켓배송을 제공합니다.`}
+                {data && data.length > 0 ? (
+                  <>
+                    가장 인기 있는 상위 제품들의 가격대는 {formatCurrency(Math.min(...data.map(p => p.price)))} ~ {formatCurrency(Math.max(...data.map(p => p.price)))}로, 
+                    평균 가격은 {formatCurrency(data.reduce((sum, p) => sum + p.price, 0) / data.length)}입니다.
+                    {data.filter(p => p.isRocketDelivery).length > 0 && 
+                      ` 상위 ${data.length}개 제품 중 ${data.filter(p => p.isRocketDelivery).length}개가 로켓배송을 제공합니다.`}
+                  </>
+                ) : "제품 데이터를 불러오는 중입니다..."}
               </p>
             </div>
           </div>
