@@ -22,9 +22,19 @@ const NAVER_CATEGORY_MAP: Record<string, string> = {
 };
 
 // 네이버 쇼핑인사이트 웹 URL (2025년 3월 업데이트)
-const SHOPPING_INSIGHT_URL = 'https://datalab.naver.com/shoppingInsight/sKeyword.naver';
-const SHOPPING_API_URL = 'https://datalab.naver.com/shoppingInsight/getKeywordList.naver';
-const SHOPPING_API_URL_ALT = 'https://datalab.naver.com/shopping/getKeywordRank.naver';
+const SHOPPING_INSIGHT_URLS = [
+  'https://datalab.naver.com/shoppingInsight/sKeyword.naver',
+  'https://datalab.naver.com/shopping/insight/keyword.naver',
+  'https://datalab.naver.com/shopping/insight/trends.naver',
+  'https://datalab.naver.com/shoppingInsight/news/shoppingKeyword.nhn',
+  'https://datalab.naver.com/shopping/keyword/trends.naver'
+];
+const SHOPPING_API_URLS = [
+  'https://datalab.naver.com/shoppingInsight/getKeywordList.naver',
+  'https://datalab.naver.com/shopping/getKeywordRank.naver',
+  'https://datalab.naver.com/shopping/insight/api/getKeywordRank.nhn',
+  'https://datalab.naver.com/shopping/api/getKeywordTrend.naver'
+];
 
 /**
  * 네이버 쇼핑인사이트 페이지에서 인기 키워드 추출
@@ -67,10 +77,13 @@ export async function crawlShoppingInsightKeywords(
     };
     
     // 다양한 접근 방식을 시도하기 위한 매개변수 세트
-    const paramsList = [
-      // 방법 1: 기존 접근 방식
-      {
-        url: SHOPPING_API_URL,
+    const paramsList = [];
+    
+    // API 요청 매개변수
+    for (const apiUrl of SHOPPING_API_URLS) {
+      // POST 요청 (폼 데이터 방식)
+      paramsList.push({
+        url: apiUrl,
         method: 'post',
         data: new URLSearchParams({
           cid: categoryCode,
@@ -85,14 +98,14 @@ export async function crawlShoppingInsightKeywords(
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
           'Accept': 'application/json, text/javascript, */*; q=0.01',
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'Referer': SHOPPING_INSIGHT_URL,
+          'Referer': SHOPPING_INSIGHT_URLS[0],
           'X-Requested-With': 'XMLHttpRequest'
         }
-      },
+      });
       
-      // 방법 2: 대체 API 엔드포인트 및 JSON 형식
-      {
-        url: SHOPPING_API_URL_ALT,
+      // POST 요청 (JSON 데이터 방식)
+      paramsList.push({
+        url: apiUrl,
         method: 'post',
         data: JSON.stringify({
           startDate: formatDate(startDate),
@@ -106,14 +119,16 @@ export async function crawlShoppingInsightKeywords(
           'Accept': 'application/json, text/plain, */*',
           'Content-Type': 'application/json',
           'Origin': 'https://datalab.naver.com',
-          'Referer': SHOPPING_INSIGHT_URL,
+          'Referer': SHOPPING_INSIGHT_URLS[0],
           'X-Requested-With': 'XMLHttpRequest'
         }
-      },
-      
-      // 방법 3: 웹페이지 직접 파싱
-      {
-        url: `${SHOPPING_INSIGHT_URL}?cid=${categoryCode}&timeUnit=${periodParam}`,
+      });
+    }
+    
+    // 웹페이지 직접 파싱 (각 인사이트 URL에 대해)
+    for (const insightUrl of SHOPPING_INSIGHT_URLS) {
+      paramsList.push({
+        url: `${insightUrl}?cid=${categoryCode}&timeUnit=${periodParam}`,
         method: 'get',
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36',
@@ -122,8 +137,21 @@ export async function crawlShoppingInsightKeywords(
           'Upgrade-Insecure-Requests': '1',
           'Cache-Control': 'max-age=0'
         }
-      }
-    ];
+      });
+      
+      // 키워드 랭킹 형식 URL 시도
+      paramsList.push({
+        url: `${insightUrl}?categoryId=${categoryCode}&period=${period === 'daily' ? 'date' : period}`,
+        method: 'get',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Referer': 'https://datalab.naver.com',
+          'Upgrade-Insecure-Requests': '1',
+          'Cache-Control': 'max-age=0'
+        }
+      });
+    }
     
     // 각 접근 방식 순차적으로 시도
     let lastError = null;
@@ -138,37 +166,182 @@ export async function crawlShoppingInsightKeywords(
         
         console.log(`✅ 방법 ${index + 1} 응답 코드: ${response.status}`);
         
-        // 방법 1 응답 처리
-        if (params.url === SHOPPING_API_URL && response.data && response.data.success) {
+        // API 응답 처리 (ranks 형식)
+        if (response.data && response.data.success && response.data.ranks) {
           const keywords = response.data.ranks.map((item: any) => item.keyword);
-          console.log(`✅ 방법 1 성공: ${keywords.length}개 키워드 추출`);
+          console.log(`✅ API 응답(ranks) 성공: ${keywords.length}개 키워드 추출`);
           console.log(`첫 5개 키워드: ${keywords.slice(0, 5).join(', ')}`);
           return keywords.slice(0, limit);
         }
         
-        // 방법 2 응답 처리
-        if (params.url === SHOPPING_API_URL_ALT && response.data && response.data.results) {
+        // API 응답 처리 (results 형식)
+        if (response.data && response.data.results) {
           const keywords = response.data.results.map((item: any) => item.keyword);
-          console.log(`✅ 방법 2 성공: ${keywords.length}개 키워드 추출`);
+          console.log(`✅ API 응답(results) 성공: ${keywords.length}개 키워드 추출`);
           console.log(`첫 5개 키워드: ${keywords.slice(0, 5).join(', ')}`);
           return keywords.slice(0, limit);
         }
         
         // 방법 3: HTML 파싱 시도
         if (params.method === 'get' && response.data) {
-          // HTML에서 키워드 테이블 파싱 (정규식 사용)
-          const keywordMatches = response.data.match(/"keyword":"([^"]+)"/g);
+          console.log(`HTML 데이터 길이: ${response.data.length} 바이트`);
           
+          // 다양한 HTML 파싱 방법 시도
+          let keywords: string[] = [];
+          
+          // 방법 3-1: 정규식으로 키워드 JSON 데이터 추출
+          const keywordMatches = response.data.match(/"keyword":"([^"]+)"/g);
           if (keywordMatches && keywordMatches.length > 0) {
-            const keywords = keywordMatches
+            keywords = keywordMatches
               .map(match => match.replace(/"keyword":"([^"]+)"/, '$1'))
               .filter((value, index, self) => self.indexOf(value) === index); // 중복 제거
-              
+          }
+          
+          // 방법 3-2: 정규식으로 순위별 키워드 직접 추출 (테이블 구조 기반)
+          if (keywords.length === 0) {
+            const rankPattern = /<span class="rank_num">(\d+)<\/span>\s*<span class="rank_title">([^<]+)<\/span>/g;
+            let match;
+            const rankKeywords: string[] = [];
+            
+            while ((match = rankPattern.exec(response.data)) !== null) {
+              rankKeywords.push(match[2].trim());
+            }
+            
+            if (rankKeywords.length > 0) {
+              keywords = rankKeywords;
+              console.log(`순위별 키워드 추출 성공: ${keywords.length}개`);
+            }
+          }
+          
+          // 방법 3-3: data-rank 속성을 가진 요소에서 키워드 추출
+          if (keywords.length === 0) {
+            const dataRankPattern = /data-rank="(\d+)"[^>]*>([^<]+)<\/a>/g;
+            let match;
+            const rankKeywords: string[] = [];
+            
+            while ((match = dataRankPattern.exec(response.data)) !== null) {
+              rankKeywords.push(match[2].trim());
+            }
+            
+            if (rankKeywords.length > 0) {
+              keywords = rankKeywords;
+              console.log(`data-rank 속성에서 키워드 추출 성공: ${keywords.length}개`);
+            }
+          }
+          
+          // 방법 3-4: 순위 항목을 포함하는 li 요소에서 키워드 추출
+          if (keywords.length === 0) {
+            // 1번째 사진에서 본 HTML 구조를 기반으로 한 패턴
+            const liPattern = /<li[^>]*>\s*<span[^>]*>(\d+)<\/span>\s*<span[^>]*>([^<]+)<\/span>/g;
+            let match;
+            const rankKeywords: string[] = [];
+            
+            while ((match = liPattern.exec(response.data)) !== null) {
+              rankKeywords.push(match[2].trim());
+            }
+            
+            if (rankKeywords.length > 0) {
+              keywords = rankKeywords;
+              console.log(`li 요소에서 키워드 추출 성공: ${keywords.length}개`);
+            }
+          }
+          
+          // 방법 3-5: 순위 테이블에서 키워드 추출 (첫 번째 이미지 기반)
+          if (keywords.length === 0) {
+            // 사진에서 본 표 구조에서 키워드 추출
+            const tablePattern = /<td[^>]*>\s*(\d+)\s*<\/td>\s*<td[^>]*>\s*([^<]+)\s*<\/td>/g;
+            let match;
+            const rankKeywords: string[] = [];
+            
+            while ((match = tablePattern.exec(response.data)) !== null) {
+              rankKeywords.push(match[2].trim());
+            }
+            
+            if (rankKeywords.length > 0) {
+              keywords = rankKeywords;
+              console.log(`테이블에서 키워드 추출 성공: ${keywords.length}개`);
+            }
+          }
+          
+          // 방법 3-6: 두 번째 이미지 기반 - 인기 키워드 목록(2025년 형식)
+          if (keywords.length === 0) {
+            // 두 번째 사진에서 본 li 구조에서 키워드 추출
+            const rankItemPattern = /<div[^>]*class="[^"]*rank-item[^"]*"[^>]*>\s*<span[^>]*>\s*(\d+)\s*<\/span>\s*([^<]+)/g;
+            let match;
+            const rankKeywords: string[] = [];
+            
+            while ((match = rankItemPattern.exec(response.data)) !== null) {
+              rankKeywords.push(match[2].trim());
+            }
+            
+            if (rankKeywords.length > 0) {
+              keywords = rankKeywords;
+              console.log(`rank-item에서 키워드 추출 성공: ${keywords.length}개`);
+            }
+          }
+          
+          // 방법 3-7: 두 번째 이미지 기반 - 개별 키워드 항목
+          if (keywords.length === 0) {
+            // 두 번째 사진 패턴
+            const keywordItemPattern = />\s*(\d+)\s*<\/[^>]*>\s*<[^>]*>\s*([^<]+)\s*<\/[^>]*>\s*<[^>]*class="[^"]*change[^"]*"[^>]*>/g;
+            let match;
+            const rankKeywords: string[] = [];
+            
+            while ((match = keywordItemPattern.exec(response.data)) !== null) {
+              rankKeywords.push(match[2].trim());
+            }
+            
+            if (rankKeywords.length > 0) {
+              keywords = rankKeywords;
+              console.log(`순위-키워드-변화 패턴에서 추출 성공: ${keywords.length}개`);
+            }
+          }
+          
+          if (keywords.length > 0) {
             console.log(`✅ 방법 3 성공: ${keywords.length}개 키워드 추출`);
             console.log(`첫 5개 키워드: ${keywords.slice(0, 5).join(', ')}`);
             return keywords.slice(0, limit);
           } else {
+            // HTML 샘플 일부 출력 (디버깅 용도)
             console.log(`⚠️ 방법 3: HTML에서 키워드를 찾을 수 없습니다.`);
+            
+            // 첫 번째 사진의 구조를 확인하기 위해 HTML 샘플 저장
+            const htmlSample = response.data.slice(0, 500) + "..." + 
+                             response.data.slice(response.data.length - 500);
+            console.log(`HTML 샘플: ${htmlSample}`);
+            
+            // 키워드가 포함될 수 있는 텍스트 노드 검색
+            const textNodePattern = />([^<]{3,20})</g;
+            let match;
+            const textNodes: string[] = [];
+            
+            while ((match = textNodePattern.exec(response.data)) !== null) {
+              const text = match[1].trim();
+              if (text && !text.includes('네이버') && !text.includes('검색') && text.length >= 2) {
+                textNodes.push(text);
+              }
+            }
+            
+            // 텍스트 노드에서 찾은 내용 중 가장 많이 등장하는 것들을 키워드로 간주
+            if (textNodes.length > 0) {
+              // 빈도 계산
+              const frequency: Record<string, number> = {};
+              textNodes.forEach(text => {
+                frequency[text] = (frequency[text] || 0) + 1;
+              });
+              
+              // 빈도별로 정렬
+              const sortedByFreq = Object.entries(frequency)
+                .sort((a, b) => b[1] - a[1])
+                .map(entry => entry[0]);
+              
+              if (sortedByFreq.length > 0) {
+                console.log(`텍스트 노드에서 ${sortedByFreq.length}개 키워드 후보 발견`);
+                keywords = sortedByFreq.slice(0, limit);
+                console.log(`첫 5개 키워드 후보: ${keywords.slice(0, 5).join(', ')}`);
+                return keywords;
+              }
+            }
           }
         }
       } catch (error: any) {
