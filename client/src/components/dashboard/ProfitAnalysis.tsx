@@ -43,17 +43,20 @@ interface ProfitAnalysisProps {
 
 const ProfitAnalysis: React.FC<ProfitAnalysisProps> = ({ data }) => {
   // 숫자 포맷팅 (천 단위 콤마)
-  const formatNumber = (num: number) => {
+  const formatNumber = (num: number | undefined) => {
+    if (num === undefined || isNaN(num)) return '0';
     return new Intl.NumberFormat('ko-KR').format(num);
   };
 
   // 가격 포맷팅
-  const formatCurrency = (num: number) => {
+  const formatCurrency = (num: number | undefined) => {
+    if (num === undefined || isNaN(num)) return '₩0';
     return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(num);
   };
 
   // 퍼센트 포맷팅
-  const formatPercent = (num: number) => {
+  const formatPercent = (num: number | undefined) => {
+    if (num === undefined || isNaN(num)) return '0.0%';
     return `${num.toFixed(1)}%`;
   };
 
@@ -86,9 +89,9 @@ const ProfitAnalysis: React.FC<ProfitAnalysisProps> = ({ data }) => {
                   <DollarSign className="h-4 w-4 mr-2 text-green-500" />
                   <span className="text-sm font-medium">수익 점수</span>
                 </div>
-                <span className="text-sm font-bold">{data.profitScore}/100</span>
+                <span className="text-sm font-bold">{data?.profitScore || 0}/100</span>
               </div>
-              <Progress value={data.profitScore} className="h-2" />
+              <Progress value={data?.profitScore || 0} className="h-2" />
               <p className={`text-sm font-medium ${getProfitabilityColor(data.profitabilityLevel)}`}>
                 {data.profitabilityLevel}
               </p>
@@ -140,32 +143,36 @@ const ProfitAnalysis: React.FC<ProfitAnalysisProps> = ({ data }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-500">최저가</p>
-                  <p className="text-lg font-bold">{formatCurrency(data.priceDistribution.min)}</p>
+                  <p className="text-lg font-bold">{formatCurrency(data?.priceDistribution?.min)}</p>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-500">최고가</p>
-                  <p className="text-lg font-bold">{formatCurrency(data.priceDistribution.max)}</p>
+                  <p className="text-lg font-bold">{formatCurrency(data?.priceDistribution?.max)}</p>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-500">평균가</p>
-                  <p className="text-lg font-bold">{formatCurrency(data.priceDistribution.average)}</p>
+                  <p className="text-lg font-bold">{formatCurrency(data?.priceDistribution?.average)}</p>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-500">중간값</p>
-                  <p className="text-lg font-bold">{formatCurrency(data.priceDistribution.median)}</p>
+                  <p className="text-lg font-bold">{formatCurrency(data?.priceDistribution?.median)}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                {data.priceDistribution.ranges.map((range, index) => (
+                {data?.priceDistribution?.ranges?.map ? data.priceDistribution.ranges.map((range, index) => (
                   <div key={index} className="space-y-1">
                     <div className="flex items-center justify-between text-sm">
-                      <span>{range.range}</span>
-                      <span>{formatPercent(range.percentage)}</span>
+                      <span>{range?.range || ''}</span>
+                      <span>{formatPercent(range?.percentage)}</span>
                     </div>
-                    <Progress value={range.percentage} className="h-2" />
+                    <Progress value={range?.percentage || 0} className="h-2" />
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center py-2">
+                    <p className="text-sm text-gray-500">가격 분포 데이터가 없습니다.</p>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -183,19 +190,19 @@ const ProfitAnalysis: React.FC<ProfitAnalysisProps> = ({ data }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-500">평균 CPC</p>
-                  <p className="text-lg font-bold">{formatCurrency(data.avgCPC)}</p>
+                  <p className="text-lg font-bold">{formatCurrency(data?.avgCPC)}</p>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-500">마진/CPC 비율</p>
-                  <p className="text-lg font-bold">{data.marginToCpcRatio.toFixed(1)}x</p>
+                  <p className="text-lg font-bold">{(data?.marginToCpcRatio || 0).toFixed(1)}x</p>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-500">전환율</p>
-                  <p className="text-lg font-bold">{formatPercent(data.conversionRate)}</p>
+                  <p className="text-lg font-bold">{formatPercent(data?.conversionRate)}</p>
                 </div>
                 <div className="text-center p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm text-gray-500">ROAS</p>
-                  <p className="text-lg font-bold">{data.ROAS.toFixed(1)}x</p>
+                  <p className="text-lg font-bold">{(data?.ROAS || 0).toFixed(1)}x</p>
                 </div>
               </div>
 
