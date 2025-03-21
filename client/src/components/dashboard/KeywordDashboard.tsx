@@ -60,30 +60,53 @@ const KeywordDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       
+      console.log(`키워드 분석 요청: "${searchKeyword}"`);
+      
       // 키워드 분석 요청
       const response = await axios.get(`${API_BASE_URL}/keywords/${encodeURIComponent(searchKeyword)}`);
+      console.log('키워드 분석 응답:', response.data);
       
       if (response.data.status === 'completed') {
         // 이미 완료된 분석 결과
-        setDashboardData(response.data.data.dashboard);
-        setLoading(false);
-        setShowConfetti(true);
+        console.log('이미 완료된 분석 결과:', response.data.data);
         
-        setTimeout(() => {
-          setShowConfetti(false);
-        }, 3000);
+        if (response.data.data && response.data.data.dashboard) {
+          setDashboardData(response.data.data.dashboard);
+          setLoading(false);
+          setShowConfetti(true);
+          
+          toast({
+            title: "분석 완료",
+            description: `"${searchKeyword}" 키워드 분석이 완료되었습니다.`,
+          });
+          
+          setTimeout(() => {
+            setShowConfetti(false);
+          }, 3000);
+        } else {
+          console.error('대시보드 데이터가 없음:', response.data);
+          setError('분석 결과를 불러오는데 실패했습니다. 다시 시도해주세요.');
+          setLoading(false);
+        }
       } else if (response.data.status === 'processing') {
         // 진행 중인 작업 폴링
         const taskId = response.data.taskId;
+        console.log(`키워드 진행 중, 태스크 ID: ${taskId}`);
         startPolling(taskId);
         
         toast({
           title: "분석 진행 중",
           description: "키워드 분석이 진행 중입니다. 잠시만 기다려주세요.",
         });
+      } else {
+        // 예상치 못한 상태
+        console.error('예상치 못한 응답 상태:', response.data);
+        setError('서버에서 예상치 못한 응답이 반환되었습니다.');
+        setLoading(false);
       }
     } catch (err: any) {
       const errorMessage = err.response?.data?.message || '키워드 분석 중 오류가 발생했습니다.';
+      console.error('검색 오류:', err, errorMessage);
       setError(errorMessage);
       setLoading(false);
       
@@ -92,8 +115,6 @@ const KeywordDashboard: React.FC = () => {
         description: errorMessage,
         variant: "destructive",
       });
-      
-      console.error('검색 오류:', err);
     }
   };
   
@@ -104,28 +125,52 @@ const KeywordDashboard: React.FC = () => {
       clearInterval(pollingTask);
     }
     
+    console.log(`태스크 ID로 폴링 시작: ${taskId}, 키워드: ${keyword}`);
+    
     // 새 폴링 시작 (3초 간격)
     const intervalId = setInterval(async () => {
       try {
+        console.log(`태스크 상태 확인 중: ${taskId}`);
         const response = await axios.get(`${API_BASE_URL}/tasks/${taskId}`);
+        console.log('태스크 응답:', response.data);
         
         if (response.data.status === 'completed') {
+          console.log(`작업 완료됨, 결과 조회 중: ${keyword}`);
           // 작업 완료, 결과 조회
-          const resultResponse = await axios.get(`${API_BASE_URL}/keywords/${encodeURIComponent(keyword)}`);
-          
-          if (resultResponse.data.status === 'completed' && resultResponse.data.data) {
-            setDashboardData(resultResponse.data.data.dashboard);
+          try {
+            const resultResponse = await axios.get(`${API_BASE_URL}/keywords/${encodeURIComponent(keyword)}`);
+            console.log('결과 응답:', resultResponse.data);
+            
+            if (resultResponse.data.status === 'completed' && resultResponse.data.data) {
+              console.log('대시보드 데이터 설정:', resultResponse.data.data.dashboard);
+              setDashboardData(resultResponse.data.data.dashboard);
+              setLoading(false);
+              setShowConfetti(true);
+              
+              toast({
+                title: "분석 완료",
+                description: `"${keyword}" 키워드 분석이 완료되었습니다.`,
+              });
+              
+              setTimeout(() => {
+                setShowConfetti(false);
+              }, 3000);
+            } else {
+              // 분석은 완료되었지만 데이터가 없는 경우 직접 다시 가져오기 시도
+              console.log('태스크는 완료되었지만 데이터가 없습니다. 직접 로드 시도...');
+              const forceResponse = await axios.get(`${API_BASE_URL}/keywords/${encodeURIComponent(keyword)}?refresh=true`);
+              if (forceResponse.data.data && forceResponse.data.data.dashboard) {
+                setDashboardData(forceResponse.data.data.dashboard);
+                setLoading(false);
+              } else {
+                setError('데이터를 불러오는데 실패했습니다. 페이지를 새로고침하고 다시 시도해주세요.');
+                setLoading(false);
+              }
+            }
+          } catch (resultErr) {
+            console.error('결과 조회 중 오류:', resultErr);
+            setError('결과를 조회하는 중 오류가 발생했습니다.');
             setLoading(false);
-            setShowConfetti(true);
-            
-            toast({
-              title: "분석 완료",
-              description: `"${keyword}" 키워드 분석이 완료되었습니다.`,
-            });
-            
-            setTimeout(() => {
-              setShowConfetti(false);
-            }, 3000);
           }
           
           clearInterval(intervalId);
@@ -133,6 +178,7 @@ const KeywordDashboard: React.FC = () => {
         } else if (response.data.status === 'failed') {
           // 작업 실패
           const errorMessage = response.data.error || '키워드 분석 작업이 실패했습니다.';
+          console.error('분석 작업 실패:', errorMessage);
           setError(errorMessage);
           setLoading(false);
           
@@ -144,6 +190,8 @@ const KeywordDashboard: React.FC = () => {
           
           clearInterval(intervalId);
           setPollingTask(null);
+        } else {
+          console.log(`작업 진행 중: ${response.data.status}`);
         }
       } catch (err) {
         console.error('폴링 오류:', err);
