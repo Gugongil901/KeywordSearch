@@ -7,12 +7,12 @@ import ProductRanking from "@/components/home/product-ranking";
 import FAQSection from "@/components/home/faq-section";
 import CTASection from "@/components/home/cta-section";
 
-// 카테고리 코드 매핑 객체 추가
+// 카테고리 코드 매핑 객체 추가 - 네이버 쇼핑인사이트 API 규격에 맞게 수정
 const categoryCodeMap: Record<string, string> = {
   "전체": "all",
-  "패션의류": "50000167",
-  "패션잡화": "50000002",
-  "화장품/미용": "50000003",
+  "패션의류": "50000000",
+  "패션잡화": "50000001",
+  "화장품/미용": "50000002",
   "디지털/가전": "50000003",
   "가구/인테리어": "50000004",
   "출산/육아": "50000005",
@@ -24,8 +24,9 @@ const categoryCodeMap: Record<string, string> = {
 // 카테고리 이름 매핑 객체 추가 (코드 -> 이름)
 const categoryNameMap: Record<string, string> = {
   "all": "전체",
-  "50000167": "패션의류",
-  "50000002": "패션잡화", 
+  "50000000": "패션의류",
+  "50000001": "패션잡화", 
+  "50000002": "화장품/미용",
   "50000003": "디지털/가전",
   "50000004": "가구/인테리어",
   "50000005": "출산/육아",

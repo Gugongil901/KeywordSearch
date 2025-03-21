@@ -93,7 +93,7 @@ const KeywordTrends: React.FC<KeywordTrendsProps> = ({ period, category = "all",
     <div className="bg-white rounded-lg shadow p-4">
       <div className="flex justify-between items-center mb-3">
         <h2 className="text-base font-medium text-gray-900">
-          {categoryName} 인기 키워드
+          인기 키워드
         </h2>
         <span className="text-xs text-gray-500">{formatDate()} 기준</span>
       </div>
