@@ -27,11 +27,14 @@ const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shoppin
 const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 
 // 쇼핑인사이트 인기검색어 API (실시간 인기 키워드)
-const NAVER_DATALAB_KEYWORDS_AGE_API = "https://openapi.naver.com/v1/datalab/shopping/categories/keywords/age";
-const NAVER_SHOPPING_INSIGHT_API = "https://openapi.naver.com/v1/datalab/shopping/categories/keywords";
+const NAVER_SHOPPING_INSIGHT_API const NAVER_DATALAB_KEYWORDS_AGE_API = "https://openapi.naver.com/v1/datalab/shopping/categories/keywords/age";
 
 // 네이버 통합검색어 트렌드 API
 const NAVER_DATALAB_SEARCH_API = "https://openapi.naver.com/v1/datalab/search";
+
+// 네이버 API 인증 정보
+const NAVER_CLIENT_ID = "ErTaCUGQWfhKvcEnftat";
+const NAVER_CLIENT_SECRET = "Xoq9VSewrv";
 
 // Setup axios instances
 let naverSearchClient: any;
@@ -69,7 +72,7 @@ export function setupNaverAPI() {
   });
 
   // Initialize Naver DataLab API client
-  naverDataLabClient = axios.create({
+  naverDataLabClient = axiosos.create({
     headers: {
       "X-Naver-Client-Id": NAVER_CLIENT_ID,
       "X-Naver-Client-Secret": NAVER_CLIENT_SECRET,
@@ -680,7 +683,7 @@ export async function getHotKeywords(category: string = "all", period: string = 
           ages: ["10", "20", "30", "40", "50", "60"]  // 전 연령대 포함
         };
 
-        apiEndpoint = NAVER_SHOPPING_INSIGHT_API; // 쇼핑인사이트 인기검색어 API
+        apiEndpoint = NAVER_SHOPPING_INSIGHT_API;
         console.log("1. 쇼핑인사이트 인기검색어 API 요청:", JSON.stringify(insightBody).substring(0, 300) + "...");
         console.log("쇼핑인사이트 인기검색어 API 엔드포인트:", apiEndpoint);
 
