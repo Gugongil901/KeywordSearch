@@ -251,7 +251,27 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
   const renderKeywordMeaning = () => {
     if (!mlData || !mlData.ml_analysis?.keyword_meaning) return null;
     
-    const { keyword_meaning } = mlData.ml_analysis;
+    // 타입 안전을 위한 인터페이스 정의
+    interface KeywordMeaning {
+      nouns?: string[];
+      categories?: Array<{
+        category?: string;
+        score?: number;
+        matches?: string[];
+      }>;
+      intent?: {
+        intent?: string;
+        score?: number;
+        matches?: string[];
+      };
+      sentiment?: {
+        sentiment?: string;
+        positive_score?: number;
+        negative_score?: number;
+      };
+    }
+    
+    const { keyword_meaning = {} as KeywordMeaning } = mlData.ml_analysis;
     
     return (
       <div className="space-y-6">
@@ -259,11 +279,11 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
         <div className="space-y-2">
           <h4 className="text-sm font-medium">핵심 명사</h4>
           <div className="flex flex-wrap gap-2">
-            {keyword_meaning.nouns.map((noun, index) => (
+            {keyword_meaning.nouns?.map((noun, index) => (
               <Badge key={index} variant="outline" className="px-3 py-1 bg-slate-50">
-                {noun}
+                {noun || ''}
               </Badge>
-            ))}
+            )) || <div className="text-gray-500 text-sm">명사 데이터 없음</div>}
           </div>
         </div>
         
@@ -271,22 +291,22 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
         <div className="space-y-2">
           <h4 className="text-sm font-medium">의미 카테고리</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {keyword_meaning.categories.map((category, index) => (
+            {keyword_meaning.categories?.map((category, index) => (
               <div key={index} className="border rounded-lg p-4 bg-gray-50">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">{category.category}</span>
-                  <Badge>{category.score} 점</Badge>
+                  <span className="font-medium">{category?.category || ''}</span>
+                  <Badge>{category?.score || 0} 점</Badge>
                 </div>
                 <div className="text-sm text-gray-500">관련 단어:</div>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {category.matches.map((match, idx) => (
+                  {category?.matches?.map((match, idx) => (
                     <Badge key={idx} variant="outline" className="bg-white">
-                      {match}
+                      {match || ''}
                     </Badge>
-                  ))}
+                  )) || <span className="text-sm text-gray-500">관련 단어 없음</span>}
                 </div>
               </div>
-            ))}
+            )) || <div className="text-gray-500 text-sm">카테고리 데이터 없음</div>}
           </div>
         </div>
         
@@ -295,17 +315,17 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
           <h4 className="text-sm font-medium mb-2">사용자 검색 의도</h4>
           <div className="flex justify-between items-center mb-3">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-lg">{keyword_meaning.intent.intent}</span>
-              <Badge>{keyword_meaning.intent.score} 점</Badge>
+              <span className="font-semibold text-lg">{keyword_meaning.intent?.intent || '알 수 없음'}</span>
+              <Badge>{keyword_meaning.intent?.score || 0} 점</Badge>
             </div>
           </div>
-          {keyword_meaning.intent.matches.length > 0 && (
+          {keyword_meaning.intent?.matches && keyword_meaning.intent.matches.length > 0 && (
             <div>
               <span className="text-sm text-gray-500">의도 관련 단어:</span>
               <div className="flex flex-wrap gap-1 mt-1">
-                {keyword_meaning.intent.matches.map((match, idx) => (
+                {keyword_meaning.intent.matches.map((match: string, idx: number) => (
                   <Badge key={idx} variant="outline" className="bg-white">
-                    {match}
+                    {match || ''}
                   </Badge>
                 ))}
               </div>
@@ -318,16 +338,16 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
           <h4 className="text-sm font-medium mb-2">키워드 감성 분석</h4>
           <div className="flex items-center justify-between">
             <div className="text-lg font-semibold">
-              {keyword_meaning.sentiment.sentiment}
+              {keyword_meaning.sentiment?.sentiment || '중립'}
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
-                <span className="text-sm">긍정: {keyword_meaning.sentiment.positive_score}</span>
+                <span className="text-sm">긍정: {keyword_meaning.sentiment?.positive_score || 0}</span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
-                <span className="text-sm">부정: {keyword_meaning.sentiment.negative_score}</span>
+                <span className="text-sm">부정: {keyword_meaning.sentiment?.negative_score || 0}</span>
               </div>
             </div>
           </div>
@@ -340,26 +360,38 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
   const renderSemanticKeywords = () => {
     if (!mlData || !mlData.ml_analysis?.semantic_related_keywords) return null;
     
-    const { semantic_related_keywords } = mlData.ml_analysis;
+    // 타입 안전을 위한 인터페이스 정의
+    interface SemanticKeyword {
+      keyword?: string;
+      similarity?: number;
+      representativeProduct?: {
+        name?: string;
+        price?: number;
+        image?: string;
+        url?: string;
+      };
+    }
+    
+    const { semantic_related_keywords = [] as SemanticKeyword[] } = mlData.ml_analysis;
     
     return (
       <div className="space-y-6">
         <h4 className="text-sm font-medium">의미적 연관 키워드</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {semantic_related_keywords.map((item, index) => (
+          {semantic_related_keywords?.map((item, index) => (
             <div key={index} className="border rounded-lg p-4 bg-gray-50 hover:bg-gray-100 transition-colors">
               <div className="flex justify-between items-center mb-2">
-                <div className="font-medium">{item.keyword}</div>
+                <div className="font-medium">{item?.keyword || ''}</div>
                 <Badge variant="outline">
-                  유사도: {(item.similarity * 100).toFixed(0)}%
+                  유사도: {((item?.similarity || 0) * 100).toFixed(0)}%
                 </Badge>
               </div>
               
               {/* 진행률 표시 */}
-              <Progress value={item.similarity * 100} className="h-1 mb-3" />
+              <Progress value={(item?.similarity || 0) * 100} className="h-1 mb-3" />
               
               {/* 대표 제품 정보 - 있을 경우 표시 */}
-              {item.representativeProduct && (
+              {item?.representativeProduct && (
                 <div className="mt-3 pt-3 border-t">
                   <div className="text-xs text-gray-500 mb-2">대표 제품:</div>
                   <div className="flex gap-3">
@@ -368,7 +400,7 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
                       {item.representativeProduct.image && (
                         <img 
                           src={item.representativeProduct.image} 
-                          alt={item.representativeProduct.name}
+                          alt={item.representativeProduct.name || ''}
                           className="w-16 h-16 object-cover rounded border border-gray-200"
                           onError={(e) => {
                             // 이미지 로드 실패 시 기본 이미지로 대체
@@ -380,9 +412,9 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
                     
                     {/* 제품 상세 정보 */}
                     <div className="flex-1">
-                      <div className="text-sm font-medium mb-1">{item.representativeProduct.name}</div>
+                      <div className="text-sm font-medium mb-1">{item.representativeProduct.name || '제품명 없음'}</div>
                       <div className="text-sm text-gray-700">
-                        {item.representativeProduct.price.toLocaleString('ko-KR')}원
+                        {(item.representativeProduct.price || 0).toLocaleString('ko-KR')}원
                       </div>
                       {item.representativeProduct.url && (
                         <a 
@@ -399,7 +431,7 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
                 </div>
               )}
             </div>
-          ))}
+          )) || <div className="text-gray-500 text-sm p-4">연관 키워드 데이터가 없습니다.</div>}
         </div>
       </div>
     );
@@ -409,7 +441,14 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
   const renderMarketSegments = () => {
     if (!mlData || !mlData.ml_analysis?.market_segments) return null;
     
-    const { market_segments } = mlData.ml_analysis;
+    // 타입 안전을 위한 인터페이스 정의
+    interface MarketSegment {
+      id?: number;
+      label?: string;
+      keywords?: string[];
+    }
+    
+    const { market_segments = [] as MarketSegment[] } = mlData.ml_analysis;
     
     const colors = ['bg-blue-100', 'bg-green-100', 'bg-purple-100', 'bg-amber-100', 'bg-pink-100'];
     
@@ -417,18 +456,22 @@ export default function MLAnalysisPanel({ keyword, onLoad }: MLAnalysisPanelProp
       <div className="space-y-6">
         <h4 className="text-sm font-medium">시장 세그먼트 분석</h4>
         <div className="grid grid-cols-1 gap-4">
-          {market_segments.map((segment, index) => (
-            <div key={index} className={`border rounded-lg p-4 ${colors[index % colors.length]}`}>
-              <div className="font-medium mb-2">세그먼트 {index + 1}: {segment.label}</div>
-              <div className="flex flex-wrap gap-2 mt-3">
-                {segment.keywords.map((kw, idx) => (
-                  <Badge key={idx} variant="outline" className="bg-white">
-                    {kw}
-                  </Badge>
-                ))}
+          {market_segments?.length > 0 ? (
+            market_segments.map((segment, index) => (
+              <div key={index} className={`border rounded-lg p-4 ${colors[index % colors.length]}`}>
+                <div className="font-medium mb-2">세그먼트 {index + 1}: {segment?.label || '미분류'}</div>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {segment?.keywords?.map((kw, idx) => (
+                    <Badge key={idx} variant="outline" className="bg-white">
+                      {kw || ''}
+                    </Badge>
+                  )) || <span className="text-sm text-gray-500">키워드 없음</span>}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <div className="text-gray-500 text-sm p-4">세그먼트 데이터가 없습니다.</div>
+          )}
         </div>
       </div>
     );
