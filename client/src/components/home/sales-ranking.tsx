@@ -113,27 +113,27 @@ const CategoryKeywords: React.FC<CategoryKeywordsProps> = ({ period }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium text-gray-900">
+    <div className="bg-white rounded-lg shadow p-4">
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-base font-medium text-gray-900">
           카테고리별 인기 키워드
         </h2>
         <span className="text-xs text-gray-500">{formatDate()} 기준</span>
       </div>
       
       {isLoading ? (
-        <div className="py-10 text-center text-gray-500">로딩 중...</div>
+        <div className="py-6 text-center text-gray-500 text-sm">로딩 중...</div>
       ) : (
-        <div className="grid grid-cols-1 gap-4">
-          <div className="bg-gray-50 rounded p-3">
-            <ul className="space-y-1">
+        <div className="grid grid-cols-1 gap-2">
+          <div className="bg-gray-50 rounded p-2">
+            <ul className="space-y-0.5">
               {getKeywords().map((keyword, index) => (
                 <li 
                   key={index} 
-                  className="flex items-center py-2 border-b border-gray-100 cursor-pointer hover:bg-gray-100"
+                  className="flex items-center py-1.5 border-b border-gray-100 cursor-pointer hover:bg-gray-100 text-sm"
                   onClick={() => handleKeywordClick(keyword.keyword)}
                 >
-                  <span className="w-8 text-center font-semibold text-gray-700">{keyword.rank}</span>
+                  <span className="w-6 text-center font-semibold text-gray-700">{keyword.rank}</span>
                   <span className="flex-grow text-gray-800">{keyword.keyword}</span>
                   {getChangeIcon(keyword.change)}
                 </li>

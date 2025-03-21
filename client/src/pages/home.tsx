@@ -13,12 +13,14 @@ const Home: React.FC = () => {
     <div>
       <HeroSearch />
       
-      {/* 키워드 트렌드 섹션 - 모든 빨간색 영역 제거 */}
+      {/* 키워드 트렌드 섹션 - 너비 조정 */}
       <section className="bg-[#f5f7f8] w-full pt-4 mt-4">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8 pt-4">
-            <KeywordTrends period="daily" />
-            <CategoryKeywords period="daily" />
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8 pt-4">
+              <KeywordTrends period="daily" />
+              <CategoryKeywords period="daily" />
+            </div>
           </div>
         </div>
       </section>
