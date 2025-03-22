@@ -210,7 +210,7 @@ const TrendAnalysis: React.FC = () => {
     <div className="bg-gray-50 min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold mb-6">트렌드 분석</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-6">키워드 트래커</h1>
           
           <div className="flex flex-wrap gap-2 mb-6">
             <Button
