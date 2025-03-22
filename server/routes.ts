@@ -19,8 +19,8 @@ import nicheKeywordsRoutes from "./api/routes/niche-keywords-routes";
 import healthSupplementRoutes from "./api/health-supplement/healthSupplementRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Replit 'asleep' 상태에서 깨우는 핑 라우트
-  app.get('/', (_req, res) => {
+  // API 상태 확인 라우트 - React 앱이 서빙될 수 있도록 루트 경로 대신 /api/status로 변경
+  app.get('/api/status', (_req, res) => {
     res.json({
       status: "alive",
       message: "키워드 스카우터 API가 정상적으로 동작 중입니다.",
