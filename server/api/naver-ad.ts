@@ -19,16 +19,12 @@ class NaverAdAPIClient {
     // NAVER_CUSTOMER_ID를 customerId로,
     // NAVER_AD_API_SECRET_KEY를 secretKey로 사용
     
-    // 테스트용 API 키 세트 (실제 환경에서는 환경 변수로 관리해야 함)
-    // 주의: 이 키는 테스트 전용이며 실제 프로덕션에서는 사용하지 말아야 함
-    const customerId = process.env.NAVER_AD_API_CUSTOMER_ID || "1234567890";
-    const accessLicense = process.env.NAVER_AD_API_ACCESS_LICENSE || "0123456789abcdef0123456789abcdef";
+    // 사용자 제공 API 키 사용 (실제 키)
+    const customerId = process.env.NAVER_AD_API_CUSTOMER_ID || "3405855";
+    const accessLicense = process.env.NAVER_AD_API_ACCESS_LICENSE || "01000000005a79e0d0ffff30be92041e87dd2444c689e1209efbe2f9ea58fd3a3ae67ee01e";
     
-    // 비밀키 (Base64 디코딩)
-    let secretKey = process.env.NAVER_AD_API_SECRET_KEY || "AAAAAAAAAA";
-    
-    // 보안상의 이유로 실제 API 키로 바꾸지 말 것
-    // 실제 API 키는 환경 변수나 보안 저장소를 통해 관리해야 함
+    // 비밀키 (Base64)
+    let secretKey = process.env.NAVER_AD_API_SECRET_KEY || "AQAAAABaeeDQ//8wvpIEHofdJETGcg3aHhG5YRGgFHPnSsNISw==";
     
     // 서명 디버깅 로그
     console.log(`API 인증 정보 초기화: customer_id=${customerId}`);
@@ -53,11 +49,11 @@ class NaverAdAPIClient {
    * https://naver.github.io/searchad-apidoc/#/sample
    */
   private generateHeaders(method: string, uri: string, apiKey: string = ''): Record<string, string> {
+    // 타임스탬프 생성 (밀리초)
     this.timestamp = Date.now();
     
     // 서명 문자열 형식: {timestamp}.{method}.{uri}
-    // 예: 1518007642123.GET./keywordstool
-    // 여기서 URI는 /keywordstool 같은 경로만 포함
+    // 네이버 API 문서 예시: 1518007642123.GET./ncc/campaigns
     const pathOnly = uri.split('?')[0];  // 쿼리 파라미터 제거
     const sig = this.timestamp + '.' + method + '.' + pathOnly;
     
@@ -65,18 +61,27 @@ class NaverAdAPIClient {
     console.log(`서명 문자열: ${sig}`);
     
     // HMAC-SHA256 암호화 (비밀키로 서명)
-    const hmac = crypto.createHmac('sha256', this.secretKey);
-    const signature = hmac.update(sig).digest('base64');
-    
-    console.log(`생성된 서명: ${signature}`);
-
-    return {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'X-Timestamp': this.timestamp.toString(),
-      'X-API-KEY': apiKey,
-      'X-Customer': this.customerId,
-      'X-Signature': signature,
-    };
+    try {
+      // 예시 코드처럼 생성
+      const hmac = crypto.createHmac('sha256', this.secretKey);
+      hmac.update(sig);
+      const signature = hmac.digest('base64');
+      
+      console.log(`생성된 서명: ${signature}`);
+  
+      // 네이버 검색광고 API 문서에 따른 정확한 헤더 설정
+      // https://naver.github.io/searchad-apidoc/#/sample
+      return {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'X-Timestamp': this.timestamp.toString(),
+        'X-API-KEY': apiKey,
+        'X-Customer': this.customerId,
+        'X-Signature': signature,
+      };
+    } catch (error) {
+      console.error('서명 생성 오류:', error);
+      throw new Error('서명 생성 중 오류 발생');
+    }
   }
 
   /**
