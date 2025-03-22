@@ -895,7 +895,10 @@ export function CompetitorMonitoringContent({
                         <div className="space-y-2">
                           {/* 경쟁사 데이터 표시 */}
                           {Object.keys(monitoringResult.changesDetected || {}).map((competitorId) => {
-                            const brand = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitorId);
+                            // 경쟁사 ID로 브랜드 찾기 (ID가 아닌 이름으로도 찾을 수 있도록)
+                            const brand = HEALTH_SUPPLEMENT_BRANDS.find(
+                              b => b.id === competitorId || b.name === competitorId
+                            );
                             // 해당 경쟁사 데이터 가져오기
                             const competitorData = monitoringResult.changesDetected[competitorId];
                             
@@ -965,7 +968,7 @@ export function CompetitorMonitoringContent({
                         <CardHeader className="py-3">
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-base">
-                              {HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name || selectedCompetitor} 변경사항
+                              {HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor || b.name === selectedCompetitor)?.name || selectedCompetitor} 변경사항
                             </CardTitle>
                             <a 
                               href={BRAND_STORE_URLS[selectedCompetitor as keyof typeof BRAND_STORE_URLS] || '#'} 
