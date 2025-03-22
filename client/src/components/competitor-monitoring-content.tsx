@@ -982,9 +982,10 @@ export function CompetitorMonitoringContent({
                             // 모니터링 결과가 없으면 모든 경쟁사 표시
                             if (!monitoringResult || !monitoringResult.changesDetected) return true;
                             
-                            // 해당 경쟁사의 데이터가 없으면 필터링
+                            // 해당 경쟁사의 데이터가 있으면 변화 확인
                             const competitorData = monitoringResult.changesDetected?.[competitorId];
-                            if (!competitorData) return false;
+                            // 데이터가 없어도 표시하도록 수정 (false 리턴하지 않음)
+                            if (!competitorData) return true;
                             
                             // 변경사항이 하나라도 있으면 표시
                             return (
