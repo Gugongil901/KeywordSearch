@@ -230,7 +230,7 @@ export function CompetitorMonitoringContent({
   const [loading, setLoading] = useState<boolean>(false);
   const [configOpen, setConfigOpen] = useState<boolean>(false);
   const [monitoringResult, setMonitoringResult] = useState<MonitoringResult | null>(null);
-  const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
+  const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>('drlin'); // 기본값으로 첫 번째 경쟁사 선택
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<string>('changes');
   const [keywordDebounceTimeout, setKeywordDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -262,8 +262,17 @@ export function CompetitorMonitoringContent({
     // 키워드와 경쟁사가 있으면 자동으로 변경사항 확인
     if (keyword && competitors.length > 0) {
       checkChanges();
+      
+      // 경쟁사 데이터를 가져온 후, 첫 번째 경쟁사가 선택되도록 설정
+      if (monitoringResult && Object.keys(monitoringResult.changesDetected).length > 0) {
+        // 결과에서 사용 가능한 첫 번째 경쟁사 ID 가져오기
+        const availableCompetitors = Object.keys(monitoringResult.changesDetected);
+        if (availableCompetitors.length > 0 && !selectedCompetitor) {
+          setSelectedCompetitor(availableCompetitors[0]);
+        }
+      }
     }
-  }, [keyword]); // 키워드가 변경될 때마다 실행
+  }, [keyword, monitoringResult]); // 키워드나 모니터링 결과가 변경될 때마다 실행
   
   // 임계값 변경 처리
   const handleThresholdChange = (key: string, value: any) => {
