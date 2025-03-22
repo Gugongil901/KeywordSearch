@@ -50,10 +50,11 @@ const MinimalApp = () => {
     
     checkServer();
     
-    // 7초 후에 디버그 정보 숨기기 (연결 확인 위해 시간 증가)
+    // 디버그 정보 계속 표시 (문제 진단용)
     const hideTimer = setTimeout(() => {
+      console.log("디버그 모드 종료, App 컴포넌트로 전환");
       setShowDebug(false);
-    }, 7000);
+    }, 30000); // 30초로 연장
     
     // 클린업 함수
     return () => {
