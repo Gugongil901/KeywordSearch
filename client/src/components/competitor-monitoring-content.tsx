@@ -59,7 +59,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertCircle, ArrowDown, ArrowUp, Info, Loader2, RefreshCw, Settings, ShoppingBag, Star, Trash, Clock, LineChart, Lightbulb } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUp, Info, Loader2, RefreshCw, Settings, ShoppingBag, Star, Trash, Clock, LineChart, Lightbulb, CheckCircle } from "lucide-react";
 import { SiNaver } from "react-icons/si";
 
 // 건강기능식품 브랜드 상수
@@ -980,44 +980,45 @@ export function CompetitorMonitoringContent({
                         </CardHeader>
                         <CardContent className="py-2">
                           <div className="space-y-6">
-                            {/* 가격 변경 */}
-                            <PriceChangeList 
-                              changes={monitoringResult.changesDetected[selectedCompetitor]?.priceChanges || []}
-                              competitor={selectedCompetitor}
-                            />
-                            
-                            {/* 순위 변경 */}
-                            <RankChangeList 
-                              changes={monitoringResult.changesDetected[selectedCompetitor]?.rankChanges || []}
-                              competitor={selectedCompetitor}
-                            />
-                            
-                            {/* 리뷰 변경 */}
-                            <ReviewChangeList 
-                              changes={monitoringResult.changesDetected[selectedCompetitor]?.reviewChanges || []}
-                              competitor={selectedCompetitor}
-                            />
-                            
-                            {/* 신제품 */}
-                            <NewProductList 
-                              changes={monitoringResult.changesDetected[selectedCompetitor]?.newProducts || []}
-                              competitor={selectedCompetitor}
-                            />
-                            
                             {/* 모든 변경사항이 없는 경우 */}
                             {!monitoringResult.changesDetected[selectedCompetitor]?.priceChanges?.length &&
                              !monitoringResult.changesDetected[selectedCompetitor]?.rankChanges?.length &&
                              !monitoringResult.changesDetected[selectedCompetitor]?.reviewChanges?.length &&
-                             !monitoringResult.changesDetected[selectedCompetitor]?.newProducts?.length && (
-                              <div className="flex flex-col items-center justify-center py-6">
-                                <div className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-100 mb-3">
-                                  <Info className="h-6 w-6 text-gray-400" />
-                                </div>
-                                <p className="text-gray-500 font-medium mb-1">변경사항 없음</p>
-                                <p className="text-sm text-gray-400 text-center max-w-md">
-                                  선택한 경쟁사의 제품에서 감지된 변경사항이 없습니다. 다음 확인 시에 다시 검사합니다.
+                             !monitoringResult.changesDetected[selectedCompetitor]?.newProducts?.length ? (
+                              <div className="flex flex-col items-center justify-center p-10 text-center border rounded-lg bg-gray-50">
+                                <CheckCircle className="w-12 h-12 text-green-500 mb-3" />
+                                <h3 className="text-lg font-medium mb-1">변경사항이 없습니다</h3>
+                                <p className="text-gray-500 max-w-md">
+                                  현재 <strong>{HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name}</strong>에 대한 
+                                  가격, 순위, 리뷰, 신제품 변경사항이 감지되지 않았습니다. 다음 확인 시에 다시 검사합니다.
                                 </p>
                               </div>
+                            ) : (
+                              <>
+                                {/* 가격 변경 */}
+                                <PriceChangeList 
+                                  changes={monitoringResult.changesDetected[selectedCompetitor]?.priceChanges || []}
+                                  competitor={selectedCompetitor}
+                                />
+                                
+                                {/* 순위 변경 */}
+                                <RankChangeList 
+                                  changes={monitoringResult.changesDetected[selectedCompetitor]?.rankChanges || []}
+                                  competitor={selectedCompetitor}
+                                />
+                                
+                                {/* 리뷰 변경 */}
+                                <ReviewChangeList 
+                                  changes={monitoringResult.changesDetected[selectedCompetitor]?.reviewChanges || []}
+                                  competitor={selectedCompetitor}
+                                />
+                                
+                                {/* 신제품 */}
+                                <NewProductList 
+                                  changes={monitoringResult.changesDetected[selectedCompetitor]?.newProducts || []}
+                                  competitor={selectedCompetitor}
+                                />
+                              </>
                             )}
                           </div>
                         </CardContent>
