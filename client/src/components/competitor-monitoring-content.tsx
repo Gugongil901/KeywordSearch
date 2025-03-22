@@ -981,7 +981,11 @@ export function CompetitorMonitoringContent({
                               <div 
                                 key={competitorId}
                                 className={`p-2 rounded-md cursor-pointer ${selectedCompetitor === competitorId ? 'bg-primary/10' : 'hover:bg-gray-100'}`}
-                                onClick={() => setSelectedCompetitor(competitorId)}
+                                onClick={() => {
+                                  setSelectedCompetitor(competitorId);
+                                  localStorage.setItem('selectedCompetitor', competitorId);
+                                  console.log('경쟁사 선택(변경사항 탭): ID 저장', competitorId);
+                                }}
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center">
@@ -1165,7 +1169,11 @@ export function CompetitorMonitoringContent({
                                   <div 
                                     key={competitorId}
                                     className={`p-2 rounded-md cursor-pointer ${selectedCompetitor === competitorId ? 'bg-primary/10' : 'hover:bg-gray-100'}`}
-                                    onClick={() => setSelectedCompetitor(competitorId)}
+                                    onClick={() => {
+                                      setSelectedCompetitor(competitorId);
+                                      localStorage.setItem('selectedCompetitor', competitorId);
+                                      console.log('경쟁사 선택(인사이트 로드중 탭): ID 저장', competitorId);
+                                    }}
                                   >
                                     <div className="flex items-center justify-between">
                                       <div className="font-medium">{brand?.name || competitorId}</div>
@@ -1193,7 +1201,11 @@ export function CompetitorMonitoringContent({
                                 <div 
                                   key={competitorId}
                                   className={`p-2 rounded-md cursor-pointer ${selectedCompetitor === competitorId ? 'bg-primary/10' : 'hover:bg-gray-100'}`}
-                                  onClick={() => setSelectedCompetitor(competitorId)}
+                                  onClick={() => {
+                                    setSelectedCompetitor(competitorId);
+                                    localStorage.setItem('selectedCompetitor', competitorId);
+                                    console.log('경쟁사 선택(인사이트 탭): ID 저장', competitorId);
+                                  }}
                                 >
                                   <div className="flex items-center justify-between">
                                     <div className="font-medium">{insight.competitor}</div>
