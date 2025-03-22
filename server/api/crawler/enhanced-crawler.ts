@@ -144,7 +144,13 @@ function extractKeywordsFromHtml(html: string): string[] | null {
     /<div[^>]*class="[^"]*keyword_rank[^"]*"[^>]*>([\s\S]*?)<\/div>/g,
     
     // 6. JSONP 응답에서 추출
-    /jQuery\d+\((\{.*\})\)/
+    /jQuery\d+\((\{.*\})\)/g,
+    
+    // 7. 네이버 쇼핑인사이트의 최신 구조 (정규식 개선)
+    /<li class="item_[^"]*">\s*<span class="title">\s*<span class="num">(\d+)<\/span>\s*<span class="keyword">([^<]+)<\/span>/g,
+    
+    // 8. 네이버 데이터랩 쇼핑인사이트의 순위 테이블
+    /<tr>\s*<td class="rank">(\d+)<\/td>\s*<td class="title">\s*<span class="ellipsis">([^<]+)<\/span>/g
   ];
   
   // 1. 모든 패턴 시도
@@ -200,11 +206,11 @@ function extractKeywordsFromHtml(html: string): string[] | null {
   if (!found) {
     // 키워드 목록이 포함된 주요 영역 찾기
     const keywordSections = [
-      /<div[^>]*class="[^"]*keyword_rank[^"]*"[^>]*>([\s\S]*?)<\/div>/,
-      /<div[^>]*class="[^"]*rank_top[^"]*"[^>]*>([\s\S]*?)<\/div>/,
-      /<div[^>]*class="[^"]*ranking_list[^"]*"[^>]*>([\s\S]*?)<\/div>/,
-      /<div[^>]*class="[^"]*keyword_list[^"]*"[^>]*>([\s\S]*?)<\/div>/,
-      /<ul[^>]*class="[^"]*keyword_list[^"]*"[^>]*>([\s\S]*?)<\/ul>/
+      /<div[^>]*class="[^"]*keyword_rank[^"]*"[^>]*>([\s\S]*?)<\/div>/g,
+      /<div[^>]*class="[^"]*rank_top[^"]*"[^>]*>([\s\S]*?)<\/div>/g,
+      /<div[^>]*class="[^"]*ranking_list[^"]*"[^>]*>([\s\S]*?)<\/div>/g,
+      /<div[^>]*class="[^"]*keyword_list[^"]*"[^>]*>([\s\S]*?)<\/div>/g,
+      /<ul[^>]*class="[^"]*keyword_list[^"]*"[^>]*>([\s\S]*?)<\/ul>/g
     ];
     
     for (const sectionPattern of keywordSections) {
