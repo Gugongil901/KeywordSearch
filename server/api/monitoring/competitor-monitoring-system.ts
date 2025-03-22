@@ -206,7 +206,8 @@ export class CompetitorMonitoringSystem {
   private detectChanges(
     baselineData: Record<string, CompetitorProduct[]>,
     currentData: Record<string, CompetitorProduct[]>,
-    thresholds: MonitoringThresholds
+    thresholds: MonitoringThresholds,
+    showAllCompetitors: boolean = false
   ): Record<string, CompetitorChanges> {
     const changes: Record<string, CompetitorChanges> = {};
     
@@ -292,6 +293,21 @@ export class CompetitorMonitoringSystem {
       }
       
       changes[competitor] = competitorChanges;
+    }
+    
+    // 모든 경쟁사 표시가 활성화된 경우, 변경사항이 없는 경쟁사도 포함
+    if (showAllCompetitors) {
+      for (const competitor of Object.keys(baselineData)) {
+        if (!changes[competitor]) {
+          changes[competitor] = {
+            priceChanges: [],
+            newProducts: [],
+            rankChanges: [],
+            reviewChanges: [],
+            alerts: false
+          };
+        }
+      }
     }
     
     return changes;

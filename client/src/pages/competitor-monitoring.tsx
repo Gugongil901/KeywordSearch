@@ -516,7 +516,7 @@ function generateBrandProducts(brandId: string): CompetitorProduct[] {
   const brandName = brandInfo ? brandInfo.name : brandId;
   const brandImage = BRAND_PRODUCT_IMAGES[brandId as keyof typeof BRAND_PRODUCT_IMAGES];
   const storeUrl = BRAND_STORE_URLS[brandId as keyof typeof BRAND_STORE_URLS];
-  
+
   // 브랜드별 기본 제품 3개 생성
   return [
     {
@@ -569,7 +569,7 @@ export default function CompetitorMonitoring() {
   const [showConfigDialog, setShowConfigDialog] = useState<boolean>(false);
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
   const [insightsMode, setInsightsMode] = useState<boolean>(false);
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -603,7 +603,7 @@ export default function CompetitorMonitoring() {
     }
 
     setLoading(true);
-    
+
     const config: MonitoringConfig = {
       keyword,
       competitors,
@@ -639,27 +639,27 @@ export default function CompetitorMonitoring() {
   // 샘플 결과 생성 (실제로는 API 연동)
   const generateMockResults = (): MonitoringResult => {
     const changesDetected: Record<string, CompetitorChanges> = {};
-    
+
     // 선택된 모든 경쟁사에 대해 결과 생성
     competitors.forEach(competitor => {
       const priceChanges: PriceChange[] = [];
       const newProducts: NewProductAlert[] = [];
       const rankChanges: RankChange[] = [];
       const reviewChanges: ReviewChange[] = [];
-      
+
       // 각 경쟁사별 제품 데이터 사용
       const products = TOP_HEALTH_PRODUCTS[competitor as keyof typeof TOP_HEALTH_PRODUCTS] || [];
-      
+
       // 제품 데이터가 없는 경우 브랜드에 맞는 기본 제품 데이터 생성
       const brandProducts = products.length > 0 ? products : generateBrandProducts(competitor);
-      
+
       // 가격 변화 (약 50% 확률로 발생)
       if (Math.random() > 0.5 && brandProducts.length > 0) {
         const product = brandProducts[0];
         const oldPrice = product.price;
         const newPrice = Math.round(oldPrice * (1 + (Math.random() * 0.2 - 0.1)));
         const changePercent = ((newPrice - oldPrice) / oldPrice) * 100;
-        
+
         if (Math.abs(changePercent) >= alertThresholds.priceChangePercent) {
           priceChanges.push({
             product: { ...product, collectedAt: new Date().toISOString() },
@@ -669,14 +669,14 @@ export default function CompetitorMonitoring() {
           });
         }
       }
-      
+
       // 순위 변화 (약 40% 확률로 발생)
       if (alertThresholds.rankChange && Math.random() > 0.6 && brandProducts.length > 0) {
         const product = brandProducts[Math.floor(Math.random() * brandProducts.length)];
         const oldRank = product.rank;
         const change = Math.floor(Math.random() * 5) * (Math.random() > 0.5 ? 1 : -1);
         const newRank = Math.max(1, oldRank - change);
-        
+
         rankChanges.push({
           product: { ...product, collectedAt: new Date().toISOString() },
           oldRank,
@@ -684,14 +684,14 @@ export default function CompetitorMonitoring() {
           change
         });
       }
-      
+
       // 리뷰 변화 (약 50% 확률로 발생)
       if (Math.random() > 0.5 && brandProducts.length > 0) {
         const product = brandProducts[Math.floor(Math.random() * brandProducts.length)];
         const oldReviews = product.reviews;
         const newReviews = Math.round(oldReviews * (1 + (Math.random() * 0.3)));
         const changePercent = ((newReviews - oldReviews) / oldReviews) * 100;
-        
+
         if (changePercent >= alertThresholds.reviewChangePercent) {
           reviewChanges.push({
             product: { ...product, collectedAt: new Date().toISOString() },
@@ -701,16 +701,16 @@ export default function CompetitorMonitoring() {
           });
         }
       }
-      
+
       // 새 제품 알림 (약 25% 확률로 발생)
       if (alertThresholds.newProduct && Math.random() > 0.75) {
         const brandInfo = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor);
         const brandName = brandInfo ? brandInfo.name : competitor;
-        
+
         // 브랜드별 신제품 이미지 및 정보 생성
         const brandImage = BRAND_PRODUCT_IMAGES[competitor as keyof typeof BRAND_PRODUCT_IMAGES] || 
           'https://shop-phinf.pstatic.net/20230111_10/1673421821959A6DYz_JPEG/12690534937377620_942697878.jpg';
-        
+
         newProducts.push({
           product: {
             productId: `${competitor}-new-${Date.now()}`,
@@ -724,7 +724,7 @@ export default function CompetitorMonitoring() {
           type: 'new_product'
         });
       }
-      
+
       // 변화 감지 데이터 저장 (알림 여부 계산)
       changesDetected[competitor] = {
         priceChanges,
@@ -734,10 +734,10 @@ export default function CompetitorMonitoring() {
         alerts: priceChanges.length > 0 || newProducts.length > 0 || rankChanges.length > 0 || reviewChanges.length > 0
       };
     });
-    
+
     // 전체 알림 여부 설정
     const hasAlerts = Object.values(changesDetected).some(changes => changes.alerts);
-    
+
     return {
       keyword,
       checkedAt: new Date().toISOString(),
@@ -745,12 +745,12 @@ export default function CompetitorMonitoring() {
       hasAlerts
     };
   };
-  
+
   // UI 비교 모드 토글
   const toggleInsightsMode = () => {
     setInsightsMode(!insightsMode);
   };
-  
+
   // 날짜 포맷팅 유틸리티
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -762,36 +762,36 @@ export default function CompetitorMonitoring() {
       minute: '2-digit'
     }).format(date);
   };
-  
+
   // 숫자 포맷팅 유틸리티
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('ko-KR').format(num);
   };
-  
+
   // 변경률 표시 컴포넌트
   const ChangeIndicator = ({ value }: { value: number }) => {
     if (value === 0) return <span className="text-gray-500">0%</span>;
-    
+
     const isPositive = value > 0;
     const color = isPositive ? "text-green-600" : "text-red-600";
     const icon = isPositive ? <ArrowUp className="inline w-3 h-3" /> : <ArrowDown className="inline w-3 h-3" />;
-    
+
     return (
       <span className={color}>
         {icon} {Math.abs(value).toFixed(1)}%
       </span>
     );
   };
-  
+
   // 가격 변화 랜더링
   // 렌더링 함수들은 별도의 컴포넌트 파일로 이동했습니다.
   // PriceChangeList, RankChangeList, ReviewChangeList, NewProductList 컴포넌트를 사용합니다.
-  
+
   // UI 렌더링
   return (
     <div className="container mx-auto p-4 max-w-7xl">
       <h1 className="text-2xl font-bold mb-6">경쟁사 모니터링</h1>
-      
+
       {/* 탭 UI */}
       <Tabs defaultValue="monitoring" className="mt-4">
         <TabsList className="mb-4">
@@ -799,7 +799,7 @@ export default function CompetitorMonitoring() {
           <TabsTrigger value="insights">ML 인사이트</TabsTrigger>
           <TabsTrigger value="keywords">키워드 분석</TabsTrigger>
         </TabsList>
-        
+
         {/* 모니터링 탭 내용 */}
         <TabsContent value="monitoring">
           <div className="mb-4 flex justify-between">
@@ -844,7 +844,7 @@ export default function CompetitorMonitoring() {
               </Button>
             </div>
           </div>
-          
+
           {/* 설정 다이얼로그 */}
           <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
             <DialogContent className="sm:max-w-md">
@@ -968,13 +968,13 @@ export default function CompetitorMonitoring() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-          
+
           {/* 모니터링 결과 */}
           {loading ? (
             <div className="flex justify-center items-center h-60">
               <div className="text-center">
                 <Loader2 className="w-10 h-10 animate-spin mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-500">경쟁사 데이터를 분석 중입니다...</p>
+                <p className="textgray-500">경쟁사 데이터를 분석 중입니다...</p>
               </div>
             </div>
           ) : monitoringResults ? (
@@ -992,13 +992,13 @@ export default function CompetitorMonitoring() {
                   </Badge>
                 )}
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Object.entries(monitoringResults.changesDetected).map(([competitor, changes]) => {
                   const brandInfo = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor);
                   const brandName = brandInfo ? brandInfo.name : competitor;
                   const hasChanges = changes.alerts;
-                  
+
                   return (
                     <Card key={competitor} className={`overflow-hidden ${hasChanges ? 'border-orange-300' : ''}`}>
                       <CardHeader className="p-4 pb-2">
@@ -1065,14 +1065,14 @@ export default function CompetitorMonitoring() {
             </Alert>
           )}
         </TabsContent>
-        
+
         {/* ML 인사이트 탭 내용 */}
         <TabsContent value="insights">
           <div className="mb-4">
             <h2 className="text-xl font-semibold mb-2">경쟁사 ML 인사이트</h2>
             <p className="text-gray-500 text-sm">인공지능 분석을 통한 경쟁사 강점, 약점 및 시장 포지셔닝 분석</p>
           </div>
-          
+
           {/* 브랜드 선택 */}
           <div className="mb-6 flex flex-wrap gap-2">
             {HEALTH_SUPPLEMENT_BRANDS.slice(0, 4).map((brand) => (
@@ -1086,7 +1086,7 @@ export default function CompetitorMonitoring() {
               </Button>
             ))}
           </div>
-          
+
           {/* 선택된 브랜드 인사이트 */}
           {selectedCompetitor && COMPETITOR_INSIGHTS_DATA[selectedCompetitor] && (
             <div className="mt-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1128,7 +1128,7 @@ export default function CompetitorMonitoring() {
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="mt-6">
                       <h4 className="font-medium mb-2">대표 제품</h4>
                       <div className="flex gap-4 items-center">
@@ -1153,7 +1153,7 @@ export default function CompetitorMonitoring() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-lg">강점 & 약점 분석</CardTitle>
@@ -1178,7 +1178,7 @@ export default function CompetitorMonitoring() {
                       }}
                     />
                   </div>
-                  
+
                   {/* 강점 목록 */}
                   <div className="mt-4">
                     <h4 className="text-sm font-medium mb-2 text-green-700">주요 강점</h4>
@@ -1191,7 +1191,7 @@ export default function CompetitorMonitoring() {
                       ))}
                     </ul>
                   </div>
-                  
+
                   {/* 약점 목록 */}
                   <div className="mt-4">
                     <h4 className="text-sm font-medium mb-2 text-red-700">주요 약점</h4>
@@ -1206,7 +1206,7 @@ export default function CompetitorMonitoring() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* 강점 상세 정보 */}
               <Card className="lg:col-span-2">
                 <CardHeader className="pb-2">
@@ -1252,7 +1252,7 @@ export default function CompetitorMonitoring() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* 약점 상세 정보 */}
               <Card className="lg:col-span-2">
                 <CardHeader className="pb-2">
@@ -1300,7 +1300,7 @@ export default function CompetitorMonitoring() {
               </Card>
             </div>
           )}
-          
+
           {!selectedCompetitor && (
             <div className="text-center p-10 border border-dashed rounded-lg my-8">
               <Info className="h-10 w-10 mx-auto mb-4 text-gray-400" />
@@ -1311,14 +1311,14 @@ export default function CompetitorMonitoring() {
             </div>
           )}
         </TabsContent>
-        
+
         {/* 키워드 분석 탭 내용 */}
         <TabsContent value="keywords">
           <div className="mb-4">
             <h2 className="text-xl font-semibold mb-2">키워드 분석</h2>
             <p className="text-gray-500 text-sm">건강기능식품 관련 키워드 트렌드 및 인사이트 분석</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardHeader className="pb-2">
@@ -1344,7 +1344,7 @@ export default function CompetitorMonitoring() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">계절별 인기 키워드</CardTitle>
@@ -1364,7 +1364,7 @@ export default function CompetitorMonitoring() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium mb-1">여름 (6월-8월)</h3>
                     <div className="flex flex-wrap gap-2">
@@ -1375,7 +1375,7 @@ export default function CompetitorMonitoring() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium mb-1">가을 (9월-11월)</h3>
                     <div className="flex flex-wrap gap-2">
@@ -1386,7 +1386,7 @@ export default function CompetitorMonitoring() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium mb-1">겨울 (12월-2월)</h3>
                     <div className="flex flex-wrap gap-2">
@@ -1400,7 +1400,7 @@ export default function CompetitorMonitoring() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">2025 주목 키워드</CardTitle>
@@ -1430,7 +1430,7 @@ export default function CompetitorMonitoring() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card className="md:col-span-3">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg">브랜드별 주력 키워드</CardTitle>
