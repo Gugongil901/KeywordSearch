@@ -3,7 +3,7 @@
  * 여러 경쟁사의 주요 지표를 한눈에 비교할 수 있는 차트
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -20,7 +20,7 @@ import {
 } from "chart.js";
 import { Bar, Radar } from "react-chartjs-2";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ColorPalette, COLOR_PALETTES } from "../ui/color-palette-selector";
+import { getPaletteFromLocalStorage, getChartPaletteColors } from "../theme/ColorPaletteSelector";
 
 // 직접 인터페이스 정의
 interface CompetitorInsight {
@@ -70,6 +70,13 @@ ChartJS.register(
   Filler
 );
 
+// 차트에서 사용할 색상 팔레트 타입
+interface ChartColorPalette {
+  background: string[];
+  border: string[];
+  radar: string[];
+}
+
 // 이 컴포넌트의 Props 타입 정의
 interface CompetitorComparisonChartProps {
   insights: Record<string, CompetitorInsight>;
@@ -79,7 +86,7 @@ interface CompetitorComparisonChartProps {
   height?: number;
   title?: string;
   description?: string;
-  colorPalette?: ColorPalette;
+  colorPalette?: ChartColorPalette; // 옵션 - 직접 팔레트 전달 가능
 }
 
 export function CompetitorComparisonChart({
@@ -90,8 +97,26 @@ export function CompetitorComparisonChart({
   height = 300,
   title = '경쟁사 비교',
   description = '선택된 경쟁사들의 주요 지표를 비교합니다.',
-  colorPalette = COLOR_PALETTES[0] // 기본값으로 첫 번째 팔레트 사용
+  colorPalette
 }: CompetitorComparisonChartProps) {
+  // 테마 관리를 위한 상태
+  const [chartColors, setChartColors] = useState<{
+    background: string[];
+    border: string[];
+    radar: string[];
+  }>({
+    background: [],
+    border: [],
+    radar: []
+  });
+  
+  // 로컬 스토리지에서 저장된 테마 불러오기 및 적용
+  useEffect(() => {
+    const paletteId = getPaletteFromLocalStorage();
+    const themeColors = getChartPaletteColors(paletteId);
+    setChartColors(themeColors);
+  }, []);
+  
   // 선택된 경쟁사 중 인사이트가 있는 경쟁사만 필터링
   const filteredCompetitors = competitors.filter(id => insights[id]);
   
@@ -111,10 +136,25 @@ export function CompetitorComparisonChart({
     );
   }
   
+  // 팔레트 색상 사용 (직접 전달된 팔레트 또는 테마 시스템 색상)
+  const chartPalette = colorPalette ? {
+    background: colorPalette.background || [],
+    border: colorPalette.border || [],
+    radar: colorPalette.radar || []
+  } : chartColors;
+  
   // 선택된 색상 팔레트 사용
-  const backgroundColors = colorPalette.colors.background;
-  const borderColors = colorPalette.colors.border;
-  const radarBackgroundColors = colorPalette.colors.radar;
+  const backgroundColors = chartPalette.background.length > 0 ? 
+    chartPalette.background : 
+    ['rgba(14, 165, 233, 0.5)', 'rgba(59, 130, 246, 0.5)']; // 기본값
+    
+  const borderColors = chartPalette.border.length > 0 ? 
+    chartPalette.border : 
+    ['rgba(14, 165, 233, 0.8)', 'rgba(59, 130, 246, 0.8)'];
+    
+  const radarBackgroundColors = chartPalette.radar.length > 0 ? 
+    chartPalette.radar : 
+    ['rgba(14, 165, 233, 0.15)', 'rgba(59, 130, 246, 0.15)'];
   
   // 메트릭에 따른 라벨 설정
   let metricLabel = '';

@@ -201,6 +201,40 @@ export const getFullPaletteById = (paletteId: string): ColorPalette => {
   return defaultPalettes.find(p => p.id === paletteId) || defaultPalettes[0];
 };
 
+// 차트용 색상 팔레트 가져오기 (차트.js 컴포넌트용)
+export const getChartPaletteColors = (paletteId: string) => {
+  const palette = getFullPaletteById(paletteId);
+  
+  if (!palette.chartColors) {
+    // 기본 차트 색상 (파랑 테마 기준)
+    return {
+      background: [
+        'rgba(37, 99, 235, 0.5)',   // 파랑
+        'rgba(79, 70, 229, 0.5)',   // 인디고
+        'rgba(59, 130, 246, 0.5)',  // 하늘색
+        'rgba(6, 182, 212, 0.5)',   // 시안
+        'rgba(14, 165, 233, 0.5)',  // 하늘색 2
+      ],
+      border: [
+        'rgba(37, 99, 235, 0.8)',
+        'rgba(79, 70, 229, 0.8)',
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(6, 182, 212, 0.8)',
+        'rgba(14, 165, 233, 0.8)',
+      ],
+      radar: [
+        'rgba(37, 99, 235, 0.15)',
+        'rgba(79, 70, 229, 0.15)',
+        'rgba(59, 130, 246, 0.15)',
+        'rgba(6, 182, 212, 0.15)',
+        'rgba(14, 165, 233, 0.15)',
+      ]
+    };
+  }
+  
+  return palette.chartColors;
+};
+
 export const applyPaletteToDocument = (palette: ColorPalette) => {
   // CSS 변수 설정
   document.documentElement.style.setProperty('--color-primary', palette.primary);
