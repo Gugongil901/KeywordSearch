@@ -59,7 +59,7 @@ export class DatabaseConnector {
         // 모니터링 구성 생성
         const config: MonitoringConfig = {
           keyword,
-          competitors: competitors.slice(0, 6), // 각 키워드마다 6개의 경쟁사 설정
+          competitors: competitors, // 모든 경쟁사 사용 (12개)
           createdAt: new Date().toISOString(),
           lastUpdated: new Date().toISOString(),
           monitorFrequency: 'daily',
