@@ -207,7 +207,7 @@ interface CompetitorInsight {
   };
 }
 
-const CompetitorMonitoringContent: React.FC = () => {
+export function competitor_monitoring_content() {
   // 상태 관리
   const [keyword, setKeyword] = useState<string>('영양제');
   const [competitors, setCompetitors] = useState<string[]>([]);
@@ -660,18 +660,18 @@ const CompetitorMonitoringContent: React.FC = () => {
   // 헤더 섹션 렌더링
   const renderHeader = () => {
     return (
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
         <div>
-          <h3 className="text-base font-medium mb-1">경쟁사 제품 모니터링</h3>
-          <p className="text-xs text-gray-500">경쟁사 제품의 가격, 순위, 리뷰 변화를 모니터링합니다.</p>
+          <h3 className="text-xl font-semibold mb-1">경쟁사 모니터링</h3>
+          <p className="text-sm text-gray-500">경쟁사 제품의 가격, 순위, 리뷰 변화를 지속적으로 모니터링합니다.</p>
         </div>
-        <div className="flex items-center mt-2 md:mt-0 space-x-2">
-          <Button variant="outline" size="sm" className="h-8 text-xs px-2 py-1" onClick={() => setConfigOpen(true)}>
-            <Settings className="h-3 w-3 mr-1" />
+        <div className="flex items-center mt-3 md:mt-0 space-x-2">
+          <Button variant="outline" size="sm" onClick={() => setConfigOpen(true)}>
+            <Settings className="h-4 w-4 mr-2" />
             설정
           </Button>
-          <Button size="sm" className="h-8 text-xs px-2 py-1" onClick={checkChanges} disabled={loading}>
-            {loading ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
+          <Button size="sm" onClick={checkChanges} disabled={loading}>
+            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             변경 확인
           </Button>
         </div>
@@ -1261,5 +1261,3 @@ const TOP_HEALTH_PRODUCTS = {
     { productId: 'yuhan-probiotics', name: '유한 락토바실러스', price: 25900, reviews: 3254, rank: 3, image: 'https://shop-phinf.pstatic.net/20220817_13/1660704232458PJFzR_JPEG/31872935306819722_2009653231.jpg', collectedAt: new Date().toISOString() },
   ],
 };
-
-export default CompetitorMonitoringContent;

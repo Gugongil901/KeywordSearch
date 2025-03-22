@@ -58,12 +58,11 @@ const Home: React.FC = () => {
         onTrendTypeChange={setTrendType}
       />
       
-      {/* 키워드 트렌드 섹션 - 표준 UI 적용 */}
-      <section className="bg-gray-50 w-full pt-2 mt-2">
-        <div className="container mx-auto px-4 py-3">
-          <h2 className="text-xl font-semibold mb-3">실시간 트렌드</h2>
-          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* 키워드 트렌드 섹션 - 너비 조정 */}
+      <section className="bg-[#f5f7f8] w-full pt-4 mt-4">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-8 pt-4">
               <KeywordTrends 
                 period={trendType} 
                 category={getCategoryCode(category)} 
@@ -79,41 +78,29 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className="bg-gray-50 w-full pt-2 mt-2">
-        <div className="container mx-auto px-4 py-3">
-          <h2 className="text-xl font-semibold mb-3">키워드 분석</h2>
-          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
-            <KeywordAnalysis />
-          </div>
+      <section className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
+          <KeywordAnalysis />
         </div>
       </section>
 
-      <section className="bg-gray-50 w-full pt-2 mt-2">
-        <div className="container mx-auto px-4 py-3">
-          <h2 className="text-xl font-semibold mb-3">인기 상품</h2>
-          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
-            <ProductRanking />
-          </div>
+      <section className="container mx-auto px-4 py-8 mb-12">
+        <div className="max-w-4xl mx-auto">
+          <ProductRanking />
         </div>
       </section>
 
       {/* 도움말 섹션 삭제 - 사용자 요청에 따라 빨간색 영역 제거 */}
 
-      <section className="bg-gray-50 w-full pt-2 mt-2">
-        <div className="container mx-auto px-4 py-3">
-          <h2 className="text-xl font-semibold mb-3">자주 묻는 질문</h2>
-          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
-            <FAQSection />
-          </div>
+      <section className="container mx-auto px-4 py-8 mb-12">
+        <div className="max-w-4xl mx-auto">
+          <FAQSection />
         </div>
       </section>
 
-      <section className="bg-gray-50 w-full pt-2 mt-2 pb-8">
-        <div className="container mx-auto px-4 py-3">
-          <h2 className="text-xl font-semibold mb-3">시작하기</h2>
-          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
-            <CTASection />
-          </div>
+      <section className="container mx-auto px-4 py-12 mb-12">
+        <div className="max-w-4xl mx-auto">
+          <CTASection />
         </div>
       </section>
     </div>
