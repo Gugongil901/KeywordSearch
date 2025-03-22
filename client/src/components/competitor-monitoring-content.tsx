@@ -518,11 +518,57 @@ export function CompetitorMonitoringContent({
       setLoading(true);
       setError(null);
       
+      // 검색 전 모니터링 설정 존재 여부 확인
+      let configExists = false;
+      
+      try {
+        // 설정 존재 여부 확인 API 호출
+        const configCheckResponse = await fetch(`${window.location.origin}/api/monitoring/configs/${encodeURIComponent(keyword)}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (configCheckResponse.ok) {
+          const configData = await configCheckResponse.json();
+          configExists = !configData.error;
+          console.log(`"${keyword}" 키워드 모니터링 설정 확인:`, configExists ? "존재함" : "없음");
+        }
+      } catch (configErr) {
+        console.error('모니터링 설정 확인 오류:', configErr);
+      }
+      
+      // 설정이 없으면 자동으로 생성
+      if (!configExists) {
+        console.log(`"${keyword}" 키워드의 모니터링 설정이 없습니다. 자동으로 생성합니다.`);
+        try {
+          // 모든 브랜드 사용
+          const allBrandIds = HEALTH_SUPPLEMENT_BRANDS.map(brand => brand.id);
+          
+          const setupResponse = await fetch(`${window.location.origin}/api/monitoring/setup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              keyword,
+              competitors: allBrandIds,
+              monitorFrequency: monitoringFrequency,
+              alertThresholds
+            }),
+          });
+          
+          if (!setupResponse.ok) {
+            console.warn('자동 모니터링 설정 생성 실패:', await setupResponse.text());
+          } else {
+            console.log(`"${keyword}" 키워드의 모니터링 설정이 자동으로 생성되었습니다.`);
+          }
+        } catch (setupErr) {
+          console.error('자동 모니터링 설정 생성 오류:', setupErr);
+        }
+      }
+      
+      // 변경사항 확인 API 호출
       const response = await fetch(`${window.location.origin}/api/monitoring/check/${encodeURIComponent(keyword)}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
       
       if (!response.ok) {
@@ -533,7 +579,7 @@ export function CompetitorMonitoringContent({
       const data = await response.json();
       
       if (data.error) {
-        // 설정을 찾을 수 없는 경우 사용자에게 알림 메시지 표시
+        // 설정을 찾을 수 없는 경우 (이미 자동 생성 시도 했으므로 UI에만 메시지 표시)
         if (data.error.includes('모니터링 설정을 찾을 수 없습니다')) {
           toast({
             title: "모니터링 설정 필요",
@@ -548,11 +594,33 @@ export function CompetitorMonitoringContent({
         throw new Error(data.error);
       }
       
-      setMonitoringResult(data);
+      // 여기서 중요한 변화: API 응답에 없는 브랜드도 UI에 모두 표시하기 위해
+      // 데이터가 없는 브랜드를 위한 빈 객체 추가
+      const enhancedData = {...data};
+      
+      // API 응답에 없는 브랜드에 대한 빈 객체 추가
+      if (enhancedData.changesDetected) {
+        HEALTH_SUPPLEMENT_BRANDS.forEach(brand => {
+          // 이미 존재하지 않는 경우에만 빈 객체 추가
+          if (!enhancedData.changesDetected[brand.name]) {
+            enhancedData.changesDetected[brand.name] = {
+              priceChanges: [],
+              newProducts: [],
+              rankChanges: [],
+              reviewChanges: [],
+              alerts: false
+            };
+            console.log(`브랜드 "${brand.name}" 데이터 없음 - 빈 객체 추가함`);
+          }
+        });
+      }
+      
+      // 수정된 결과 저장
+      setMonitoringResult(enhancedData);
       
       // 만약 결과에 데이터가 있고 선택된 경쟁사가 없다면 첫 번째 경쟁사를 자동으로 선택
-      if (data.changesDetected && Object.keys(data.changesDetected).length > 0) {
-        const availableCompetitors = Object.keys(data.changesDetected);
+      if (enhancedData.changesDetected && Object.keys(enhancedData.changesDetected).length > 0) {
+        const availableCompetitors = Object.keys(enhancedData.changesDetected);
         if (availableCompetitors.length > 0) {
           // 이미 선택된 경쟁사가 결과에 포함되지 않은 경우에도 새로운 첫 번째 경쟁사로 설정
           // 경쟁사 이름이나 ID 모두 지원
