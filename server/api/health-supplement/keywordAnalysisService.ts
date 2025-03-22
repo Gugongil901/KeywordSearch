@@ -419,9 +419,10 @@ export class KeywordAnalysisService {
     };
     bestKeywords: Array<{
       keyword: string;
-      rank: number;
-      prevRank?: number;
+      rank: number | null;
+      prevRank?: number | null;
       change?: number;
+      error?: string;
     }>;
     count: number;
     timestamp: string;

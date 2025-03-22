@@ -14,6 +14,7 @@ import KeywordInsights from "@/pages/keyword-insights";
 import CompetitorMonitoring from "@/pages/competitor-monitoring-new";
 import TrendAnalysis from "@/pages/trend-analysis";
 import AdvancedAnalysis from "@/pages/advanced-analysis";
+import HealthSupplement from "@/pages/health-supplement";
 import TestComponent from "@/components/test/TestComponent";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/monitoring" component={CompetitorMonitoring} />
       <Route path="/trends" component={TrendAnalysis} />
       <Route path="/advanced-analysis" component={AdvancedAnalysis} />
+      <Route path="/health-supplement" component={HealthSupplement} />
       <Route component={NotFound} />
     </Switch>
   );
