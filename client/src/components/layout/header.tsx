@@ -2,7 +2,6 @@ import { Link, useLocation } from "wouter";
 import Logo from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
 import { PopoverColorSelector } from "@/components/theme/ColorPaletteSelector";
-import { PaintBucket } from "lucide-react";
 
 const Header = () => {
   const [location] = useLocation();
@@ -49,13 +48,6 @@ const Header = () => {
           </Link>
           <Link href="/guide" className="text-gray-900 hover:text-primary text-sm">
             가이드
-          </Link>
-          <Link 
-            href="/theme-customization" 
-            className={`flex items-center text-sm ${isActive('/theme-customization') ? 'text-primary' : 'text-gray-900 hover:text-primary'}`}
-          >
-            <PaintBucket className="h-4 w-4 mr-1" />
-            <span className="hidden sm:inline">테마</span>
           </Link>
           <PopoverColorSelector />
           <Button className="bg-primary text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-primary/90">로그인</Button>
