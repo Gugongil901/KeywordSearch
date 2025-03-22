@@ -34,10 +34,11 @@ export async function searchShoppingInsight(keyword: string) {
         startDate: formattedStartDate,
         endDate: formattedEndDate,
         timeUnit: 'date',
-        category: 'ALL',
+        category: '50000000',  // 전체 카테고리 코드
         keyword: [
           {
-            name: keyword,
+            name: "검색어",
+            param: [keyword],
             param: [keyword]
           }
         ],

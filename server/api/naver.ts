@@ -23,11 +23,11 @@ const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shoppin
 
 // 쇼핑인사이트 키워드 트렌드 조회 API (카테고리별 키워드 트렌드)
 // 공식 URL: https://openapi.naver.com/v1/datalab/shopping/category/keywords
-// 이전에 잘못된 URL을 사용하여 404 에러가 발생했음
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
+// 2025년 3월 기준 최신 엔드포인트
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/sshopping/category/keywords";
 
 // 쇼핑인사이트 인기검색어 API (실시간 인기 키워드)
-// 2023년 네이버 API 문서에 따르면 올바른 엔드포인트는 아래와 같으나, 변경될 수 있음
+// 2025년 3월 네이버 API 문서 기준에 따르면 올바른 엔드포인트는 아래와 같으나, 변경될 수 있음
 const NAVER_SHOPPING_INSIGHT_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 const NAVER_DATALAB_KEYWORDS_AGE_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords/age";
 

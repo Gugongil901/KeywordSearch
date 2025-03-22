@@ -55,8 +55,9 @@ export async function crawlShoppingInsightKeywords(
     // 카테고리 코드 매핑
     const categoryCode = NAVER_CATEGORY_MAP[category] || NAVER_CATEGORY_MAP.all;
     
-    // 기간 파라미터 매핑 (업데이트됨)
-    const periodParam = period === 'daily' ? 'P1D' : period === 'weekly' ? 'P7D' : 'P30D';
+    // 2025년 3월 기준 업데이트된 API 요청 형식
+    // 기간 파라미터 매핑 (네이버 API 공식 문서 기준)
+    const periodParam = period === 'daily' ? 'date' : period === 'weekly' ? 'week' : 'month';
     
     // 현재 날짜 기준으로 날짜 계산
     const endDate = new Date();
