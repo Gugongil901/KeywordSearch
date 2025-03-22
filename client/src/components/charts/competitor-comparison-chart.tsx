@@ -20,6 +20,7 @@ import {
 } from "chart.js";
 import { Bar, Radar } from "react-chartjs-2";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ColorPalette, COLOR_PALETTES } from "../ui/color-palette-selector";
 
 // 직접 인터페이스 정의
 interface CompetitorInsight {
@@ -78,6 +79,7 @@ interface CompetitorComparisonChartProps {
   height?: number;
   title?: string;
   description?: string;
+  colorPalette?: ColorPalette;
 }
 
 export function CompetitorComparisonChart({
@@ -87,7 +89,8 @@ export function CompetitorComparisonChart({
   metric = 'marketShare',
   height = 300,
   title = '경쟁사 비교',
-  description = '선택된 경쟁사들의 주요 지표를 비교합니다.'
+  description = '선택된 경쟁사들의 주요 지표를 비교합니다.',
+  colorPalette = COLOR_PALETTES[0] // 기본값으로 첫 번째 팔레트 사용
 }: CompetitorComparisonChartProps) {
   // 선택된 경쟁사 중 인사이트가 있는 경쟁사만 필터링
   const filteredCompetitors = competitors.filter(id => insights[id]);
@@ -95,11 +98,11 @@ export function CompetitorComparisonChart({
   // 데이터가 없으면 빈 차트 표시
   if (filteredCompetitors.length === 0) {
     return (
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">{title}</CardTitle>
+      <Card className="overflow-hidden border-0 shadow-sm">
+        <CardHeader className="pb-1 pt-3">
+          <CardTitle className="text-sm font-medium text-gray-800">{title}</CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-0 px-3 pb-3">
           <div style={{ height }} className="flex items-center justify-center">
             <p className="text-gray-500 text-sm">데이터가 없습니다.</p>
           </div>
@@ -108,33 +111,10 @@ export function CompetitorComparisonChart({
     );
   }
   
-  // 더 얇고 세련된 파스텔 색상 세트
-  const backgroundColors = [
-    'rgba(79, 142, 247, 0.4)',   // 밝은 파랑
-    'rgba(64, 192, 153, 0.4)',   // 민트
-    'rgba(252, 128, 128, 0.4)',  // 연한 빨강
-    'rgba(248, 175, 97, 0.4)',   // 연한 주황
-    'rgba(147, 115, 237, 0.4)',  // 연한 보라
-    'rgba(247, 121, 167, 0.4)',  // 연한 분홍
-  ];
-  
-  const borderColors = [
-    'rgba(79, 142, 247, 0.7)',
-    'rgba(64, 192, 153, 0.7)', 
-    'rgba(252, 128, 128, 0.7)',
-    'rgba(248, 175, 97, 0.7)',
-    'rgba(147, 115, 237, 0.7)',
-    'rgba(247, 121, 167, 0.7)',
-  ];
-  
-  const radarBackgroundColors = [
-    'rgba(79, 142, 247, 0.1)',
-    'rgba(64, 192, 153, 0.1)',
-    'rgba(252, 128, 128, 0.1)',
-    'rgba(248, 175, 97, 0.1)',
-    'rgba(147, 115, 237, 0.1)',
-    'rgba(247, 121, 167, 0.1)',
-  ];
+  // 선택된 색상 팔레트 사용
+  const backgroundColors = colorPalette.colors.background;
+  const borderColors = colorPalette.colors.border;
+  const radarBackgroundColors = colorPalette.colors.radar;
   
   // 메트릭에 따른 라벨 설정
   let metricLabel = '';

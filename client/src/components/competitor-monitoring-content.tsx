@@ -236,6 +236,7 @@ export function CompetitorMonitoringContent({
   const [selectedTab, setSelectedTab] = useState<string>('insights'); // 기본값을 인사이트로 변경
   const [keywordDebounceTimeout, setKeywordDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
   const [competitorInsights, setCompetitorInsights] = useState<Record<string, CompetitorInsight>>({});
+  const [selectedColorPaletteId, setSelectedColorPaletteId] = useState<string>('pastel'); // 기본 색상 팔레트
   
   const { toast } = useToast();
   
