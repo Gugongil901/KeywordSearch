@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { InfoIcon, CheckCircle, AlertCircle, Search, Filter, Loader2 } from "lucide-react";
+import { InfoIcon, CheckCircle, AlertCircle, Search as SearchIcon, Filter, Loader2 } from "lucide-react";
 import axios from 'axios';
 
 interface SearchResult {
@@ -276,15 +276,30 @@ export default function IntegratedSearch() {
   };
 
   const handleTabChange = (value: string) => {
+    console.log(`[탭 변경] ${activeTab} -> ${value}`);
     setActiveTab(value);
+    
     // 탭이 변경되면 결과는 초기화하지만, 각 탭의 키워드는 유지됩니다
     setSearchResult(null);
+    
+    // 새 탭에 키워드가 없으면 기본 키워드를 설정하고 자동으로 검색 실행
+    setTimeout(() => {
+      if (!tabKeywords[value] || tabKeywords[value].trim() === '') {
+        console.log(`[자동 키워드 설정] 탭 ${value}에 키워드 없음, 기본 키워드 설정`);
+        handleUseDefaultKeywords();
+      }
+    }, 100);
   };
 
   const handleUseDefaultKeywords = (shouldSearch = false) => {
+    console.log(`[기본 키워드 사용] 현재 탭: ${activeTab}`);
+    
+    // 사용 가능한 키워드가 없으면 기본 키워드 사용
     const newKeywords = availableKeywords.length > 0 
       ? availableKeywords.slice(0, 5).join(', ') 
       : DEFAULT_KEYWORDS.slice(0, 5).join(', ');
+    
+    console.log(`[기본 키워드 사용] 적용될 키워드: ${newKeywords}`);
     
     // 현재 탭의 키워드 업데이트
     setTabKeywords(prev => ({
@@ -292,10 +307,12 @@ export default function IntegratedSearch() {
       [activeTab]: newKeywords
     }));
     
-    // 즉시 검색 실행 옵션
-    if (shouldSearch) {
-      setTimeout(() => handleSearch(), 100); // 약간의 지연을 두고 검색 실행
-    }
+    // 항상 검색 실행 (shouldSearch 파라미터 무시)
+    // 기본 키워드를 사용하는 목적이 검색을 위한 것이므로 항상 검색 실행
+    setTimeout(() => {
+      console.log(`[기본 키워드 사용] 검색 실행: ${activeTab}`);
+      handleSearch();
+    }, 100); // 약간의 지연을 두고 검색 실행
   };
   
   // 서버에서 키워드 목록 가져오기
@@ -714,9 +731,41 @@ export default function IntegratedSearch() {
     // 현재 활성화된 탭과 검색 결과 타입이 일치하는지 확인
     if (activeTab !== searchResult.type) {
       console.log(`[렌더링 경고] 활성 탭(${activeTab})과 결과 타입(${searchResult.type})이 다릅니다`);
-      return null;
+      
+      // 기본 키워드를 사용하여 현재 탭에 맞는 검색을 다시 실행
+      console.log(`[자동 검색 실행] 탭 변경으로 인한 자동 검색 실행: ${activeTab}`);
+      
+      // 탭 변경 후 검색 결과가 없는 경우에만 자동 검색 실행
+      if (!searchResult.data || Object.keys(searchResult.data).length === 0) {
+        // 약간의 지연 후 현재 탭에 맞는 기본 키워드로 검색 실행
+        setTimeout(() => {
+          handleUseDefaultKeywords();
+        }, 300);
+      }
+      
+      return (
+        <Alert className="my-4">
+          <InfoIcon className="h-4 w-4" />
+          <AlertTitle>다른 분석 탭으로 이동했습니다</AlertTitle>
+          <AlertDescription>
+            <div className="flex flex-col space-y-2">
+              <p>현재 탭에 맞는 검색 결과를 보려면 검색을 실행하세요.</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="self-start"
+                onClick={() => handleUseDefaultKeywords()}
+              >
+                <SearchIcon className="h-4 w-4 mr-2" />
+                기본 키워드로 검색하기
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      );
     }
     
+    // 정상적인 렌더링 로직
     switch (searchResult.type) {
       case 'ad-keywords':
         return renderAdKeywordResults(searchResult.data);
