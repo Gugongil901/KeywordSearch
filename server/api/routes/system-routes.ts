@@ -9,9 +9,12 @@ import { logger } from '../../utils/logger';
 const router = Router();
 
 /**
- * 전체 시스템 상태 확인 API
+ * 전체 시스템 상태 확인 API (keepalive 용으로도 사용)
+ * Replit의 'asleep' 상태에서 깨어나기 위한 핑 엔드포인트
  */
 router.get('/status', async (_req: Request, res: Response) => {
+  // 핑 헤더 추가로 Replit 서비스 깨우기
+  res.setHeader('X-Replit-Keep-Alive', 'true');
   try {
     const system = getKeywordAnalysisSystem();
     const status = system.getSystemStatus();

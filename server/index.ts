@@ -17,11 +17,20 @@ app.use(cors({
   credentials: true
 }));
 
-// 모든 응답에 대해 UTF-8 인코딩 설정
+// Replit 환경에서 서비스가 깨어나도록 하는 미들웨어
 app.use((req, res, next) => {
+  // 모든 요청에 대해 CORS 헤더 추가
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // API 요청에 대해 UTF-8 인코딩 설정
   if (req.path.startsWith('/api')) {
     res.setHeader('Content-Type', 'application/json; charset=utf-8');
   }
+  
+  // Replit 서비스를 깨우기 위한 헤더 설정
+  res.setHeader('X-Replit-Keep-Alive', 'true');
   next();
 });
 
@@ -101,12 +110,12 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`서버가 시작되었습니다: http://localhost:${port}`);
-    log(`외부 접속 URL: https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
+    log(`외부 접속 URL: https://${process.env.REPLIT_DOMAINS || `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`}`);
     // 접속 테스트용 로그 추가
     log(`======================================`);
     log(`Replit 환경 확인: ${process.env.REPL_ID ? 'Replit에서 실행 중' : '로컬에서 실행 중'}`);
-    log(`웹 브라우저에서 접속하려면: https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
-    log(`API 테스트: https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/api/system/status`);
+    log(`웹 브라우저에서 접속하려면: https://${process.env.REPLIT_DOMAINS || `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`}`);
+    log(`API 테스트: https://${process.env.REPLIT_DOMAINS || `${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`}/api/system/status`);
     log(`======================================`);
   });
 })();

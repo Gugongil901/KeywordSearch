@@ -19,6 +19,31 @@ import nicheKeywordsRoutes from "./api/routes/niche-keywords-routes";
 import healthSupplementRoutes from "./api/health-supplement/healthSupplementRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Replit 'asleep' 상태에서 깨우는 핑 라우트
+  app.get('/', (_req, res) => {
+    res.json({
+      status: "alive",
+      message: "키워드 스카우터 API가 정상적으로 동작 중입니다.",
+      timestamp: new Date().toISOString()
+    });
+  });
+  
+  // Replit 깨우기용 웹훅 엔드포인트 (외부 모니터링 서비스에서 호출 가능)
+  app.get('/api/wake', (_req, res) => {
+    res.setHeader('X-Replit-Keep-Alive', 'true');
+    res.json({
+      status: "awakened",
+      message: "서비스가 깨어났습니다",
+      time: new Date().toISOString()
+    });
+  });
+  
+  // 간단한 상태 확인 엔드포인트
+  app.get('/api/ping', (_req, res) => {
+    res.setHeader('X-Replit-Keep-Alive', 'true');
+    res.json({ ping: "pong", time: new Date().toISOString() });
+  });
+  
   // 기본 라우트 - 간단한 HTML 응답 추가 (테스트용)
   app.get('/hello', (_req, res) => {
     res.send(`

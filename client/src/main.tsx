@@ -20,10 +20,17 @@ const MinimalApp = () => {
     const checkServer = async () => {
       try {
         console.log('서버 상태 확인 중...');
-        const response = await fetch(`${window.location.origin}/api/system/status`, {
+        // Replit 환경의 API 경로 문제 해결을 위한 절대 경로 사용
+        const apiUrl = '/api/system/status';
+        console.log(`API 요청 URL: ${apiUrl}`);
+        
+        const response = await fetch(apiUrl, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          },
+          credentials: 'same-origin',
         });
         
         if (response.ok) {
