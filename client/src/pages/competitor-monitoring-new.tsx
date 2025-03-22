@@ -229,6 +229,33 @@ export default function CompetitorMonitoring() {
               </Select>
             </div>
             
+            <div className="grid gap-4 pt-2 mb-4">
+              <h4 className="text-sm font-medium text-gray-700">모니터링할 경쟁사 선택</h4>
+              <div className="max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-md border border-gray-100">
+                {HEALTH_SUPPLEMENT_BRANDS.map((brand) => (
+                  <div key={brand.id} className="flex items-center space-x-2 py-1.5 border-b border-gray-100 last:border-0">
+                    <Checkbox 
+                      id={`brand-${brand.id}`}
+                      checked={selectedCompetitors.includes(brand.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedCompetitors(prev => [...prev, brand.id]);
+                        } else {
+                          setSelectedCompetitors(prev => prev.filter(id => id !== brand.id));
+                        }
+                      }}
+                    />
+                    <Label 
+                      htmlFor={`brand-${brand.id}`}
+                      className="text-sm font-medium cursor-pointer"
+                    >
+                      {brand.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="grid gap-3 pt-2">
               <h4 className="text-sm font-medium text-gray-700">알림 조건</h4>
               
