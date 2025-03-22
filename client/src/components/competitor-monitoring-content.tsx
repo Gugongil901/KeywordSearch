@@ -1028,8 +1028,9 @@ export function competitor_monitoring_content() {
                                 </div>
                                 <div className="flex items-center justify-center">
                                   <StrengthWeaknessChart 
-                                    strengths={competitorInsights[selectedCompetitor].strengths}
-                                    weaknesses={competitorInsights[selectedCompetitor].weaknesses}
+                                    competitor={selectedCompetitor}
+                                    strengthsData={competitorInsights[selectedCompetitor].strengths.reduce((acc, item) => ({...acc, [item]: 80}), {})}
+                                    weaknessesData={competitorInsights[selectedCompetitor].weaknesses.reduce((acc, item) => ({...acc, [item]: 60}), {})}
                                   />
                                 </div>
                               </div>
