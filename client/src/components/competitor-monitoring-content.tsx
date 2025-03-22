@@ -977,9 +977,11 @@ export function CompetitorMonitoringContent({
                           {/* 무조건 12개 브랜드 모두 표시 */}
                           {HEALTH_SUPPLEMENT_BRANDS.map((brandItem) => {
                             const competitorId = brandItem.id;
+                            const competitorName = brandItem.name;
                             
-                            // 해당 경쟁사 데이터 가져오기 (없을 경우 null)
-                            const competitorData = monitoringResult?.changesDetected?.[competitorId] || null;
+                            // ID나 브랜드명으로 데이터 찾기 (API 응답은 브랜드명으로 되어 있을 수 있음)
+                            const competitorData = monitoringResult?.changesDetected?.[competitorId] || 
+                                                  monitoringResult?.changesDetected?.[competitorName] || null;
                             
                             // 변경사항 있는지 확인
                             const hasChanges = competitorData && (
@@ -1068,18 +1070,18 @@ export function CompetitorMonitoringContent({
                         <CardContent className="py-2">
                           <div className="space-y-6">
                             {/* 모든 변경사항이 없는 경우 - 직접 경쟁사 ID이거나 이름으로 찾기 */}
-                            {!Object.entries(monitoringResult.changesDetected)
-                              .find(([key, _]) => key === selectedCompetitor)
-                              ?.[1]?.priceChanges?.length &&
-                             !Object.entries(monitoringResult.changesDetected)
-                              .find(([key, _]) => key === selectedCompetitor)
-                              ?.[1]?.rankChanges?.length &&
-                             !Object.entries(monitoringResult.changesDetected)
-                              .find(([key, _]) => key === selectedCompetitor)
-                              ?.[1]?.reviewChanges?.length &&
-                             !Object.entries(monitoringResult.changesDetected)
-                              .find(([key, _]) => key === selectedCompetitor)
-                              ?.[1]?.newProducts?.length ? (
+                            {(() => {
+                              // ID 또는 이름으로 경쟁사 데이터 찾기
+                              const selectedName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name;
+                              const competitorData = Object.entries(monitoringResult.changesDetected)
+                                .find(([key, _]) => key === selectedCompetitor || key === selectedName)
+                                ?.[1];
+                              
+                              return !competitorData?.priceChanges?.length && 
+                                     !competitorData?.rankChanges?.length && 
+                                     !competitorData?.reviewChanges?.length && 
+                                     !competitorData?.newProducts?.length;
+                            })() ? (
                               <div className="flex flex-col items-center justify-center p-10 text-center border rounded-lg bg-gray-50">
                                 <CheckCircle className="w-12 h-12 text-green-500 mb-3" />
                                 <h3 className="text-lg font-medium mb-1">변경사항이 없습니다</h3>
@@ -1093,7 +1095,11 @@ export function CompetitorMonitoringContent({
                                 {/* 가격 변경 - ID 또는 이름으로 경쟁사 찾기 */}
                                 <PriceChangeList 
                                   changes={Object.entries(monitoringResult.changesDetected)
-                                    .find(([key, _]) => key === selectedCompetitor)
+                                    .find(([key, _]) => {
+                                      // ID 또는 이름으로 경쟁사 찾기
+                                      const selectedName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name;
+                                      return key === selectedCompetitor || key === selectedName;
+                                    })
                                     ?.[1]?.priceChanges || []}
                                   competitor={selectedCompetitor}
                                 />
@@ -1101,7 +1107,10 @@ export function CompetitorMonitoringContent({
                                 {/* 순위 변경 - ID 또는 이름으로 경쟁사 찾기 */}
                                 <RankChangeList 
                                   changes={Object.entries(monitoringResult.changesDetected)
-                                    .find(([key, _]) => key === selectedCompetitor)
+                                    .find(([key, _]) => {
+                                      const selectedName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name;
+                                      return key === selectedCompetitor || key === selectedName;
+                                    })
                                     ?.[1]?.rankChanges || []}
                                   competitor={selectedCompetitor}
                                 />
@@ -1109,7 +1118,10 @@ export function CompetitorMonitoringContent({
                                 {/* 리뷰 변경 - ID 또는 이름으로 경쟁사 찾기 */}
                                 <ReviewChangeList 
                                   changes={Object.entries(monitoringResult.changesDetected)
-                                    .find(([key, _]) => key === selectedCompetitor)
+                                    .find(([key, _]) => {
+                                      const selectedName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name;
+                                      return key === selectedCompetitor || key === selectedName;
+                                    })
                                     ?.[1]?.reviewChanges || []}
                                   competitor={selectedCompetitor}
                                 />
@@ -1117,7 +1129,10 @@ export function CompetitorMonitoringContent({
                                 {/* 신제품 - ID 또는 이름으로 경쟁사 찾기 */}
                                 <NewProductList 
                                   changes={Object.entries(monitoringResult.changesDetected)
-                                    .find(([key, _]) => key === selectedCompetitor)
+                                    .find(([key, _]) => {
+                                      const selectedName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name;
+                                      return key === selectedCompetitor || key === selectedName;
+                                    })
                                     ?.[1]?.newProducts || []}
                                   competitor={selectedCompetitor}
                                 />
