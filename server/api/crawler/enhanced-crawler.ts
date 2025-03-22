@@ -321,7 +321,7 @@ export async function enhancedCrawling(category: string = 'all', period: string 
           const filteredKeywords = extractedKeywords
             .filter(keyword => 
               keyword.length > 1 && 
-              !/업데이트|선택됨|권장|안내|NAVER|네이버|바로가기|다음|이전|메뉴|홈|설정|로그인/.test(keyword)
+              !/업데이트|선택됨|권장|안내|NAVER|네이버|바로가기|다음|이전|메뉴|홈|설정|로그인|검색어트렌드|쇼핑인사이트|지역통계|뉴스댓글통계|분야 통계|검색어 통계|이용약관|개인정보|법적고지|고객센터|약관|통계|페이지/.test(keyword)
             )
             // 건강기능식품 키워드를 우선적으로 정렬
             .sort((a, b) => {
