@@ -69,60 +69,6 @@ ChartJS.register(
   Filler
 );
 
-// 색상 팔레트
-const CHART_COLORS = [
-  'rgba(59, 130, 246, 0.7)',   // 파랑
-  'rgba(16, 185, 129, 0.7)',   // 초록
-  'rgba(239, 68, 68, 0.7)',    // 빨강
-  'rgba(245, 158, 11, 0.7)',   // 주황
-  'rgba(139, 92, 246, 0.7)',   // 보라
-  'rgba(236, 72, 153, 0.7)',   // 분홍
-  'rgba(14, 165, 233, 0.7)',   // 하늘
-  'rgba(249, 115, 22, 0.7)',   // 진한 주황
-  'rgba(79, 70, 229, 0.7)',    // 인디고
-  'rgba(168, 85, 247, 0.7)',   // 연보라
-  'rgba(20, 184, 166, 0.7)',   // 청록
-  'rgba(251, 191, 36, 0.7)'    // 노랑
-];
-
-// 차트 옵션
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'bottom' as const,
-      labels: {
-        boxWidth: 12,
-        font: {
-          size: 11
-        }
-      }
-    },
-    title: {
-      display: false
-    },
-    tooltip: {
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      titleColor: '#333',
-      bodyColor: '#666',
-      borderColor: '#e5e7eb',
-      borderWidth: 1,
-      padding: 10,
-      boxPadding: 4,
-      usePointStyle: true,
-      callbacks: {
-        labelTextColor: () => '#666'
-      }
-    }
-  },
-  scales: {
-    y: {
-      beginAtZero: true
-    }
-  }
-};
-
 // 이 컴포넌트의 Props 타입 정의
 interface CompetitorComparisonChartProps {
   insights: Record<string, CompetitorInsight>;
@@ -161,12 +107,34 @@ export function CompetitorComparisonChart({
       </Card>
     );
   }
-
-  // 차트 데이터 설정
-  let chartData = {
-    labels: [] as string[],
-    datasets: [] as any[]
-  };
+  
+  // 고정 색상 세트 - 바 차트와 레이더 차트 모두 사용
+  const backgroundColors = [
+    'rgba(37, 99, 235, 0.6)',  // 파랑
+    'rgba(5, 150, 105, 0.6)',  // 초록
+    'rgba(220, 38, 38, 0.6)',  // 빨강
+    'rgba(217, 119, 6, 0.6)',  // 주황
+    'rgba(109, 40, 217, 0.6)', // 보라
+    'rgba(219, 39, 119, 0.6)', // 분홍
+  ];
+  
+  const borderColors = [
+    'rgba(37, 99, 235, 1)',
+    'rgba(5, 150, 105, 1)',
+    'rgba(220, 38, 38, 1)',
+    'rgba(217, 119, 6, 1)',
+    'rgba(109, 40, 217, 1)',
+    'rgba(219, 39, 119, 1)',
+  ];
+  
+  const radarBackgroundColors = [
+    'rgba(37, 99, 235, 0.2)',
+    'rgba(5, 150, 105, 0.2)',
+    'rgba(220, 38, 38, 0.2)',
+    'rgba(217, 119, 6, 0.2)',
+    'rgba(109, 40, 217, 0.2)',
+    'rgba(219, 39, 119, 0.2)',
+  ];
   
   // 메트릭에 따른 라벨 설정
   let metricLabel = '';
@@ -184,23 +152,101 @@ export function CompetitorComparisonChart({
       metricLabel = '시장 점유율 (%)';
   }
   
-  // 차트 타입에 따라 다른 데이터 형식 사용
+  // 차트 옵션
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom' as const,
+        labels: {
+          boxWidth: 12,
+          font: {
+            size: 11
+          },
+          padding: 15,
+          usePointStyle: true
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        titleColor: '#111827',
+        bodyColor: '#4B5563',
+        borderColor: '#E5E7EB',
+        borderWidth: 1,
+        padding: 12,
+        boxPadding: 6
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(243, 244, 246, 0.8)',
+          borderDash: [5, 5]
+        },
+        ticks: {
+          font: { size: 11 },
+          padding: 8
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          font: { size: 11 },
+          padding: 8
+        }
+      }
+    },
+    elements: {
+      bar: {
+        borderWidth: 1,
+        borderRadius: 6,
+      },
+      point: {
+        radius: 4,
+        hoverRadius: 6
+      },
+      line: {
+        tension: 0.3
+      }
+    }
+  };
+  
+  // 레이더 차트 추가 옵션
+  const radarOptions = {
+    ...chartOptions,
+    scales: {
+      r: {
+        beginAtZero: true,
+        ticks: {
+          stepSize: 20,
+          display: false
+        }
+      }
+    }
+  };
+  
+  let chartData = {};
+  
   if (chartType === 'bar') {
-    // 바 차트 데이터 형식
+    // 바 차트 데이터
     chartData = {
       labels: filteredCompetitors.map(id => insights[id].competitor),
       datasets: [
         {
           label: metricLabel,
           data: filteredCompetitors.map(id => insights[id][metric]),
-          backgroundColor: filteredCompetitors.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
-          borderColor: filteredCompetitors.map((_, i) => CHART_COLORS[i % CHART_COLORS.length].replace('0.7', '1')),
+          backgroundColor: filteredCompetitors.map((_, i) => backgroundColors[i % backgroundColors.length]),
+          borderColor: filteredCompetitors.map((_, i) => borderColors[i % borderColors.length]),
           borderWidth: 1
         }
       ]
     };
   } else {
-    // 레이더 차트 데이터 형식 (모든 지표를 한 번에 표시)
+    // 레이더 차트 데이터
     chartData = {
       labels: ['위협 수준', '시장 점유율', '성장률'],
       datasets: filteredCompetitors.map((id, index) => ({
@@ -210,10 +256,10 @@ export function CompetitorComparisonChart({
           insights[id].marketShare,
           insights[id].growthRate
         ],
-        backgroundColor: CHART_COLORS[index % CHART_COLORS.length].replace('0.7', '0.2'),
-        borderColor: CHART_COLORS[index % CHART_COLORS.length].replace('0.7', '1'),
+        backgroundColor: radarBackgroundColors[index % radarBackgroundColors.length],
+        borderColor: borderColors[index % borderColors.length],
         borderWidth: 2,
-        pointBackgroundColor: CHART_COLORS[index % CHART_COLORS.length].replace('0.7', '1'),
+        pointBackgroundColor: borderColors[index % borderColors.length],
         pointRadius: 3
       }))
     };
@@ -230,21 +276,7 @@ export function CompetitorComparisonChart({
           {chartType === 'bar' ? (
             <Bar options={chartOptions} data={chartData} />
           ) : (
-            <Radar 
-              data={chartData} 
-              options={{
-                ...chartOptions,
-                scales: {
-                  r: {
-                    beginAtZero: true,
-                    ticks: {
-                      stepSize: 20,
-                      display: false
-                    }
-                  }
-                }
-              }} 
-            />
+            <Radar options={radarOptions} data={chartData} />
           )}
         </div>
       </CardContent>
