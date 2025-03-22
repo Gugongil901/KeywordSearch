@@ -232,7 +232,7 @@ export function CompetitorMonitoringContent({
   const [monitoringResult, setMonitoringResult] = useState<MonitoringResult | null>(null);
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>('drlin'); // 기본값으로 첫 번째 경쟁사 선택
   const [error, setError] = useState<string | null>(null);
-  const [selectedTab, setSelectedTab] = useState<string>('changes');
+  const [selectedTab, setSelectedTab] = useState<string>('insights'); // 기본값을 인사이트로 변경
   const [keywordDebounceTimeout, setKeywordDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
   const [competitorInsights, setCompetitorInsights] = useState<Record<string, CompetitorInsight>>({});
   
@@ -263,6 +263,9 @@ export function CompetitorMonitoringContent({
     if (keyword && competitors.length > 0) {
       checkChanges();
       
+      // 항상 경쟁사 인사이트 데이터를 로드
+      loadCompetitorInsights();
+      
       // 경쟁사 데이터를 가져온 후, 첫 번째 경쟁사가 선택되도록 설정
       if (monitoringResult && Object.keys(monitoringResult.changesDetected).length > 0) {
         // 결과에서 사용 가능한 첫 번째 경쟁사 ID 가져오기
@@ -273,6 +276,22 @@ export function CompetitorMonitoringContent({
       }
     }
   }, [keyword, monitoringResult]); // 키워드나 모니터링 결과가 변경될 때마다 실행
+  
+  // 컴포넌트 마운트 시 경쟁사 인사이트 데이터를 로드하기 위한 별도의 useEffect
+  useEffect(() => {
+    // 페이지 로드 시 바로 경쟁사 인사이트 로드
+    loadCompetitorInsights();
+    
+    // 30초마다 자동으로 인사이트 데이터 새로고침
+    const insightRefreshTimer = setInterval(() => {
+      loadCompetitorInsights();
+    }, 120000); // 2분마다 새로고침 (30초는 너무 빈번)
+    
+    // 컴포넌트 언마운트 시 타이머 정리
+    return () => {
+      clearInterval(insightRefreshTimer);
+    };
+  }, []);
   
   // 임계값 변경 처리
   const handleThresholdChange = (key: string, value: any) => {
@@ -745,7 +764,7 @@ export function CompetitorMonitoringContent({
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <Tabs defaultValue="changes" value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+            <Tabs defaultValue="insights" value={selectedTab} onValueChange={setSelectedTab} className="w-full">
               <TabsList className="w-full rounded-none justify-start bg-gray-100 p-0 h-auto">
                 <TabsTrigger 
                   value="changes" 
