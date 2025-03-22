@@ -323,6 +323,16 @@ export async function enhancedCrawling(category: string = 'all', period: string 
               keyword.length > 1 && 
               !/업데이트|선택됨|권장|안내|NAVER|네이버|바로가기|다음|이전|메뉴|홈|설정|로그인/.test(keyword)
             )
+            // 건강기능식품 키워드를 우선적으로 정렬
+            .sort((a, b) => {
+              const healthKeywords = /비타민|유산균|오메가3|칼슘|콜라겐|프로폴리스|루테인|홍삼|밀크씨슬|영양제|철분|마그네슘|아연/;
+              const aIsHealth = healthKeywords.test(a);
+              const bIsHealth = healthKeywords.test(b);
+              
+              if (aIsHealth && !bIsHealth) return -1;
+              if (!aIsHealth && bIsHealth) return 1;
+              return 0;
+            })
             .slice(0, limit);
           
           if (filteredKeywords.length > 0) {
