@@ -617,32 +617,41 @@ export default function IntegratedSearch() {
             <CardContent className="space-y-4">
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium">
-                  URL (확인할 웹페이지 주소)
-                </label>
-                <Input
-                  placeholder="https://example.com"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                />
-              </div>
-              
-              <div className="flex flex-col space-y-2">
-                <label className="text-sm font-medium">
                   키워드 목록 (쉼표로 구분)
                 </label>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="비타민, 종합비타민, 멀티비타민, 마그네슘..."
-                    value={keywords}
-                    onChange={(e) => setKeywords(e.target.value)}
-                  />
-                  <Button 
-                    variant="outline" 
-                    onClick={handleUseDefaultKeywords}
-                    className="whitespace-nowrap"
-                  >
-                    기본 키워드
-                  </Button>
+                <div className="flex flex-col space-y-4">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="비타민, 종합비타민, 멀티비타민, 마그네슘..."
+                      value={keywords}
+                      onChange={(e) => setKeywords(e.target.value)}
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={handleUseDefaultKeywords}
+                      className="whitespace-nowrap"
+                    >
+                      추천 키워드
+                    </Button>
+                  </div>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
+                    <div className="flex flex-wrap gap-2">
+                      {availableKeywords.slice(0, 10).map((keyword, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="outline" 
+                          className="cursor-pointer hover:bg-accent"
+                          onClick={() => setKeywords(prev => prev ? `${prev}, ${keyword}` : keyword)}
+                        >
+                          {keyword}
+                        </Badge>
+                      ))}
+                      {availableKeywords.length > 10 && (
+                        <Badge variant="outline">+ {availableKeywords.length - 10}개 더</Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -670,51 +679,47 @@ export default function IntegratedSearch() {
             <CardHeader>
               <CardTitle>상품 순위 분석</CardTitle>
               <CardDescription>
-                특정 상품이 다양한 키워드에서 어떤 순위로 노출되는지 분석합니다.
+                다양한 키워드에서 인기 건강보조제 브랜드 제품들의 노출 순위를 분석합니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium">
-                    상품 ID
-                  </label>
-                  <Input
-                    placeholder="상품 고유 ID"
-                    value={productId}
-                    onChange={(e) => setProductId(e.target.value)}
-                  />
-                </div>
-                
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium">
-                    상품명
-                  </label>
-                  <Input
-                    placeholder="상품 이름"
-                    value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
-                  />
-                </div>
-              </div>
-              
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium">
                   키워드 목록 (쉼표로 구분)
                 </label>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="비타민, 종합비타민, 멀티비타민, 마그네슘..."
-                    value={keywords}
-                    onChange={(e) => setKeywords(e.target.value)}
-                  />
-                  <Button 
-                    variant="outline" 
-                    onClick={handleUseDefaultKeywords}
-                    className="whitespace-nowrap"
-                  >
-                    기본 키워드
-                  </Button>
+                <div className="flex flex-col space-y-4">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="비타민, 종합비타민, 멀티비타민, 마그네슘..."
+                      value={keywords}
+                      onChange={(e) => setKeywords(e.target.value)}
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={handleUseDefaultKeywords}
+                      className="whitespace-nowrap"
+                    >
+                      추천 키워드
+                    </Button>
+                  </div>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
+                    <div className="flex flex-wrap gap-2">
+                      {availableKeywords.slice(0, 10).map((keyword, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="outline" 
+                          className="cursor-pointer hover:bg-accent"
+                          onClick={() => setKeywords(prev => prev ? `${prev}, ${keyword}` : keyword)}
+                        >
+                          {keyword}
+                        </Badge>
+                      ))}
+                      {availableKeywords.length > 10 && (
+                        <Badge variant="outline">+ {availableKeywords.length - 10}개 더</Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
               
