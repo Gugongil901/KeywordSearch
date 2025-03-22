@@ -53,7 +53,18 @@ interface NewProductAlert {
 export function PriceChangeList({ changes, competitor }: { changes: PriceChange[], competitor: string }) {
   const [sortBy, setSortBy] = useState<string>("percent-desc");
   
-  if (changes.length === 0) return null;
+  // 변경사항이 없을 때 메시지 표시
+  if (changes.length === 0) {
+    return (
+      <div>
+        <h4 className="text-sm font-medium mb-2">가격 변경</h4>
+        <div className="p-4 text-center text-gray-500 bg-gray-50 rounded-md">
+          가격 변경사항이 없습니다.
+        </div>
+        <Separator className="my-4" />
+      </div>
+    );
+  }
   
   const sortedChanges = [...changes].sort((a, b) => {
     switch (sortBy) {
@@ -117,7 +128,18 @@ export function PriceChangeList({ changes, competitor }: { changes: PriceChange[
 export function RankChangeList({ changes, competitor }: { changes: RankChange[], competitor: string }) {
   const [sortBy, setSortBy] = useState<string>("change-desc");
   
-  if (changes.length === 0) return null;
+  // 변경사항이 없을 때 메시지 표시
+  if (changes.length === 0) {
+    return (
+      <div>
+        <h4 className="text-sm font-medium mb-2">순위 변경</h4>
+        <div className="p-4 text-center text-gray-500 bg-gray-50 rounded-md">
+          순위 변경사항이 없습니다.
+        </div>
+        <Separator className="my-4" />
+      </div>
+    );
+  }
   
   const sortedChanges = [...changes].sort((a, b) => {
     switch (sortBy) {
@@ -181,7 +203,18 @@ export function RankChangeList({ changes, competitor }: { changes: RankChange[],
 export function ReviewChangeList({ changes, competitor }: { changes: ReviewChange[], competitor: string }) {
   const [sortBy, setSortBy] = useState<string>("percent-desc");
   
-  if (changes.length === 0) return null;
+  // 변경사항이 없을 때 메시지 표시
+  if (changes.length === 0) {
+    return (
+      <div>
+        <h4 className="text-sm font-medium mb-2">리뷰 변경</h4>
+        <div className="p-4 text-center text-gray-500 bg-gray-50 rounded-md">
+          리뷰 변경사항이 없습니다.
+        </div>
+        <Separator className="my-4" />
+      </div>
+    );
+  }
   
   const sortedChanges = [...changes].sort((a, b) => {
     switch (sortBy) {
@@ -245,7 +278,18 @@ export function ReviewChangeList({ changes, competitor }: { changes: ReviewChang
 export function NewProductList({ changes, competitor }: { changes: NewProductAlert[], competitor: string }) {
   const [sortBy, setSortBy] = useState<string>("price-desc");
   
-  if (changes.length === 0) return null;
+  // 변경사항이 없을 때 메시지 표시
+  if (changes.length === 0) {
+    return (
+      <div>
+        <h4 className="text-sm font-medium mb-2">신제품</h4>
+        <div className="p-4 text-center text-gray-500 bg-gray-50 rounded-md">
+          신규 출시 제품이 없습니다.
+        </div>
+        <Separator className="my-4" />
+      </div>
+    );
+  }
   
   const sortedChanges = [...changes].sort((a, b) => {
     switch (sortBy) {
