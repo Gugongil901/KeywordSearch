@@ -15,6 +15,7 @@ import imageProxyRouter from "./api/proxy/image-proxy";
 import imageAnalysisRoutes from "./api/routes/image-analysis-routes";
 import shoppingInsightRoutes from "./api/routes/shopping-insight-routes";
 import keywordAnalysisRoutes from "./api/routes/keyword-analysis-routes";
+import nicheKeywordsRoutes from "./api/routes/niche-keywords-routes";
 import healthSupplementRoutes from "./api/health-supplement/healthSupplementRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -137,6 +138,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register health supplement API routes
   app.use('/api/health-supplement', healthSupplementRoutes);
+  
+  // Register niche keywords API routes
+  app.use('/api/niche-keywords', nicheKeywordsRoutes);
 
   // API routes
   app.get("/api/health", (_req, res) => {
