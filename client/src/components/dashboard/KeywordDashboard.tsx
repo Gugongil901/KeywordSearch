@@ -335,16 +335,16 @@ const KeywordDashboard: React.FC = () => {
   };
   
   return (
-    <div className="container mx-auto p-4">
+    <div>
       <ConfettiEffect trigger={showConfetti} duration={3000} />
       
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">네이버 키워드 분석 대시보드</h1>
-        <p className="text-gray-600">네이버 쇼핑과 검색광고 데이터를 기반으로 키워드의 경쟁도, 성장성, 수익성을 분석합니다.</p>
+      <div className="mb-4">
+        <h3 className="text-xl font-bold mb-2">네이버 키워드 분석</h3>
+        <p className="text-gray-600 text-sm">네이버 쇼핑과 검색광고 데이터를 기반으로 키워드의 경쟁도, 성장성, 수익성을 분석합니다.</p>
       </div>
       
-      <Card className="mb-6">
-        <CardContent className="pt-6">
+      <Card className="mb-4">
+        <CardContent className="pt-4">
           <SearchBar onSearch={handleSearch} isLoading={loading} />
         </CardContent>
       </Card>
