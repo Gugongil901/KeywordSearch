@@ -254,6 +254,7 @@ export function CompetitorMonitoringContent({
   const [keywordDebounceTimeout, setKeywordDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
   const [competitorInsights, setCompetitorInsights] = useState<Record<string, CompetitorInsight>>({});
   const [selectedColorPaletteId, setSelectedColorPaletteId] = useState<string>('pastel'); // 기본 색상 팔레트
+  const [innerTabState, setInnerTabState] = useState<string>('strengths'); // 내부 탭(강점/약점)용 상태
 
   // 이제 정렬 상태 변수가 각 리스트 컴포넌트에 내장됨
   
@@ -1416,12 +1417,23 @@ export function CompetitorMonitoringContent({
                             </div>
                             
                             {/* 탭 섹션 */}
-                            <Tabs defaultValue="strengths">
-                              <TabsList className="w-full">
-                                <TabsTrigger value="strengths" className="w-1/2">강점</TabsTrigger>
-                                <TabsTrigger value="weaknesses" className="w-1/2">약점</TabsTrigger>
-                              </TabsList>
-                              <TabsContent value="strengths" className="mt-4">
+                            <div>
+                              <div className="flex w-full border-b mb-4">
+                                <button 
+                                  onClick={() => setInnerTabState('strengths')} 
+                                  className={`py-2 px-4 font-medium text-sm flex-1 text-center ${innerTabState === 'strengths' ? 'border-b-2 border-blue-500 text-blue-700' : 'text-gray-500'}`}
+                                >
+                                  강점
+                                </button>
+                                <button 
+                                  onClick={() => setInnerTabState('weaknesses')} 
+                                  className={`py-2 px-4 font-medium text-sm flex-1 text-center ${innerTabState === 'weaknesses' ? 'border-b-2 border-blue-500 text-blue-700' : 'text-gray-500'}`}
+                                >
+                                  약점
+                                </button>
+                              </div>
+                              {innerTabState === 'strengths' && (
+                                <div className="mt-4">
                                 <div className="space-y-6">
                                   {competitorInsights[selectedCompetitor].strengths.map((strength, index) => {
                                     const details = competitorInsights[selectedCompetitor].strengthsDetails[strength];
@@ -1458,8 +1470,10 @@ export function CompetitorMonitoringContent({
                                     );
                                   })}
                                 </div>
-                              </TabsContent>
-                              <TabsContent value="weaknesses" className="mt-4">
+                                </div>
+                              )}
+                              {innerTabState === 'weaknesses' && (
+                                <div className="mt-4">
                                 <div className="space-y-6">
                                   {competitorInsights[selectedCompetitor].weaknesses.map((weakness, index) => {
                                     const details = competitorInsights[selectedCompetitor].weaknessesDetails[weakness];
@@ -1496,8 +1510,9 @@ export function CompetitorMonitoringContent({
                                     );
                                   })}
                                 </div>
-                              </TabsContent>
-                            </Tabs>
+                                </div>
+                              )}
+                            </div>
                             
                             {/* 레이더 차트 추가 */}
                             <div className="mt-6">
