@@ -91,11 +91,16 @@ const TrendAnalysis: React.FC = () => {
       setKeywordData(data);
       setCurrentKeyword(keyword);
       
-      // 검색 결과가 올바르게 로드되었는지 로그로 확인
-      if (data && data.products && data.products.length > 0) {
-        console.log(`검색 결과: ${data.products.length}개 상품 로드됨`);
+      // 검색 결과 데이터가 있는지 확인
+      if (data) {
+        // 상품 정보 로그 출력
+        if (data.products && data.products.length > 0) {
+          console.log(`검색 결과: ${data.products.length}개 상품 로드됨`);
+        } else {
+          console.log("검색 결과: 상품 없음");
+        }
         
-        // 검색 데이터로 분석 데이터 만들기
+        // 검색 데이터로 분석 데이터 만들기 (항상 생성)
         const analysisData = {
           keyword: data.keyword,
           monthlySearches: data.searchCount || 0,
@@ -119,10 +124,10 @@ const TrendAnalysis: React.FC = () => {
           description: `"${keyword}" 키워드 검색이 완료되었습니다.`,
         });
       } else {
-        console.log("검색 결과: 상품 없음");
+        console.log("검색 결과: 데이터 없음");
         toast({
-          title: "검색 결과 없음",
-          description: `"${keyword}" 키워드에 대한 상품 정보를 찾을 수 없습니다.`,
+          title: "데이터 없음",
+          description: `"${keyword}" 키워드에 대한 정보를 찾을 수 없습니다.`,
           variant: "destructive",
         });
       }
@@ -298,7 +303,7 @@ const TrendAnalysis: React.FC = () => {
                     <CardContent>
                       {loading ? (
                         <div className="text-center py-8">로딩 중...</div>
-                      ) : analysisData ? (
+                      ) : keywordData || analysisData ? (
                         <div>
                           <div className="grid grid-cols-2 gap-4 mb-6">
                             <div className="bg-gray-50 p-4 rounded-lg">
