@@ -336,14 +336,25 @@ export function CompetitorMonitoringContent({
       
       // 경쟁사가 있고 아직 선택된 경쟁사가 없으면 첫 번째 경쟁사 선택
       if (competitors.length > 0 && !selectedCompetitor) {
-        setSelectedCompetitor(competitors[0]);
-        localStorage.setItem('selectedCompetitor', competitors[0]);
+        // 경쟁사 ID로 경쟁사 이름 찾기
+        const competitorName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitors[0])?.name || competitors[0];
+        setSelectedCompetitor(competitorName);
+        localStorage.setItem('selectedCompetitor', competitorName);
       }
       
       // 만약 선택된 경쟁사가 현재 경쟁사 목록에 없으면 첫 번째 경쟁사로 변경
-      if (selectedCompetitor && !competitors.includes(selectedCompetitor)) {
-        setSelectedCompetitor(competitors[0]);
-        localStorage.setItem('selectedCompetitor', competitors[0]);
+      if (selectedCompetitor) {
+        // 현재 경쟁사 목록에 이름이나 ID가 포함되어 있는지 확인
+        const isIncluded = competitors.some(id => 
+          id === selectedCompetitor || 
+          HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === id)?.name === selectedCompetitor
+        );
+        
+        if (!isIncluded) {
+          const competitorName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitors[0])?.name || competitors[0];
+          setSelectedCompetitor(competitorName);
+          localStorage.setItem('selectedCompetitor', competitorName);
+        }
       }
     }
   }, [keyword, competitors.join(',')]); // 키워드나 경쟁사 목록이 변경될 때마다 실행
@@ -984,6 +995,7 @@ export function CompetitorMonitoringContent({
                         <CardHeader className="py-3">
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-base">
+                              {/* 이름이나 ID로 경쟁사 찾기 */}
                               {HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor || b.name === selectedCompetitor)?.name || selectedCompetitor} 변경사항
                             </CardTitle>
                             <a 
@@ -999,11 +1011,19 @@ export function CompetitorMonitoringContent({
                         </CardHeader>
                         <CardContent className="py-2">
                           <div className="space-y-6">
-                            {/* 모든 변경사항이 없는 경우 */}
-                            {!monitoringResult.changesDetected[selectedCompetitor]?.priceChanges?.length &&
-                             !monitoringResult.changesDetected[selectedCompetitor]?.rankChanges?.length &&
-                             !monitoringResult.changesDetected[selectedCompetitor]?.reviewChanges?.length &&
-                             !monitoringResult.changesDetected[selectedCompetitor]?.newProducts?.length ? (
+                            {/* 모든 변경사항이 없는 경우 - 직접 경쟁사 ID이거나 이름으로 찾기 */}
+                            {!Object.entries(monitoringResult.changesDetected)
+                              .find(([key, _]) => key === selectedCompetitor)
+                              ?.[1]?.priceChanges?.length &&
+                             !Object.entries(monitoringResult.changesDetected)
+                              .find(([key, _]) => key === selectedCompetitor)
+                              ?.[1]?.rankChanges?.length &&
+                             !Object.entries(monitoringResult.changesDetected)
+                              .find(([key, _]) => key === selectedCompetitor)
+                              ?.[1]?.reviewChanges?.length &&
+                             !Object.entries(monitoringResult.changesDetected)
+                              .find(([key, _]) => key === selectedCompetitor)
+                              ?.[1]?.newProducts?.length ? (
                               <div className="flex flex-col items-center justify-center p-10 text-center border rounded-lg bg-gray-50">
                                 <CheckCircle className="w-12 h-12 text-green-500 mb-3" />
                                 <h3 className="text-lg font-medium mb-1">변경사항이 없습니다</h3>
@@ -1014,27 +1034,35 @@ export function CompetitorMonitoringContent({
                               </div>
                             ) : (
                               <>
-                                {/* 가격 변경 */}
+                                {/* 가격 변경 - ID 또는 이름으로 경쟁사 찾기 */}
                                 <PriceChangeList 
-                                  changes={monitoringResult.changesDetected[selectedCompetitor]?.priceChanges || []}
+                                  changes={Object.entries(monitoringResult.changesDetected)
+                                    .find(([key, _]) => key === selectedCompetitor)
+                                    ?.[1]?.priceChanges || []}
                                   competitor={selectedCompetitor}
                                 />
                                 
-                                {/* 순위 변경 */}
+                                {/* 순위 변경 - ID 또는 이름으로 경쟁사 찾기 */}
                                 <RankChangeList 
-                                  changes={monitoringResult.changesDetected[selectedCompetitor]?.rankChanges || []}
+                                  changes={Object.entries(monitoringResult.changesDetected)
+                                    .find(([key, _]) => key === selectedCompetitor)
+                                    ?.[1]?.rankChanges || []}
                                   competitor={selectedCompetitor}
                                 />
                                 
-                                {/* 리뷰 변경 */}
+                                {/* 리뷰 변경 - ID 또는 이름으로 경쟁사 찾기 */}
                                 <ReviewChangeList 
-                                  changes={monitoringResult.changesDetected[selectedCompetitor]?.reviewChanges || []}
+                                  changes={Object.entries(monitoringResult.changesDetected)
+                                    .find(([key, _]) => key === selectedCompetitor)
+                                    ?.[1]?.reviewChanges || []}
                                   competitor={selectedCompetitor}
                                 />
                                 
-                                {/* 신제품 */}
+                                {/* 신제품 - ID 또는 이름으로 경쟁사 찾기 */}
                                 <NewProductList 
-                                  changes={monitoringResult.changesDetected[selectedCompetitor]?.newProducts || []}
+                                  changes={Object.entries(monitoringResult.changesDetected)
+                                    .find(([key, _]) => key === selectedCompetitor)
+                                    ?.[1]?.newProducts || []}
                                   competitor={selectedCompetitor}
                                 />
                               </>
