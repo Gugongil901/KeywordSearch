@@ -207,9 +207,18 @@ interface CompetitorInsight {
   };
 }
 
-export function CompetitorMonitoringContent() {
+export interface CompetitorMonitoringContentProps {
+  keyword: string;
+  onKeywordChange?: (keyword: string) => void;
+  onCompetitorsChange?: (competitors: string[]) => void;
+}
+
+export function CompetitorMonitoringContent({ 
+  keyword = '영양제', 
+  onKeywordChange, 
+  onCompetitorsChange 
+}: CompetitorMonitoringContentProps) {
   // 상태 관리
-  const [keyword, setKeyword] = useState<string>('영양제');
   const [competitors, setCompetitors] = useState<string[]>([]);
   const [monitoringFrequency, setMonitoringFrequency] = useState<'daily' | 'weekly'>('weekly');
   const [alertThresholds, setAlertThresholds] = useState({
@@ -230,13 +239,16 @@ export function CompetitorMonitoringContent() {
   
   // 경쟁사 선택 처리
   const handleCompetitorToggle = (competitorId: string) => {
-    setCompetitors(prev => {
-      if (prev.includes(competitorId)) {
-        return prev.filter(id => id !== competitorId);
-      } else {
-        return [...prev, competitorId];
-      }
-    });
+    const newCompetitors = competitors.includes(competitorId)
+      ? competitors.filter(id => id !== competitorId)
+      : [...competitors, competitorId];
+    
+    setCompetitors(newCompetitors);
+    
+    // 부모 컴포넌트에 변경 알림
+    if (onCompetitorsChange) {
+      onCompetitorsChange(newCompetitors);
+    }
   };
   
   // 임계값 변경 처리
@@ -515,18 +527,7 @@ export function CompetitorMonitoringContent() {
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="keyword" className="text-right">
-                키워드
-              </Label>
-              <Input
-                id="keyword"
-                className="col-span-3"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="모니터링할 키워드 입력 (예: 오메가3)"
-              />
-            </div>
+            {/* 키워드 입력은 상위 컴포넌트에서 처리하므로 제거 */}
             
             <div className="grid grid-cols-4 items-start gap-4">
               <Label className="text-right pt-2">
@@ -1208,7 +1209,7 @@ function renderNewProducts(changes: NewProductAlert[], competitor: string) {
         {changes.map((alert, index) => (
           <NewProductCard 
             key={`${alert.product.productId}-new-${index}`} 
-            product={alert.product} 
+            item={alert} 
             brandName={competitor}
             brandId={competitor.toLowerCase().replace(/\s+/g, '')}
           />
