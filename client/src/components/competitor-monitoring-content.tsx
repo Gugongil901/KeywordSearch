@@ -262,37 +262,75 @@ export function CompetitorMonitoringContent({
     }
   };
   
-  // 컴포넌트 마운트 시 초기 데이터 로드
+  // 컴포넌트 마운트 시 초기화
   useEffect(() => {
-    // 로컬 스토리지에서 저장된 인사이트 데이터 불러오기 시도
-    try {
-      const savedInsights = localStorage.getItem('competitorInsights');
-      if (savedInsights) {
-        const parsedInsights = JSON.parse(savedInsights);
-        setCompetitorInsights(parsedInsights);
-        console.log('로컬 스토리지에서 인사이트 데이터 불러옴');
+    // 처음 로드될 때 한 번만 실행되는 초기화 로직
+    const initialize = async () => {
+      // 1. 로컬 스토리지에서 저장된 데이터 불러오기
+      try {
+        // 인사이트 데이터 불러오기
+        const savedInsights = localStorage.getItem('competitorInsights');
+        if (savedInsights) {
+          const parsedInsights = JSON.parse(savedInsights);
+          setCompetitorInsights(parsedInsights);
+          console.log('로컬 스토리지에서 인사이트 데이터 불러옴');
+        }
+        
+        // 모니터링 결과 데이터 불러오기
+        const savedMonitoringResult = localStorage.getItem('monitoringResult');
+        if (savedMonitoringResult) {
+          const parsedMonitoringResult = JSON.parse(savedMonitoringResult);
+          setMonitoringResult(parsedMonitoringResult);
+          console.log('로컬 스토리지에서 모니터링 결과 불러옴');
+        }
+        
+        // 선택된 경쟁사 ID 불러오기
+        const savedSelectedCompetitor = localStorage.getItem('selectedCompetitor');
+        if (savedSelectedCompetitor) {
+          setSelectedCompetitor(savedSelectedCompetitor);
+          console.log('로컬 스토리지에서 선택된 경쟁사 불러옴:', savedSelectedCompetitor);
+        }
+      } catch (err) {
+        console.warn('로컬 스토리지에서 데이터 불러오기 실패:', err);
       }
-    } catch (err) {
-      console.warn('로컬 스토리지에서 데이터 불러오기 실패:', err);
-    }
+    };
     
-    // 키워드와 경쟁사가 있으면 자동으로 변경사항 확인
+    initialize();
+    // 초기 페이지 로드 시 인사이트 데이터 로드
+    loadCompetitorInsights();
+  }, []); // 마운트 시 한 번만 실행
+  
+  // 키워드나 경쟁사가 변경되면 변경사항 확인
+  useEffect(() => {
     if (keyword && competitors.length > 0) {
       checkChanges();
-      
-      // 항상 경쟁사 인사이트 데이터를 로드
       loadCompetitorInsights();
       
-      // 경쟁사 데이터를 가져온 후, 첫 번째 경쟁사가 선택되도록 설정
-      if (monitoringResult && monitoringResult.changesDetected && Object.keys(monitoringResult.changesDetected).length > 0) {
-        // 결과에서 사용 가능한 첫 번째 경쟁사 ID 가져오기
-        const availableCompetitors = Object.keys(monitoringResult.changesDetected);
-        if (availableCompetitors.length > 0 && !selectedCompetitor) {
-          setSelectedCompetitor(availableCompetitors[0]);
-        }
+      // 경쟁사가 있고 아직 선택된 경쟁사가 없으면 첫 번째 경쟁사 선택
+      if (competitors.length > 0 && !selectedCompetitor) {
+        setSelectedCompetitor(competitors[0]);
+        localStorage.setItem('selectedCompetitor', competitors[0]);
+      }
+      
+      // 만약 선택된 경쟁사가 현재 경쟁사 목록에 없으면 첫 번째 경쟁사로 변경
+      if (selectedCompetitor && !competitors.includes(selectedCompetitor)) {
+        setSelectedCompetitor(competitors[0]);
+        localStorage.setItem('selectedCompetitor', competitors[0]);
       }
     }
-  }, [keyword, monitoringResult]); // 키워드나 모니터링 결과가 변경될 때마다 실행
+  }, [keyword, competitors.join(',')]); // 키워드나 경쟁사 목록이 변경될 때마다 실행
+  
+  // 모니터링 결과가 변경되면 로컬 스토리지에 저장
+  useEffect(() => {
+    if (monitoringResult) {
+      try {
+        localStorage.setItem('monitoringResult', JSON.stringify(monitoringResult));
+        console.log('모니터링 결과 로컬 스토리지에 저장됨');
+      } catch (error) {
+        console.warn('모니터링 결과 저장 실패:', error);
+      }
+    }
+  }, [monitoringResult]);
   
   // 컴포넌트 마운트 시 경쟁사 인사이트 데이터를 로드하기 위한 별도의 useEffect
   useEffect(() => {
