@@ -600,54 +600,94 @@ export default function IntegratedSearch() {
             </div>
             
             <h3 className="text-lg font-semibold mt-4 mb-2">발견된 니치 키워드</h3>
-            <div className="border rounded-lg overflow-hidden">
+            <div className="border rounded-lg overflow-auto">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-muted">
                     <th className="px-4 py-2 text-left">키워드</th>
-                    <th className="px-4 py-2 text-right">검색량</th>
-                    <th className="px-4 py-2 text-right">경쟁도</th>
-                    <th className="px-4 py-2 text-right">성장률</th>
-                    <th className="px-4 py-2 text-right">니치 점수</th>
-                    <th className="px-4 py-2 text-right">잠재력</th>
+                    <th className="px-3 py-2 text-right">검색량</th>
+                    <th className="px-3 py-2 text-right">경쟁도</th>
+                    <th className="px-3 py-2 text-right">성장률</th>
+                    <th className="px-3 py-2 text-center">경쟁 수준</th>
+                    <th className="px-3 py-2 text-center">니치 점수</th>
+                    <th className="px-3 py-2 text-center">추천 채널</th>
                   </tr>
                 </thead>
                 <tbody>
                   {data.nicheKeywords.length > 0 ? (
                     data.nicheKeywords.map((keyword, index) => (
                       <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/30'}>
-                        <td className="px-4 py-2 font-medium">{keyword.keyword}</td>
-                        <td className="px-4 py-2 text-right font-mono">{keyword.searchVolume}</td>
-                        <td className="px-4 py-2 text-right font-mono">
+                        <td className="px-4 py-2">
+                          <div className="font-medium">{keyword.keyword}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {keyword.potential === '높음' ? '높은 잠재력' : 
+                             keyword.potential === '중간' ? '중간 잠재력' : '낮은 잠재력'}
+                            {keyword.difficultyLevel && ` • ${keyword.difficultyLevel}`}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-right font-mono">{keyword.searchVolume}</td>
+                        <td className="px-3 py-2 text-right font-mono">
                           {(keyword.competition * 100).toFixed(1)}%
                         </td>
-                        <td className="px-4 py-2 text-right">
+                        <td className="px-3 py-2 text-right">
                           <span className={`font-mono ${keyword.growth > 1 ? 'text-green-600' : 'text-red-600'}`}>
                             {((keyword.growth - 1) * 100).toFixed(1)}%
                           </span>
                         </td>
-                        <td className="px-4 py-2 text-right">
+                        <td className="px-3 py-2 text-center">
+                          {keyword.competitionLevel ? (
+                            <Badge 
+                              variant={
+                                keyword.competitionLevel === '매우 낮음' || keyword.competitionLevel === '낮음' ? "success" :
+                                keyword.competitionLevel === '중간' ? "warning" : "destructive"
+                              }
+                              className="text-xs"
+                            >
+                              {keyword.competitionLevel}
+                            </Badge>
+                          ) : 
+                          <Badge variant="outline" className="text-xs">
+                            {keyword.competition < 0.3 ? '낮음' : keyword.competition < 0.6 ? '중간' : '높음'}
+                          </Badge>}
+                        </td>
+                        <td className="px-3 py-2 text-center">
                           <Badge 
                             variant={keyword.nicheScore >= 80 ? "default" : 
                                    keyword.nicheScore >= 60 ? "secondary" : "outline"}
                             className="font-mono"
                           >
                             {keyword.nicheScore}
+                            {keyword.opportunityScore !== undefined && (
+                              <span className="text-xs ml-1">({(keyword.opportunityScore * 100).toFixed(0)}%)</span>
+                            )}
                           </Badge>
                         </td>
-                        <td className="px-4 py-2 text-right">
-                          <Badge 
-                            variant={keyword.potential === '높음' ? "default" : 
-                                   keyword.potential === '중간' ? "secondary" : "outline"}
-                          >
-                            {keyword.potential}
-                          </Badge>
+                        <td className="px-3 py-2">
+                          <div className="flex flex-wrap gap-1 justify-center">
+                            {keyword.recommendedChannels ? 
+                              keyword.recommendedChannels.map((channel, idx) => (
+                                <Badge 
+                                  key={idx} 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    channel === 'SEO' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                    channel === 'PPC' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                    channel === '컨텐츠 마케팅' ? 'bg-green-50 text-green-700 border-green-200' :
+                                    'bg-orange-50 text-orange-700 border-orange-200'
+                                  }`}
+                                >
+                                  {channel}
+                                </Badge>
+                              )) : 
+                              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">SEO</Badge>
+                            }
+                          </div>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="px-4 py-2 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-4 py-2 text-center text-muted-foreground">
                         니치 키워드를 찾을 수 없습니다.
                       </td>
                     </tr>
