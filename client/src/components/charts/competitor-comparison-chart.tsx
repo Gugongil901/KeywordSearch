@@ -108,32 +108,32 @@ export function CompetitorComparisonChart({
     );
   }
   
-  // 고정 색상 세트 - 바 차트와 레이더 차트 모두 사용
+  // 더 얇고 세련된 파스텔 색상 세트
   const backgroundColors = [
-    'rgba(37, 99, 235, 0.6)',  // 파랑
-    'rgba(5, 150, 105, 0.6)',  // 초록
-    'rgba(220, 38, 38, 0.6)',  // 빨강
-    'rgba(217, 119, 6, 0.6)',  // 주황
-    'rgba(109, 40, 217, 0.6)', // 보라
-    'rgba(219, 39, 119, 0.6)', // 분홍
+    'rgba(79, 142, 247, 0.4)',   // 밝은 파랑
+    'rgba(64, 192, 153, 0.4)',   // 민트
+    'rgba(252, 128, 128, 0.4)',  // 연한 빨강
+    'rgba(248, 175, 97, 0.4)',   // 연한 주황
+    'rgba(147, 115, 237, 0.4)',  // 연한 보라
+    'rgba(247, 121, 167, 0.4)',  // 연한 분홍
   ];
   
   const borderColors = [
-    'rgba(37, 99, 235, 1)',
-    'rgba(5, 150, 105, 1)',
-    'rgba(220, 38, 38, 1)',
-    'rgba(217, 119, 6, 1)',
-    'rgba(109, 40, 217, 1)',
-    'rgba(219, 39, 119, 1)',
+    'rgba(79, 142, 247, 0.7)',
+    'rgba(64, 192, 153, 0.7)', 
+    'rgba(252, 128, 128, 0.7)',
+    'rgba(248, 175, 97, 0.7)',
+    'rgba(147, 115, 237, 0.7)',
+    'rgba(247, 121, 167, 0.7)',
   ];
   
   const radarBackgroundColors = [
-    'rgba(37, 99, 235, 0.2)',
-    'rgba(5, 150, 105, 0.2)',
-    'rgba(220, 38, 38, 0.2)',
-    'rgba(217, 119, 6, 0.2)',
-    'rgba(109, 40, 217, 0.2)',
-    'rgba(219, 39, 119, 0.2)',
+    'rgba(79, 142, 247, 0.1)',
+    'rgba(64, 192, 153, 0.1)',
+    'rgba(252, 128, 128, 0.1)',
+    'rgba(248, 175, 97, 0.1)',
+    'rgba(147, 115, 237, 0.1)',
+    'rgba(247, 121, 167, 0.1)',
   ];
   
   // 메트릭에 따른 라벨 설정
@@ -152,7 +152,7 @@ export function CompetitorComparisonChart({
       metricLabel = '시장 점유율 (%)';
   }
   
-  // 차트 옵션
+  // 더 세련된 미니멀한 차트 옵션
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -160,70 +160,124 @@ export function CompetitorComparisonChart({
       legend: {
         position: 'bottom' as const,
         labels: {
-          boxWidth: 12,
+          boxWidth: 10,
           font: {
-            size: 11
+            size: 10,
+            family: "'Pretendard', 'Apple SD Gothic Neo', sans-serif"
           },
           padding: 15,
-          usePointStyle: true
+          usePointStyle: true,
+          pointStyle: 'circle'
         }
       },
       tooltip: {
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
         titleColor: '#111827',
         bodyColor: '#4B5563',
+        titleFont: {
+          size: 11,
+          weight: 500  // 문자열이 아닌 숫자로 변경
+        },
+        bodyFont: {
+          size: 10
+        },
         borderColor: '#E5E7EB',
         borderWidth: 1,
-        padding: 12,
-        boxPadding: 6
+        padding: 8,
+        boxPadding: 3,
+        displayColors: true,
+        cornerRadius: 4,
+        usePointStyle: true,
+        callbacks: {
+          labelPointStyle: function() {
+            return {
+              pointStyle: 'circle',
+              rotation: 0
+            };
+          }
+        }
       }
     },
     scales: {
       y: {
         beginAtZero: true,
+        border: {
+          display: false
+        },
         grid: {
-          color: 'rgba(243, 244, 246, 0.8)',
-          borderDash: [5, 5]
+          color: 'rgba(243, 244, 246, 0.5)',
+          lineWidth: 0.5,
+          borderDash: [3, 3]
         },
         ticks: {
-          font: { size: 11 },
-          padding: 8
+          font: { 
+            size: 10,
+            family: "'Pretendard', 'Apple SD Gothic Neo', sans-serif" 
+          },
+          padding: 6,
+          color: '#9CA3AF'
         }
       },
       x: {
+        border: {
+          display: false
+        },
         grid: {
           display: false
         },
         ticks: {
-          font: { size: 11 },
-          padding: 8
+          font: { 
+            size: 10,
+            family: "'Pretendard', 'Apple SD Gothic Neo', sans-serif" 
+          },
+          padding: 6,
+          color: '#9CA3AF'
         }
       }
     },
     elements: {
       bar: {
-        borderWidth: 1,
-        borderRadius: 6,
+        borderWidth: 0,
+        borderRadius: 4,
       },
       point: {
-        radius: 4,
-        hoverRadius: 6
+        radius: 3,
+        hoverRadius: 4,
+        borderWidth: 1
       },
       line: {
-        tension: 0.3
+        tension: 0.3,
+        borderWidth: 1.5
       }
     }
   };
   
-  // 레이더 차트 추가 옵션
+  // 레이더 차트 추가 옵션 - 더 세련된 미니멀 디자인
   const radarOptions = {
     ...chartOptions,
     scales: {
       r: {
         beginAtZero: true,
+        angleLines: {
+          color: 'rgba(180, 190, 200, 0.2)',
+          lineWidth: 0.5
+        },
+        grid: {
+          color: 'rgba(180, 190, 200, 0.15)',
+          circular: true,
+          lineWidth: 0.5
+        },
+        pointLabels: {
+          font: {
+            size: 10,
+            family: "'Pretendard', 'Apple SD Gothic Neo', sans-serif"
+          },
+          color: '#6B7280'
+        },
         ticks: {
           stepSize: 20,
-          display: false
+          display: false,
+          backdropColor: 'transparent'
         }
       }
     }
@@ -232,7 +286,7 @@ export function CompetitorComparisonChart({
   let chartData = {};
   
   if (chartType === 'bar') {
-    // 바 차트 데이터
+    // 더 세련된 바 차트 데이터
     chartData = {
       labels: filteredCompetitors.map(id => insights[id].competitor),
       datasets: [
@@ -240,13 +294,16 @@ export function CompetitorComparisonChart({
           label: metricLabel,
           data: filteredCompetitors.map(id => insights[id][metric]),
           backgroundColor: filteredCompetitors.map((_, i) => backgroundColors[i % backgroundColors.length]),
-          borderColor: filteredCompetitors.map((_, i) => borderColors[i % borderColors.length]),
-          borderWidth: 1
+          borderColor: 'transparent',  // 테두리 제거
+          borderWidth: 0,              // 테두리 두께 0
+          borderRadius: 3,            // 모서리 라운딩
+          barThickness: 18,           // 바 두께 조절 - 더 얇게
+          maxBarThickness: 25         // 최대 두께 제한
         }
       ]
     };
   } else {
-    // 레이더 차트 데이터
+    // 더 세련된 레이더 차트 데이터
     chartData = {
       labels: ['위협 수준', '시장 점유율', '성장률'],
       datasets: filteredCompetitors.map((id, index) => ({
@@ -258,21 +315,25 @@ export function CompetitorComparisonChart({
         ],
         backgroundColor: radarBackgroundColors[index % radarBackgroundColors.length],
         borderColor: borderColors[index % borderColors.length],
-        borderWidth: 2,
+        borderWidth: 1.5,                   // 테두리 더 얇게
         pointBackgroundColor: borderColors[index % borderColors.length],
-        pointRadius: 3
+        pointBorderColor: '#fff',           // 포인트 테두리 색상
+        pointRadius: 2.5,                   // 포인트 크기 줄임
+        pointHoverRadius: 3.5,              // 호버 시 포인트 크기
+        pointHoverBackgroundColor: '#fff',  // 호버 시 배경색
+        pointHoverBorderColor: borderColors[index % borderColors.length]  // 호버 시 테두리색
       }))
     };
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{title}</CardTitle>
-        {description && <p className="text-xs text-gray-500 mt-1">{description}</p>}
+    <Card className="overflow-hidden border-0 shadow-sm">
+      <CardHeader className="pb-1 pt-3">
+        <CardTitle className="text-sm font-medium text-gray-800">{title}</CardTitle>
+        {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
       </CardHeader>
-      <CardContent className="pt-0">
-        <div style={{ height }}>
+      <CardContent className="pt-0 px-3 pb-3">
+        <div style={{ height }} className="mt-1">
           {chartType === 'bar' ? (
             <Bar options={chartOptions} data={chartData} />
           ) : (
