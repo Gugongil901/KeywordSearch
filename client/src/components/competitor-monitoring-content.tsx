@@ -1565,11 +1565,59 @@ function renderReviewChanges(changes: ReviewChange[], competitor: string) {
 function renderNewProducts(changes: NewProductAlert[], competitor: string) {
   if (changes.length === 0) return null;
   
+  const [sortBy, setSortBy] = useState<string>("price-desc");
+  
+  const sortedChanges = [...changes].sort((a, b) => {
+    switch (sortBy) {
+      case "price-desc":
+        return b.product.price - a.product.price;
+      case "price-asc":
+        return a.product.price - b.product.price;
+      case "rank-desc":
+        return a.product.rank - b.product.rank; // 낮은 순위(1위)가 더 높게 표시
+      case "rank-asc":
+        return b.product.rank - a.product.rank; // 높은 순위(100위)가 더 높게 표시
+      case "name-asc":
+        return a.product.name.localeCompare(b.product.name);
+      case "name-desc":
+        return b.product.name.localeCompare(a.product.name);
+      case "reviews-desc":
+        return b.product.reviews - a.product.reviews;
+      case "reviews-asc":
+        return a.product.reviews - b.product.reviews;
+      default:
+        return b.product.price - a.product.price;
+    }
+  });
+  
+  const sortOptions = [
+    { value: "price-desc", label: "가격 ↓" },
+    { value: "price-asc", label: "가격 ↑" },
+    { value: "rank-desc", label: "순위 ↑" },
+    { value: "rank-asc", label: "순위 ↓" },
+    { value: "reviews-desc", label: "리뷰 ↓" },
+    { value: "reviews-asc", label: "리뷰 ↑" },
+    { value: "name-asc", label: "이름 ↑" },
+    { value: "name-desc", label: "이름 ↓" }
+  ];
+  
   return (
     <div>
-      <h4 className="text-sm font-medium mb-2">신제품 ({changes.length}개)</h4>
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-sm font-medium">신제품 ({changes.length}개)</h4>
+        <div className="flex items-center">
+          <ArrowUpDown className="h-4 w-4 mr-1 text-gray-500" />
+          <SortSelect
+            value={sortBy}
+            onChange={setSortBy}
+            options={sortOptions}
+            placeholder="정렬"
+            className="h-7 ml-1"
+          />
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {changes.map((alert, index) => (
+        {sortedChanges.map((alert, index) => (
           <NewProductCard 
             key={`${alert.product.productId}-new-${index}`} 
             item={alert} 
