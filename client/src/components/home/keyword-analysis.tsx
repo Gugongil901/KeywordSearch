@@ -101,13 +101,13 @@ const KeywordAnalysis: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-      <div className="text-center mb-10">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+    <div>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="28"
-            height="28"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -120,20 +120,20 @@ const KeywordAnalysis: React.FC = () => {
             <path d="M11 3 8 9l4 13 4-13-3-6" />
             <path d="M2 9h20" />
           </svg>
-          매출상승의 핵심, 키워드에 대한 모든 것
+          셀러를 위한 모든 데이터 분석
         </h2>
         <p className="text-gray-500 max-w-3xl mx-auto">
-          키워드 데이터만큼은 구글, 네이버 대신 키워드 스카우터! <br />
+          키워드 데이터만큼은 구글, 네이버 대신 GUGONGIL! <br />
           키워드의 지표, 차트, 등록된 상품, 연관 키워드까지 모두 확인해보세요.
         </p>
-        <div className="mt-6 flex justify-center space-x-4">
+        <div className="mt-4 flex justify-center space-x-4">
           <Link href="/keyword">
-            <Button className="bg-primary text-white px-6 py-3 rounded-md font-medium hover:bg-primary/90">
+            <Button className="bg-primary text-white px-5 py-2 rounded-md font-medium hover:bg-primary/90">
               키워드분석 바로가기
             </Button>
           </Link>
           <Link href="/guide/keyword">
-            <Button variant="outline" className="bg-white border border-primary text-primary px-6 py-3 rounded-md font-medium hover:bg-gray-50">
+            <Button variant="outline" className="bg-white border border-primary text-primary px-5 py-2 rounded-md font-medium hover:bg-gray-50">
               자세히 알아보기
             </Button>
           </Link>

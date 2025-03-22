@@ -79,29 +79,41 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <KeywordAnalysis />
+      <section className="bg-gray-50 w-full pt-2 mt-2">
+        <div className="container mx-auto px-4 py-3">
+          <h2 className="text-xl font-semibold mb-3">키워드 분석</h2>
+          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
+            <KeywordAnalysis />
+          </div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-8 mb-12">
-        <div className="max-w-4xl mx-auto">
-          <ProductRanking />
+      <section className="bg-gray-50 w-full pt-2 mt-2">
+        <div className="container mx-auto px-4 py-3">
+          <h2 className="text-xl font-semibold mb-3">인기 상품</h2>
+          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
+            <ProductRanking />
+          </div>
         </div>
       </section>
 
       {/* 도움말 섹션 삭제 - 사용자 요청에 따라 빨간색 영역 제거 */}
 
-      <section className="container mx-auto px-4 py-8 mb-12">
-        <div className="max-w-4xl mx-auto">
-          <FAQSection />
+      <section className="bg-gray-50 w-full pt-2 mt-2">
+        <div className="container mx-auto px-4 py-3">
+          <h2 className="text-xl font-semibold mb-3">자주 묻는 질문</h2>
+          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
+            <FAQSection />
+          </div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-12 mb-12">
-        <div className="max-w-4xl mx-auto">
-          <CTASection />
+      <section className="bg-gray-50 w-full pt-2 mt-2 pb-8">
+        <div className="container mx-auto px-4 py-3">
+          <h2 className="text-xl font-semibold mb-3">시작하기</h2>
+          <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
+            <CTASection />
+          </div>
         </div>
       </section>
     </div>
