@@ -795,8 +795,8 @@ export default function IntegratedSearch() {
                 <div className="flex space-x-2">
                   <Input
                     placeholder="비타민, 종합비타민, 멀티비타민, 마그네슘..."
-                    value={keywords}
-                    onChange={(e) => setKeywords(e.target.value)}
+                    value={tabKeywords['ad-keywords']}
+                    onChange={(e) => updateCurrentTabKeywords(e.target.value)}
                   />
                   <Button 
                     variant="outline" 
@@ -844,8 +844,8 @@ export default function IntegratedSearch() {
                   <div className="flex space-x-2">
                     <Input
                       placeholder="비타민, 종합비타민, 멀티비타민, 마그네슘..."
-                      value={keywords}
-                      onChange={(e) => setKeywords(e.target.value)}
+                      value={tabKeywords['page-exposure']}
+                      onChange={(e) => updateCurrentTabKeywords(e.target.value)}
                     />
                     <Button 
                       variant="outline" 
