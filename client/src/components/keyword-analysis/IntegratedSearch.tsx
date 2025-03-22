@@ -228,11 +228,16 @@ export default function IntegratedSearch() {
     setSearchResult(null);
   };
 
-  const handleUseDefaultKeywords = () => {
+  const handleUseDefaultKeywords = (shouldSearch = false) => {
     if (availableKeywords.length > 0) {
       setKeywords(availableKeywords.join(', '));
     } else {
       setKeywords(DEFAULT_KEYWORDS.join(', '));
+    }
+    
+    // 즉시 검색 실행 옵션
+    if (shouldSearch) {
+      setTimeout(() => handleSearch(), 100); // 약간의 지연을 두고 검색 실행
     }
   };
   
@@ -773,7 +778,7 @@ export default function IntegratedSearch() {
                   />
                   <Button 
                     variant="outline" 
-                    onClick={handleUseDefaultKeywords}
+                    onClick={() => handleUseDefaultKeywords(true)}
                     className="whitespace-nowrap"
                   >
                     검색
@@ -822,7 +827,7 @@ export default function IntegratedSearch() {
                     />
                     <Button 
                       variant="outline" 
-                      onClick={handleUseDefaultKeywords}
+                      onClick={() => handleUseDefaultKeywords(true)}
                       className="whitespace-nowrap"
                     >
                       검색
@@ -890,7 +895,7 @@ export default function IntegratedSearch() {
                     />
                     <Button 
                       variant="outline" 
-                      onClick={handleUseDefaultKeywords}
+                      onClick={() => handleUseDefaultKeywords(true)}
                       className="whitespace-nowrap"
                     >
                       검색
@@ -958,7 +963,7 @@ export default function IntegratedSearch() {
                     />
                     <Button 
                       variant="outline" 
-                      onClick={handleUseDefaultKeywords}
+                      onClick={() => handleUseDefaultKeywords(true)}
                       className="whitespace-nowrap"
                     >
                       검색
@@ -1054,7 +1059,7 @@ export default function IntegratedSearch() {
                     />
                     <Button 
                       variant="outline" 
-                      onClick={handleUseDefaultKeywords}
+                      onClick={() => handleUseDefaultKeywords(true)}
                       className="whitespace-nowrap"
                     >
                       검색
