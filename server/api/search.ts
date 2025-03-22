@@ -1,5 +1,4 @@
 import axios from "axios";
-
 // 네이버 API 인증 정보
 const NAVER_CLIENT_ID = "ErTaCUGQWfhKvcEnftat";
 const NAVER_CLIENT_SECRET = "Xoq9VSewrv";
@@ -38,7 +37,6 @@ export async function searchShoppingInsight(keyword: string) {
         keyword: [
           {
             name: "검색어",
-            param: [keyword],
             param: [keyword]
           }
         ],
