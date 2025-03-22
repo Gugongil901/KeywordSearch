@@ -117,7 +117,16 @@ const DEFAULT_KEYWORDS = [
 export default function IntegratedSearch() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('ad-keywords');
-  const [keywords, setKeywords] = useState('');
+  
+  // 각 탭별 키워드 상태 관리
+  const [tabKeywords, setTabKeywords] = useState<Record<string, string>>({
+    'ad-keywords': '',
+    'page-exposure': '',
+    'product-ranking': '',
+    'best-keywords': '',
+    'niche-keywords': ''
+  });
+  
   const [url, setUrl] = useState('');
   const [productId, setProductId] = useState('');
   const [productName, setProductName] = useState('');
@@ -126,6 +135,14 @@ export default function IntegratedSearch() {
   const [keywordLimit, setKeywordLimit] = useState(10);
   const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
   const [isLoadingKeywords, setIsLoadingKeywords] = useState(false);
+  
+  // 현재 탭의 키워드 업데이트 함수
+  const updateCurrentTabKeywords = (value: string) => {
+    setTabKeywords(prev => ({
+      ...prev,
+      [activeTab]: value
+    }));
+  };
 
   const handleSearch = async (event?: React.MouseEvent<HTMLButtonElement>) => {
     if (isLoading) return;
@@ -137,7 +154,8 @@ export default function IntegratedSearch() {
     
     try {
       const searchTab = activeTab;
-      const keywordArray = keywords.split(',').map(k => k.trim()).filter(k => k);
+      // 현재 활성화된 탭의 키워드 사용
+      const keywordArray = tabKeywords[activeTab].split(',').map(k => k.trim()).filter(k => k);
       
       if (keywordArray.length === 0 && searchTab !== 'niche-keywords') {
         throw new Error('키워드를 하나 이상 입력해주세요');
@@ -229,11 +247,15 @@ export default function IntegratedSearch() {
   };
 
   const handleUseDefaultKeywords = (shouldSearch = false) => {
-    if (availableKeywords.length > 0) {
-      setKeywords(availableKeywords.join(', '));
-    } else {
-      setKeywords(DEFAULT_KEYWORDS.join(', '));
-    }
+    const newKeywords = availableKeywords.length > 0 
+      ? availableKeywords.join(', ') 
+      : DEFAULT_KEYWORDS.join(', ');
+    
+    // 현재 탭의 키워드 업데이트
+    setTabKeywords(prev => ({
+      ...prev,
+      [activeTab]: newKeywords
+    }));
     
     // 즉시 검색 실행 옵션
     if (shouldSearch) {
