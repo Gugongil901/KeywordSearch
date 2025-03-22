@@ -163,7 +163,7 @@ const HeroSearch: React.FC<HeroSearchProps> = ({
                   onKeyDown={handleKeyDown}
                 />
                 <Button
-                  className="bg-primary text-white px-5 py-3 rounded-none font-medium hover:bg-primary/90"
+                  className="bg-blue-600 text-white px-5 py-3 rounded-none font-medium hover:bg-blue-700"
                   onClick={handleSearch}
                   disabled={isSearching}
                 >
@@ -172,22 +172,7 @@ const HeroSearch: React.FC<HeroSearchProps> = ({
               </div>
             </div>
 
-            {/* 인기 키워드 */}
-            <div className="flex flex-wrap mt-4 justify-center gap-2">
-              {categories.map((keyword) => (
-                <span
-                  key={keyword}
-                  className={`px-3 py-1 rounded-full text-xs cursor-pointer transition ${
-                    searchTerm === keyword
-                      ? "bg-primary text-white"
-                      : "bg-white text-gray-900 hover:bg-primary hover:text-white"
-                  }`}
-                  onClick={() => handleCategoryClick(keyword)}
-                >
-                  {keyword}
-                </span>
-              ))}
-            </div>
+            {/* 인기 키워드 섹션이 제거되었습니다 */}
           </div>
 
           {/* 검색 결과 컨테이너 */}
