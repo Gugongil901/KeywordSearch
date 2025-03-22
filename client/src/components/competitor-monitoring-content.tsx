@@ -1351,6 +1351,7 @@ export function CompetitorMonitoringContent({
                                 title="성과 레이더 차트"
                                 description="위협 수준, 시장 점유율, 성장률을 종합적으로 분석합니다."
                                 height={250}
+                                colorPalette={COLOR_PALETTES.find(p => p.id === selectedColorPaletteId) || COLOR_PALETTES[0]}
                               />
                             </div>
                           </div>
