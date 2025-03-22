@@ -209,15 +209,15 @@ export default function IntegratedSearch() {
             apiMethod = 'get';
           } else {
             endpoint = '/api/niche-keywords/find';
-            // 서버 API 형식에 맞춰 데이터 변환
+            // 서버 API 형식에 맞춰 데이터 변환 (searchVolume과 competition, growth는 서버에서 계산)
             const keywordDataList = keywordArray.map(keyword => ({
               keyword,
-              searchVolume: Math.floor(Math.random() * 900) + 100, // 임시 데이터 (실제로는 API에서 가져와야 함)
-              competition: Math.random() * 0.5,
-              growthRate: Math.random() * 2 + 0.5,
-              commercialIntent: Math.random(),
+              searchVolume: 500, // 기본값 설정
+              competition: 0.3,   // 기본값 설정
+              growth: 1.2,        // 기본값 설정
+              commercialIntent: 0.7,
               categoryRelevance: 0.8,
-              seasonality: Math.random() < 0.3
+              seasonality: 0.5
             }));
             
             requestData = { 
@@ -228,6 +228,7 @@ export default function IntegratedSearch() {
                 minGrowthRate: 1.2
               }
             };
+            console.log('[니치 키워드 검색] 요청 데이터:', requestData); // 로깅 추가
             apiMethod = 'post';
           }
           break;
