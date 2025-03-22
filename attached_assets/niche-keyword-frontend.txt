@@ -1,0 +1,878 @@
+// src/components/NicheKeywordDashboard.tsx
+import React, { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
+import { 
+  Box, Container, Typography, Grid, Paper, TextField, Button, 
+  CircularProgress, Tabs, Tab, Divider, Table, TableBody, 
+  TableCell, TableContainer, TableHead, TableRow, Chip, Card, 
+  CardContent, Slider, Switch, FormControlLabel, Alert, 
+  IconButton, Tooltip, Select, MenuItem, InputLabel, FormControl
+} from '@mui/material';
+import {
+  TrendingUp as TrendingUpIcon,
+  Search as SearchIcon,
+  FilterList as FilterListIcon,
+  StarRate as StarRateIcon,
+  ShowChart as ShowChartIcon,
+  ArrowUpward as ArrowUpwardIcon,
+  ArrowDownward as ArrowDownwardIcon,
+  Info as InfoIcon,
+  AddCircle as AddCircleIcon,
+  Remove as RemoveIcon
+} from '@mui/icons-material';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+
+// 키워드 기회 인터페이스
+interface KeywordOpportunity {
+  keyword: string;
+  searchVolume: number;
+  competition: number;
+  growthRate: number;
+  profitPotential: number;
+  opportunityScore: number;
+  competitionLevel: string;
+  difficultyLevel: string;
+  recommendedChannels: string[];
+  seasonality: number;
+  volumeScore: number;
+  categoryRelevance: number;
+}
+
+// 키워드 그룹 인터페이스
+interface KeywordGroup {
+  topic: string;
+  keywordCount: number;
+  opportunityScore: number;
+  suggestedChannels: string[];
+  primaryKeywords: string[];
+}
+
+// 분석 결과 인터페이스
+interface NicheKeywordResult {
+  category: string;
+  totalKeywordsAnalyzed: number;
+  nicheKeywordsFound: number;
+  keywordOpportunities: KeywordOpportunity[];
+  searchCriteria: {
+    minSearchVolume: number;
+    maxCompetition: number;
+    minGrowthRate: number;
+    minProfitPotential: number;
+    seasonalityFactorApplied: boolean;
+  };
+  trends: any;
+  recommendedActions: {
+    topKeywordGroups: KeywordGroup[];
+    overallStrategy: string;
+  };
+  timestamp: string;
+}
+
+const NicheKeywordDashboard: React.FC = () => {
+  // 상태 관리
+  const [activeTab, setActiveTab] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [category, setCategory] = useState('건강기능식품');
+  const [minSearchVolume, setMinSearchVolume] = useState(100);
+  const [maxCompetition, setMaxCompetition] = useState(0.4);
+  const [minGrowthRate, setMinGrowthRate] = useState(1.1);
+  const [minProfitPotential, setMinProfitPotential] = useState(0.5);
+  const [applySeasonality, setApplySeasonality] = useState(true);
+  const [resultLimit, setResultLimit] = useState(50);
+  const [includeTrends, setIncludeTrends] = useState(true);
+  
+  // 필터 상태
+  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState('opportunityScore');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  
+  // 키워드 상태
+  const [manualKeywords, setManualKeywords] = useState<string[]>([]);
+  const [keywordInput, setKeywordInput] = useState('');
+  
+  // 데이터 상태
+  const [nicheResult, setNicheResult] = useState<NicheKeywordResult | null>(null);
+  const [suggestedGroups, setSuggestedGroups] = useState<KeywordGroup[]>([]);
+  
+  // 로딩 상태
+  const [isLoading, setIsLoading] = useState(false);
+  const [isGroupsLoading, setIsGroupsLoading] = useState(false);
+  
+  // 오류 상태
+  const [error, setError] = useState('');
+  
+  // 필터링 및 정렬된 키워드 결과
+  const filteredKeywords = useMemo(() => {
+    if (!nicheResult) return [];
+    
+    return nicheResult.keywordOpportunities
+      .filter(keyword => {
+        if (!searchQuery) return true;
+        return keyword.keyword.toLowerCase().includes(searchQuery.toLowerCase());
+      })
+      .sort((a, b) => {
+        const aValue = a[sortBy as keyof KeywordOpportunity];
+        const bValue = b[sortBy as keyof KeywordOpportunity];
+        
+        if (typeof aValue === 'number' && typeof bValue === 'number') {
+          return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+        }
+        
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          return sortDirection === 'asc' 
+            ? aValue.localeCompare(bValue) 
+            : bValue.localeCompare(aValue);
+        }
+        
+        return 0;
+      });
+  }, [nicheResult, searchQuery, sortBy, sortDirection]);
+  
+  // 탭 변경 핸들러
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setActiveTab(newValue);
+  };
+  
+  // 정렬 변경 핸들러
+  const handleSortChange = (field: string) => {
+    if (sortBy === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortDirection('desc');
+    }
+  };
+  
+  // 키워드 추가 핸들러
+  const handleAddKeyword = () => {
+    if (keywordInput && !manualKeywords.includes(keywordInput)) {
+      setManualKeywords([...manualKeywords, keywordInput]);
+      setKeywordInput('');
+    }
+  };
+  
+  // 소형 틈새 키워드 분석 실행
+  const analyzeNicheKeywords = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const params = new URLSearchParams({
+        category,
+        minSearchVolume: minSearchVolume.toString(),
+        maxCompetition: maxCompetition.toString(),
+        minGrowthRate: minGrowthRate.toString(),
+        minProfitPotential: minProfitPotential.toString(),
+        seasonalityFactor: applySeasonality.toString(),
+        includeTrends: includeTrends.toString(),
+        limit: resultLimit.toString()
+      });
+      
+      const response = await axios.get(`/api/niche-keywords?${params}`);
+      setNicheResult(response.data);
+    } catch (err) {
+      console.error('틈새 키워드 분석 오류:', err);
+      setError('틈새 키워드를 분석하는 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // 추가한 키워드 분석
+  const analyzeCustomKeywords = async () => {
+    if (manualKeywords.length === 0) {
+      setError('분석할 키워드를 입력해주세요.');
+      return;
+    }
+    
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      const options = {
+        minSearchVolume,
+        maxCompetition,
+        minGrowthRate,
+        minProfitPotential,
+        seasonalityFactor: applySeasonality,
+        includeTrends,
+        limit: resultLimit
+      };
+      
+      const response = await axios.post('/api/niche-keywords/analyze', {
+        keywords: manualKeywords,
+        category,
+        options
+      });
+      
+      setNicheResult(response.data);
+    } catch (err) {
+      console.error('커스텀 키워드 분석 오류:', err);
+      setError('키워드를 분석하는 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // 추천 키워드 그룹 로딩
+  const loadSuggestedGroups = async () => {
+    setIsGroupsLoading(true);
+    
+    try {
+      const response = await axios.get('/api/niche-keywords/suggested-groups', {
+        params: { category }
+      });
+      
+      setSuggestedGroups(response.data.suggestedGroups);
+    } catch (err) {
+      console.error('키워드 그룹 로딩 오류:', err);
+    } finally {
+      setIsGroupsLoading(false);
+    }
+  };
+  
+  // 컴포넌트 마운트 시 추천 그룹 로딩
+  useEffect(() => {
+    loadSuggestedGroups();
+  }, []);
+  
+  // 경쟁 수준에 따른 칩 색상
+  const getCompetitionColor = (level: string) => {
+    switch (level) {
+      case '매우 낮음': return 'success';
+      case '낮음': return 'success';
+      case '중간': return 'warning';
+      case '높음': return 'error';
+      case '매우 높음': return 'error';
+      default: return 'default';
+    }
+  };
+  
+  // 점수에 따른 색상
+  const getScoreColor = (score: number) => {
+    if (score >= 0.8) return '#4caf50';
+    if (score >= 0.6) return '#8bc34a';
+    if (score >= 0.4) return '#ffeb3b';
+    if (score >= 0.2) return '#ff9800';
+    return '#f44336';
+  };
+  
+  // 순위 범주화
+  const getTierLabel = (score: number) => {
+    if (score >= 0.8) return 'S 등급';
+    if (score >= 0.6) return 'A 등급';
+    if (score >= 0.4) return 'B 등급';
+    if (score >= 0.2) return 'C 등급';
+    return 'D 등급';
+  };
+  
+  // 채널에 따른 칩 색상
+  const getChannelColor = (channel: string) => {
+    switch (channel) {
+      case 'SEO': return 'primary';
+      case 'PPC': return 'secondary';
+      case '컨텐츠 마케팅': return 'info';
+      case '소셜 미디어': return 'success';
+      default: return 'default';
+    }
+  };
+  
+  return (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom>
+        소형 틈새 키워드 분석 대시보드
+      </Typography>
+      
+      {/* 필터 및 검색 영역 */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="카테고리"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="건강기능식품"
+              variant="outlined"
+              size="small"
+              helperText="분석할 카테고리를 입력하세요"
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="키워드 검색"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="검색어 입력..."
+              variant="outlined"
+              size="small"
+              InputProps={{
+                endAdornment: <SearchIcon color="action" />
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={2}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<FilterListIcon />}
+              onClick={() => setShowFilters(!showFilters)}
+            >
+              필터 {showFilters ? '접기' : '펼치기'}
+            </Button>
+          </Grid>
+          
+          {showFilters && (
+            <>
+              <Grid item xs={12} md={3}>
+                <Typography gutterBottom>최소 검색량: {minSearchVolume}</Typography>
+                <Slider
+                  value={minSearchVolume}
+                  onChange={(_, value) => setMinSearchVolume(value as number)}
+                  min={50}
+                  max={1000}
+                  step={50}
+                  valueLabelDisplay="auto"
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Typography gutterBottom>최대 경쟁 강도: {maxCompetition.toFixed(1)}</Typography>
+                <Slider
+                  value={maxCompetition}
+                  onChange={(_, value) => setMaxCompetition(value as number)}
+                  min={0.1}
+                  max={1.0}
+                  step={0.1}
+                  valueLabelDisplay="auto"
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Typography gutterBottom>최소 성장률: {minGrowthRate.toFixed(1)}</Typography>
+                <Slider
+                  value={minGrowthRate}
+                  onChange={(_, value) => setMinGrowthRate(value as number)}
+                  min={0.8}
+                  max={2.0}
+                  step={0.1}
+                  valueLabelDisplay="auto"
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Typography gutterBottom>최소 수익 잠재력: {minProfitPotential.toFixed(1)}</Typography>
+                <Slider
+                  value={minProfitPotential}
+                  onChange={(_, value) => setMinProfitPotential(value as number)}
+                  min={0.1}
+                  max={1.0}
+                  step={0.1}
+                  valueLabelDisplay="auto"
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={applySeasonality}
+                      onChange={(e) => setApplySeasonality(e.target.checked)}
+                    />
+                  }
+                  label="계절성 고려"
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={includeTrends}
+                      onChange={(e) => setIncludeTrends(e.target.checked)}
+                    />
+                  }
+                  label="트렌드 데이터 포함"
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Typography gutterBottom>결과 제한: {resultLimit}</Typography>
+                <Slider
+                  value={resultLimit}
+                  onChange={(_, value) => setResultLimit(value as number)}
+                  min={10}
+                  max={100}
+                  step={10}
+                  valueLabelDisplay="auto"
+                />
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <FormControl fullWidth variant="outlined" size="small">
+                  <InputLabel>정렬 기준</InputLabel>
+                  <Select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    label="정렬 기준"
+                  >
+                    <MenuItem value="opportunityScore">기회 점수</MenuItem>
+                    <MenuItem value="searchVolume">검색량</MenuItem>
+                    <MenuItem value="competition">경쟁 강도</MenuItem>
+                    <MenuItem value="growthRate">성장률</MenuItem>
+                    <MenuItem value="profitPotential">수익 잠재력</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+            </>
+          )}
+        </Grid>
+        
+        <Box mt={2} display="flex" justifyContent="space-between">
+          <Button 
+            variant="contained" 
+            color="primary"
+            startIcon={<TrendingUpIcon />}
+            onClick={analyzeNicheKeywords}
+            disabled={isLoading}
+          >
+            {isLoading ? '분석 중...' : '소형 틈새 키워드 분석'}
+          </Button>
+          
+          <Button 
+            variant="outlined"
+            color="secondary"
+            startIcon={<SearchIcon />}
+            onClick={loadSuggestedGroups}
+            disabled={isGroupsLoading}
+          >
+            {isGroupsLoading ? '로딩 중...' : '키워드 그룹 추천'}
+          </Button>
+        </Box>
+      </Paper>
+      
+      {/* 커스텀 키워드 입력 영역 */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          직접 키워드 분석
+        </Typography>
+        
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={9}>
+            <TextField
+              fullWidth
+              label="키워드 입력"
+              value={keywordInput}
+              onChange={(e) => setKeywordInput(e.target.value)}
+              placeholder="분석할 키워드 입력..."
+              variant="outlined"
+              size="small"
+              onKeyPress={(e) => e.key === 'Enter' && handleAddKeyword()}
+            />
+          </Grid>
+          <Grid item xs={12} md={3}>
+            <Button 
+              variant="outlined" 
+              startIcon={<AddCircleIcon />}
+              onClick={handleAddKeyword}
+              fullWidth
+            >
+              키워드 추가
+            </Button>
+          </Grid>
+        </Grid>
+        
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 2, mb: 2 }}>
+          {manualKeywords.map((keyword) => (
+            <Chip 
+              key={keyword} 
+              label={keyword} 
+              onDelete={() => setManualKeywords(manualKeywords.filter(k => k !== keyword))}
+              color="primary"
+            />
+          ))}
+        </Box>
+        
+        <Button 
+          variant="contained" 
+          color="secondary"
+          startIcon={<ShowChartIcon />}
+          onClick={analyzeCustomKeywords}
+          disabled={isLoading || manualKeywords.length === 0}
+        >
+          {isLoading ? '분석 중...' : '키워드 직접 분석'}
+        </Button>
+      </Paper>
+      
+      {/* 에러 표시 */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
+      
+      {/* 결과 탭 영역 */}
+      {nicheResult && (
+        <Paper sx={{ width: '100%', mb: 3 }}>
+          <Tabs 
+            value={activeTab} 
+            onChange={handleTabChange} 
+            indicatorColor="primary"
+            textColor="primary"
+            variant="fullWidth"
+          >
+            <Tab label="키워드 기회" icon={<StarRateIcon />} iconPosition="start" />
+            <Tab label="추천 그룹" icon={<TrendingUpIcon />} iconPosition="start" />
+            <Tab label="트렌드 분석" icon={<ShowChartIcon />} iconPosition="start" />
+          </Tabs>
+          
+          <Divider />
+          
+          {/* 분석 개요 표시 */}
+          <Box sx={{ p: 2, bgcolor: '#f5f5f5' }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={8}>
+                <Typography variant="subtitle1">
+                  카테고리: <strong>{nicheResult.category}</strong> | 
+                  분석 키워드: <strong>{nicheResult.totalKeywordsAnalyzed.toLocaleString()}</strong> | 
+                  발견된 틈새 키워드: <strong>{nicheResult.nicheKeywordsFound.toLocaleString()}</strong>
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Typography variant="subtitle1">
+                  분석 시간: {new Date(nicheResult.timestamp).toLocaleString()}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Box>
+          
+          {/* 키워드 기회 탭 */}
+          {activeTab === 0 && (
+            <Box sx={{ p: 2 }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Typography variant="h6">
+                  소형 틈새 키워드 ({filteredKeywords.length})
+                </Typography>
+                
+                <Box>
+                  <Tooltip title="기회 점수는 검색량, 경쟁도, 성장률, 수익성을 종합한 지표입니다">
+                    <IconButton size="small">
+                      <InfoIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Box>
+              
+              <TableContainer>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>키워드</TableCell>
+                      <TableCell 
+                        align="right" 
+                        onClick={() => handleSortChange('searchVolume')}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        검색량
+                        {sortBy === 'searchVolume' && (
+                          sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />
+                        )}
+                      </TableCell>
+                      <TableCell 
+                        align="right"
+                        onClick={() => handleSortChange('competition')}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        경쟁 강도
+                        {sortBy === 'competition' && (
+                          sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />
+                        )}
+                      </TableCell>
+                      <TableCell 
+                        align="right"
+                        onClick={() => handleSortChange('growthRate')}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        성장률
+                        {sortBy === 'growthRate' && (
+                          sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />
+                        )}
+                      </TableCell>
+                      <TableCell 
+                        align="right"
+                        onClick={() => handleSortChange('profitPotential')}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        수익 잠재력
+                        {sortBy === 'profitPotential' && (
+                          sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />
+                        )}
+                      </TableCell>
+                      <TableCell 
+                        align="right"
+                        onClick={() => handleSortChange('opportunityScore')}
+                        sx={{ cursor: 'pointer' }}
+                      >
+                        기회 점수
+                        {sortBy === 'opportunityScore' && (
+                          sortDirection === 'asc' ? <ArrowUpwardIcon fontSize="small" /> : <ArrowDownwardIcon fontSize="small" />
+                        )}
+                      </TableCell>
+                      <TableCell align="center">추천 채널</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {filteredKeywords.map((keyword) => (
+                      <TableRow key={keyword.keyword}>
+                        <TableCell>
+                          <Typography variant="body2">
+                            {keyword.keyword}
+                          </Typography>
+                          <Chip 
+                            size="small" 
+                            label={keyword.competitionLevel} 
+                            color={getCompetitionColor(keyword.competitionLevel) as any}
+                            sx={{ mt: 0.5 }}
+                          />
+                        </TableCell>
+                        <TableCell align="right">{keyword.searchVolume.toLocaleString()}</TableCell>
+                        <TableCell align="right">{(keyword.competition * 100).toFixed(0)}%</TableCell>
+                        <TableCell align="right">
+                          {(keyword.growthRate * 100 - 100).toFixed(0)}%
+                          {keyword.growthRate > 1.2 && <ArrowUpwardIcon fontSize="small" color="success" />}
+                        </TableCell>
+                        <TableCell align="right">{(keyword.profitPotential * 100).toFixed(0)}%</TableCell>
+                        <TableCell align="right">
+                          <Box display="flex" alignItems="center" justifyContent="flex-end">
+                            <Typography 
+                              variant="body2" 
+                              sx={{ color: getScoreColor(keyword.opportunityScore), fontWeight: 'bold', mr: 1 }}
+                            >
+                              {keyword.opportunityScore.toFixed(2)}
+                            </Typography>
+                            <Chip size="small" label={getTierLabel(keyword.opportunityScore)} />
+                          </Box>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, justifyContent: 'center' }}>
+                            {keyword.recommendedChannels.map((channel) => (
+                              <Chip 
+                                key={channel} 
+                                label={channel} 
+                                size="small"
+                                color={getChannelColor(channel) as any}
+                              />
+                            ))}
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              
+              {/* 기회 점수 분포 차트 */}
+              <Box mt={4}>
+                <Typography variant="h6" gutterBottom>기회 점수 분포</Typography>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart
+                    data={[
+                      { range: 'S 등급 (0.8-1.0)', count: filteredKeywords.filter(k => k.opportunityScore >= 0.8).length },
+                      { range: 'A 등급 (0.6-0.8)', count: filteredKeywords.filter(k => k.opportunityScore >= 0.6 && k.opportunityScore < 0.8).length },
+                      { range: 'B 등급 (0.4-0.6)', count: filteredKeywords.filter(k => k.opportunityScore >= 0.4 && k.opportunityScore < 0.6).length },
+                      { range: 'C 등급 (0.2-0.4)', count: filteredKeywords.filter(k => k.opportunityScore >= 0.2 && k.opportunityScore < 0.4).length },
+                      { range: 'D 등급 (0.0-0.2)', count: filteredKeywords.filter(k => k.opportunityScore < 0.2).length },
+                    ]}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="range" />
+                    <YAxis />
+                    <RechartsTooltip />
+                    <Bar dataKey="count" name="키워드 수" fill="#8884d8" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Box>
+            </Box>
+          )}
+          
+          {/* 추천 그룹 탭 */}
+          {activeTab === 1 && (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                추천 키워드 그룹
+              </Typography>
+              
+              {isGroupsLoading ? (
+                <Box display="flex" justifyContent="center" p={3}>
+                  <CircularProgress />
+                </Box>
+              ) : (
+                <Grid container spacing={2}>
+                  {(nicheResult.recommendedActions.topKeywordGroups.length > 0 
+                    ? nicheResult.recommendedActions.topKeywordGroups 
+                    : suggestedGroups
+                  ).map((group, index) => (
+                    <Grid item xs={12} md={6} key={group.topic || index}>
+                      <Card>
+                        <CardContent>
+                          <Typography variant="h6" gutterBottom>
+                            {group.topic}
+                          </Typography>
+                          
+                          <Box mt={1} mb={2}>
+                            <Typography variant="body2" color="textSecondary">
+                              기회 점수: <strong style={{ color: getScoreColor(group.opportunityScore) }}>
+                                {group.opportunityScore.toFixed(2)}
+                              </strong>
+                              {' | '}
+                              키워드 수: <strong>{group.keywordCount}</strong>
+                            </Typography>
+                          </Box>
+                          
+                          <Typography variant="subtitle2" gutterBottom>
+                            주요 키워드:
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+                            {group.primaryKeywords.map((keyword) => (
+                              <Chip 
+                                key={keyword} 
+                                label={keyword} 
+                                size="small"
+                                color="primary"
+                              />
+                            ))}
+                          </Box>
+                          
+                          <Typography variant="subtitle2" gutterBottom>
+                            추천 마케팅 채널:
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                            {group.suggestedChannels.map((channel) => (
+                              <Chip 
+                                key={channel} 
+                                label={channel} 
+                                size="small"
+                                color={getChannelColor(channel) as any}
+                              />
+                            ))}
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+              
+              {/* 전체 전략 */}
+              {nicheResult.recommendedActions.overallStrategy && (
+                <Box mt={3}>
+                  <Card>
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom>
+                        종합 마케팅 전략
+                      </Typography>
+                      <Typography variant="body1">
+                        {nicheResult.recommendedActions.overallStrategy}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Box>
+              )}
+            </Box>
+          )}
+          
+          {/* 트렌드 분석 탭 */}
+          {activeTab === 2 && (
+            <Box sx={{ p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                키워드 트렌드 분석
+              </Typography>
+              
+              {includeTrends && nicheResult.trends && nicheResult.trends.results ? (
+                <>
+                  <Typography variant="body2" color="textSecondary" gutterBottom>
+                    최근 6개월 트렌드 (상위 5개 키워드)
+                  </Typography>
+                  
+                  <ResponsiveContainer width="100%" height={400}>
+                    <LineChart
+                      data={nicheResult.trends.results[0].data.map((item: any) => {
+                        const dataPoint: any = { period: item.period };
+                        
+                        nicheResult.trends.results.forEach((result: any) => {
+                          const matchingPoint = result.data.find((d: any) => d.period === item.period);
+                          if (matchingPoint) {
+                            dataPoint[result.title] = matchingPoint.ratio;
+                          }
+                        });
+                        
+                        return dataPoint;
+                      })}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="period" />
+                      <YAxis />
+                      <RechartsTooltip />
+                      <Legend />
+                      {nicheResult.trends.results.map((result: any, index: number) => (
+                        <Line
+                          key={result.title}
+                          type="monotone"
+                          dataKey={result.title}
+                          stroke={['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#3366cc'][index % 5]}
+                          activeDot={{ r: 8 }}
+                        />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                  
+                  <Box mt={3}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      트렌드 인사이트
+                    </Typography>
+                    
+                    <Grid container spacing={2}>
+                      {nicheResult.trends.results.map((result: any, index: number) => {
+                        // 성장률 계산 (첫 값과 마지막 값 비교)
+                        const data = result.data;
+                        const growth = data.length >= 2
+                          ? ((data[data.length - 1].ratio / data[0].ratio) - 1) * 100
+                          : 0;
+                          
+                        return (
+                          <Grid item xs={12} md={4} key={index}>
+                            <Card>
+                              <CardContent>
+                                <Typography variant="h6">{result.title}</Typography>
+                                <Typography variant="body2" color="textSecondary">
+                                  기간 성장률: 
+                                  <strong style={{ color: growth >= 0 ? '#4caf50' : '#f44336' }}>
+                                    {' '}{growth.toFixed(1)}%
+                                  </strong>
+                                  {growth > 0 && <ArrowUpwardIcon fontSize="small" color="success" />}
+                                  {growth < 0 && <ArrowDownwardIcon fontSize="small" color="error" />}
+                                </Typography>
+                                
+                                <Typography variant="body2" mt={1}>
+                                  {growth >= 10 ? '급성장 중인 키워드' : 
+                                   growth >= 0 ? '안정적인 성장 키워드' : 
+                                   '성장이 둔화된 키워드'}
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          </Grid>
+                        );
+                      })}
+                    </Grid>
+                  </Box>
+                </>
+              ) : (
+                <Alert severity="info">
+                  트렌드 데이터를 포함하도록 설정하고 분석을 실행하세요.
+                </Alert>
+              )}
+            </Box>
+          )}
+        </Paper>
+      )}
+    </Container>
+  );
+};
+
+export default NicheKeywordDashboard;
