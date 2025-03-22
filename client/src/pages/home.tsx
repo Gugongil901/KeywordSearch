@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import HeroSearch from "@/components/home/hero-search";
 import CategoryKeywords from "@/components/home/sales-ranking";
-import KeywordAnalysis from "@/components/home/keyword-analysis";
 import ProductRanking from "@/components/home/product-ranking";
 import FAQSection from "@/components/home/faq-section";
 import CTASection from "@/components/home/cta-section";
@@ -57,13 +56,6 @@ const Home: React.FC = () => {
         onTrendTypeChange={setTrendType}
       />
 
-      <section className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div id="keyword-analysis-section">
-            <KeywordAnalysis />
-          </div>
-        </div>
-      </section>
 
       <section className="container mx-auto px-4 py-8 mb-12">
         <div className="max-w-4xl mx-auto">
