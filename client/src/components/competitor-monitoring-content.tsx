@@ -219,7 +219,7 @@ export function CompetitorMonitoringContent({
   onCompetitorsChange 
 }: CompetitorMonitoringContentProps) {
   // 상태 관리
-  const [competitors, setCompetitors] = useState<string[]>([]);
+  const [competitors, setCompetitors] = useState<string[]>(['drlin', 'naturalplus', 'anguk']);
   const [monitoringFrequency, setMonitoringFrequency] = useState<'daily' | 'weekly'>('weekly');
   const [alertThresholds, setAlertThresholds] = useState({
     priceChangePercent: 5,
@@ -233,6 +233,7 @@ export function CompetitorMonitoringContent({
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<string>('changes');
+  const [keywordDebounceTimeout, setKeywordDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
   const [competitorInsights, setCompetitorInsights] = useState<Record<string, CompetitorInsight>>({});
   
   const { toast } = useToast();
@@ -249,7 +250,20 @@ export function CompetitorMonitoringContent({
     if (onCompetitorsChange) {
       onCompetitorsChange(newCompetitors);
     }
+    
+    // 경쟁사가 선택되면 자동으로 변경사항 확인
+    if (keyword && newCompetitors.length > 0) {
+      checkChanges();
+    }
   };
+  
+  // 컴포넌트 마운트 시 초기 데이터 로드
+  useEffect(() => {
+    // 키워드와 경쟁사가 있으면 자동으로 변경사항 확인
+    if (keyword && competitors.length > 0) {
+      checkChanges();
+    }
+  }, [keyword]); // 키워드가 변경될 때마다 실행
   
   // 임계값 변경 처리
   const handleThresholdChange = (key: string, value: any) => {
@@ -689,30 +703,54 @@ export function CompetitorMonitoringContent({
       {!monitoringResult ? (
         renderEmptyState()
       ) : (
-        <Card>
-          <CardHeader>
+        <Card className="shadow-lg border-0 overflow-hidden">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 pb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <div className="flex items-center space-x-2">
-                  <CardTitle>"{monitoringResult.keyword}" 모니터링 결과</CardTitle>
+                  <CardTitle className="text-blue-800 text-xl">
+                    <span className="font-bold">"{monitoringResult.keyword}"</span> 모니터링 결과
+                  </CardTitle>
                   {monitoringResult.hasAlerts && (
-                    <Badge variant="destructive">
+                    <Badge variant="destructive" className="animate-pulse bg-red-600 hover:bg-red-700">
                       <AlertCircle className="h-3 w-3 mr-1" />
-                      알림
+                      변경 알림
                     </Badge>
                   )}
                 </div>
-                <CardDescription>
-                  {new Date(monitoringResult.checkedAt).toLocaleString()} 기준
+                <CardDescription className="flex items-center text-blue-600 mt-1">
+                  <Clock className="h-3.5 w-3.5 mr-1.5" />
+                  {new Date(monitoringResult.checkedAt).toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })} 기준
                 </CardDescription>
               </div>
+              <Badge variant="outline" className="bg-blue-100 text-blue-600 border-blue-200 mt-2 sm:mt-0">
+                모니터링 대상: {Object.keys(monitoringResult.changesDetected).length}개 경쟁사
+              </Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="changes" value={selectedTab} onValueChange={setSelectedTab}>
-              <TabsList className="mb-4">
-                <TabsTrigger value="changes">변경사항</TabsTrigger>
-                <TabsTrigger value="insights">경쟁사 인사이트</TabsTrigger>
+          <CardContent className="p-0">
+            <Tabs defaultValue="changes" value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+              <TabsList className="w-full rounded-none justify-start bg-gray-100 p-0 h-auto">
+                <TabsTrigger 
+                  value="changes" 
+                  className="data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-700 rounded-none py-3 flex-1 max-w-[200px]"
+                >
+                  <LineChart className="h-4 w-4 mr-2" />
+                  변경사항
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="insights" 
+                  className="data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-700 rounded-none py-3 flex-1 max-w-[200px]"
+                >
+                  <Lightbulb className="h-4 w-4 mr-2" />
+                  경쟁사 인사이트
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="changes">
