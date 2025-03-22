@@ -3,11 +3,11 @@ import { NaverKeywordResult, NaverProductResult, NaverTrendResult, KeywordSearch
 import * as metrics from "./metrics";
 
 // Naver API Credentials
-const NAVER_CLIENT_ID = "ErTaCUGQWfhKvcEnftat";
-const NAVER_CLIENT_SECRET = "Xoq9VSewrv";
-const NAVER_AD_API_CUSTOMER_ID = process.env.NAVER_AD_API_CUSTOMER_ID || "";
-const NAVER_AD_API_ACCESS_LICENSE = process.env.NAVER_AD_API_ACCESS_LICENSE || "";
-const NAVER_AD_API_SECRET_KEY = process.env.NAVER_AD_API_SECRET_KEY || "";
+const NAVER_CLIENT_ID = process.env.NAVER_CLIENT_ID || "ErTaCUGQWfhKvcEnftat";
+const NAVER_CLIENT_SECRET = process.env.NAVER_CLIENT_SECRET || "Xoq9VSewrv";
+const NAVER_AD_API_CUSTOMER_ID = process.env.NAVER_AD_API_CUSTOMER_ID || "3405855";
+const NAVER_AD_API_ACCESS_LICENSE = process.env.NAVER_AD_API_ACCESS_LICENSE || "01000000005a79e0d0ffff30be92041e87dd2444c689e1209efbe2f9ea58fd3a3ae67ee01e";
+const NAVER_AD_API_SECRET_KEY = process.env.NAVER_AD_API_SECRET_KEY || "AQAAAABaeeDQ//8wvpIEHofdJETGcg3aHhG5YRGgFHPnSsNISw==";
 
 // API endpoints
 const NAVER_SEARCH_API = "https://openapi.naver.com/v1/search/shop.json";
