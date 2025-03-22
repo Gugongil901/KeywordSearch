@@ -974,21 +974,21 @@ export function CompetitorMonitoringContent({
                       </CardHeader>
                       <CardContent className="py-2">
                         <div className="space-y-2">
-                          {/* 경쟁사 데이터 표시 - 모든 12개 경쟁사 무조건 표시 */}
+                          {/* 무조건 12개 브랜드 모두 표시 */}
                           {HEALTH_SUPPLEMENT_BRANDS.map((brandItem) => {
                             const competitorId = brandItem.id;
                             
-                            // 해당 경쟁사 데이터 가져오기 (변경사항이 없을 수도 있음)
+                            // 해당 경쟁사 데이터 가져오기 (없을 경우 null)
                             const competitorData = monitoringResult?.changesDetected?.[competitorId] || null;
                             
-                            // 변경사항 있는지 확인 (안전하게 null 체크)
+                            // 변경사항 있는지 확인
                             const hasChanges = competitorData && (
                               (competitorData.priceChanges && competitorData.priceChanges.length > 0) || 
                               (competitorData.newProducts && competitorData.newProducts.length > 0) || 
                               (competitorData.rankChanges && competitorData.rankChanges.length > 0) || 
                               (competitorData.reviewChanges && competitorData.reviewChanges.length > 0)
                             );
-                              
+                            
                             return (
                               <div 
                                 key={competitorId}
