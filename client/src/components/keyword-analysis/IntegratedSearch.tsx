@@ -11,7 +11,7 @@ import { InfoIcon, CheckCircle, AlertCircle, Search, Filter, Loader2 } from "luc
 import axios from 'axios';
 
 interface SearchResult {
-  type: 'ad-keywords' | 'page-exposure' | 'product-ranking' | 'best-keywords';
+  type: 'ad-keywords' | 'page-exposure' | 'product-ranking' | 'best-keywords' | 'niche-keywords';
   data: any;
   timestamp: string;
 }
@@ -77,6 +77,26 @@ interface BestKeywordsResult {
   };
   count: number;
   timestamp: string;
+}
+
+interface NicheKeywordResult {
+  totalKeywords: number;
+  nicheKeywords: {
+    keyword: string;
+    searchVolume: number;
+    competition: number;
+    growth: number;
+    nicheScore: number;
+    potential: string;
+    recommendation: string;
+  }[];
+  nicheKeywordCount: number;
+  nicheRatio: string;
+  categories?: {
+    highPotential: any[];
+    mediumPotential: any[];
+    lowPotential: any[];
+  };
 }
 
 // 서버에서 가져오는 키워드로 대체
@@ -152,6 +172,12 @@ export default function IntegratedSearch() {
             keywords: keywordArray,
             limit: keywordLimit
           };
+          break;
+          
+        case 'niche-keywords':
+          endpoint = '/api/niche-keywords/recommend';
+          requestData = { };
+          apiMethod = 'get';
           break;
       }
       
@@ -522,6 +548,124 @@ export default function IntegratedSearch() {
     </div>
   );
 
+  // 니치 키워드 결과 렌더링
+  const renderNicheKeywordsResults = (data: NicheKeywordResult) => (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>소형(니치) 키워드 분석</CardTitle>
+          <CardDescription>
+            검색량은 적당하고, 경쟁도가 낮으며, 성장성이 높은 잠재력 있는 키워드
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <Alert>
+              <InfoIcon className="h-4 w-4" />
+              <AlertTitle>니치 키워드란?</AlertTitle>
+              <AlertDescription>
+                경쟁이 적고 타겟이 명확한 틈새 키워드로, 광고 효율이 높고 성장 잠재력이 있는 키워드입니다.
+              </AlertDescription>
+            </Alert>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-muted rounded-lg p-4 text-center">
+                <p className="text-sm text-muted-foreground">발견된 니치 키워드</p>
+                <p className="text-2xl font-bold">{data.nicheKeywordCount}</p>
+                <p className="text-xs text-muted-foreground">총 {data.totalKeywords}개 중</p>
+              </div>
+              
+              <div className="bg-muted rounded-lg p-4 text-center">
+                <p className="text-sm text-muted-foreground">니치 키워드 비율</p>
+                <p className="text-2xl font-bold">{data.nicheRatio}%</p>
+                <p className="text-xs text-muted-foreground">전체 키워드 대비</p>
+              </div>
+              
+              <div className="bg-muted rounded-lg p-4 text-center">
+                <p className="text-sm text-muted-foreground">높은 잠재력 키워드</p>
+                <p className="text-2xl font-bold">
+                  {data.categories?.highPotential.length || 
+                    data.nicheKeywords.filter(k => k.nicheScore >= 80).length}
+                </p>
+                <p className="text-xs text-muted-foreground">잠재력 높음으로 분류</p>
+              </div>
+            </div>
+            
+            <h3 className="text-lg font-semibold mt-4 mb-2">발견된 니치 키워드</h3>
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-muted">
+                    <th className="px-4 py-2 text-left">키워드</th>
+                    <th className="px-4 py-2 text-right">검색량</th>
+                    <th className="px-4 py-2 text-right">경쟁도</th>
+                    <th className="px-4 py-2 text-right">성장률</th>
+                    <th className="px-4 py-2 text-right">니치 점수</th>
+                    <th className="px-4 py-2 text-right">잠재력</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.nicheKeywords.length > 0 ? (
+                    data.nicheKeywords.map((keyword, index) => (
+                      <tr key={index} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/30'}>
+                        <td className="px-4 py-2 font-medium">{keyword.keyword}</td>
+                        <td className="px-4 py-2 text-right font-mono">{keyword.searchVolume}</td>
+                        <td className="px-4 py-2 text-right font-mono">
+                          {(keyword.competition * 100).toFixed(1)}%
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          <span className={`font-mono ${keyword.growth > 1 ? 'text-green-600' : 'text-red-600'}`}>
+                            {((keyword.growth - 1) * 100).toFixed(1)}%
+                          </span>
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          <Badge 
+                            variant={keyword.nicheScore >= 80 ? "default" : 
+                                   keyword.nicheScore >= 60 ? "secondary" : "outline"}
+                            className="font-mono"
+                          >
+                            {keyword.nicheScore}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          <Badge 
+                            variant={keyword.potential === '높음' ? "default" : 
+                                   keyword.potential === '중간' ? "secondary" : "outline"}
+                          >
+                            {keyword.potential}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="px-4 py-2 text-center text-muted-foreground">
+                        니치 키워드를 찾을 수 없습니다.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            
+            {data.nicheKeywords.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold mb-2">추천 활용 방안</h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  {data.nicheKeywords.slice(0, 3).map((keyword, index) => (
+                    <li key={index} className="text-sm">
+                      <span className="font-medium">{keyword.keyword}</span>: {keyword.recommendation}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   const renderSearchResults = () => {
     if (!searchResult) return null;
     
@@ -534,6 +678,8 @@ export default function IntegratedSearch() {
         return renderProductRankingResults(searchResult.data as ProductRankingResult);
       case 'best-keywords':
         return renderBestKeywordsResults(searchResult.data as BestKeywordsResult);
+      case 'niche-keywords':
+        return renderNicheKeywordsResults(searchResult.data as NicheKeywordResult);
       default:
         return <p>지원되지 않는 결과 유형입니다.</p>;
     }
@@ -549,11 +695,12 @@ export default function IntegratedSearch() {
       </div>
       
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid grid-cols-4">
+        <TabsList className="grid grid-cols-5">
           <TabsTrigger value="ad-keywords">광고 키워드 필터링</TabsTrigger>
           <TabsTrigger value="page-exposure">페이지 노출 확인</TabsTrigger>
           <TabsTrigger value="product-ranking">상품 순위 분석</TabsTrigger>
           <TabsTrigger value="best-keywords">최적 키워드 찾기</TabsTrigger>
+          <TabsTrigger value="niche-keywords">소형(니치) 키워드</TabsTrigger>
         </TabsList>
         
         <TabsContent value="ad-keywords" className="space-y-4 pt-4">
@@ -820,6 +967,132 @@ export default function IntegratedSearch() {
                     <>
                       <Search className="mr-2 h-4 w-4" />
                       최적 키워드 찾기
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="niche-keywords" className="space-y-4 pt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>소형(니치) 키워드 찾기</CardTitle>
+              <CardDescription>
+                검색량이 적당하고 경쟁이 낮으며 성장성이 높은 잠재력 있는 틈새 키워드를 찾습니다.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Alert>
+                <InfoIcon className="h-4 w-4" />
+                <AlertTitle>니치 키워드란?</AlertTitle>
+                <AlertDescription>
+                  경쟁이 적고 타겟이 명확한 틈새 키워드로, 적은 예산으로도 효율적인 광고와 높은 전환율을 기대할 수 있습니다.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="flex flex-col space-y-2">
+                <label className="text-sm font-medium">
+                  키워드 목록 (쉼표로 구분)
+                </label>
+                <div className="flex flex-col space-y-4">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="비타민, 유기농 비타민, 고함량 종합비타민, 액상 마그네슘..."
+                      value={keywords}
+                      onChange={(e) => setKeywords(e.target.value)}
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={handleUseDefaultKeywords}
+                      className="whitespace-nowrap"
+                    >
+                      추천 키워드
+                    </Button>
+                  </div>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
+                    <div className="flex flex-wrap gap-2">
+                      {availableKeywords.slice(0, 10).map((keyword, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="outline" 
+                          className="cursor-pointer hover:bg-accent"
+                          onClick={() => setKeywords(prev => prev ? `${prev}, ${keyword}` : keyword)}
+                        >
+                          {keyword}
+                        </Badge>
+                      ))}
+                      {availableKeywords.length > 10 && (
+                        <Badge variant="outline">+ {availableKeywords.length - 10}개 더</Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-col space-y-2">
+                <h3 className="text-sm font-medium">필터링 기준</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">최소 검색량</label>
+                    <Select defaultValue="100">
+                      <SelectTrigger>
+                        <SelectValue placeholder="최소 검색량" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="50">50</SelectItem>
+                        <SelectItem value="100">100</SelectItem>
+                        <SelectItem value="200">200</SelectItem>
+                        <SelectItem value="500">500</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">최대 경쟁도</label>
+                    <Select defaultValue="0.3">
+                      <SelectTrigger>
+                        <SelectValue placeholder="최대 경쟁도" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0.1">매우 낮음 (0.1)</SelectItem>
+                        <SelectItem value="0.3">낮음 (0.3)</SelectItem>
+                        <SelectItem value="0.5">중간 (0.5)</SelectItem>
+                        <SelectItem value="0.7">높음 (0.7)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">최소 성장률</label>
+                    <Select defaultValue="1.2">
+                      <SelectTrigger>
+                        <SelectValue placeholder="최소 성장률" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1.0">안정적 (1.0)</SelectItem>
+                        <SelectItem value="1.1">약간 성장 (1.1)</SelectItem>
+                        <SelectItem value="1.2">성장 중 (1.2)</SelectItem>
+                        <SelectItem value="1.5">급성장 (1.5)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button onClick={handleSearch} disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      분석 중...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="mr-2 h-4 w-4" />
+                      니치 키워드 찾기
                     </>
                   )}
                 </Button>
