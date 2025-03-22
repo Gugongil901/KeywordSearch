@@ -974,33 +974,12 @@ export function CompetitorMonitoringContent({
                       </CardHeader>
                       <CardContent className="py-2">
                         <div className="space-y-2">
-                          {/* 경쟁사 데이터 표시 - 모든 모니터링 중인 경쟁사 표시 */}
-                          {competitors.filter(competitorId => {
-                            // 변경사항만 표시 옵션이 꺼져 있으면 모든 경쟁사 표시
-                            if (!showOnlyChanges) return true;
+                          {/* 경쟁사 데이터 표시 - 모든 12개 경쟁사 무조건 표시 */}
+                          {HEALTH_SUPPLEMENT_BRANDS.map((brandItem) => {
+                            const competitorId = brandItem.id;
                             
-                            // 모니터링 결과가 없으면 모든 경쟁사 표시
-                            if (!monitoringResult || !monitoringResult.changesDetected) return true;
-                            
-                            // 해당 경쟁사의 데이터가 있으면 변화 확인
-                            const competitorData = monitoringResult.changesDetected?.[competitorId];
-                            // 데이터가 없어도 표시하도록 수정 (false 리턴하지 않음)
-                            if (!competitorData) return true;
-                            
-                            // 변경사항이 하나라도 있으면 표시
-                            return (
-                              (competitorData.priceChanges && competitorData.priceChanges.length > 0) || 
-                              (competitorData.newProducts && competitorData.newProducts.length > 0) || 
-                              (competitorData.rankChanges && competitorData.rankChanges.length > 0) || 
-                              (competitorData.reviewChanges && competitorData.reviewChanges.length > 0)
-                            );
-                          }).map((competitorId) => {
-                            // 경쟁사 ID로 브랜드 찾기
-                            const brand = HEALTH_SUPPLEMENT_BRANDS.find(
-                              b => b.id === competitorId
-                            );
                             // 해당 경쟁사 데이터 가져오기 (변경사항이 없을 수도 있음)
-                            const competitorData = monitoringResult.changesDetected?.[competitorId];
+                            const competitorData = monitoringResult?.changesDetected?.[competitorId] || null;
                             
                             // 변경사항 있는지 확인 (안전하게 null 체크)
                             const hasChanges = competitorData && (
@@ -1022,7 +1001,7 @@ export function CompetitorMonitoringContent({
                               >
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center">
-                                    <div className="font-medium">{brand?.name || competitorId}</div>
+                                    <div className="font-medium">{brandItem.name}</div>
                                   </div>
                                   {competitorData && competitorData.alerts && (
                                     <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">
@@ -1210,7 +1189,7 @@ export function CompetitorMonitoringContent({
                                     }}
                                   >
                                     <div className="flex items-center justify-between">
-                                      <div className="font-medium">{brand?.name || competitorId}</div>
+                                      <div className="font-medium">{HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitorId)?.name || competitorId}</div>
                                       <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">로드 중</Badge>
                                     </div>
                                   </div>
