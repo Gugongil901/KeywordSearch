@@ -15,6 +15,7 @@ import imageProxyRouter from "./api/proxy/image-proxy";
 import imageAnalysisRoutes from "./api/routes/image-analysis-routes";
 import shoppingInsightRoutes from "./api/routes/shopping-insight-routes";
 import keywordAnalysisRoutes from "./api/routes/keyword-analysis-routes";
+import healthSupplementRoutes from "./api/health-supplement/healthSupplementRoutes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // 기본 라우트 - 간단한 HTML 응답 추가 (테스트용)
@@ -133,6 +134,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register shopping insight API routes
   app.use('/api/shopping-insight', shoppingInsightRoutes);
+  
+  // Register health supplement API routes
+  app.use('/api/health-supplement', healthSupplementRoutes);
 
   // API routes
   app.get("/api/health", (_req, res) => {
