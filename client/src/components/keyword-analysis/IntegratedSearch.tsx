@@ -841,9 +841,7 @@ export default function IntegratedSearch() {
                         onChange={(e) => updateCurrentTabKeywords(e.target.value)}
                       />
                       <Button 
-                        variant="outline" 
-                        onClick={() => handleSearch()}
-                        className="whitespace-nowrap"
+                        variant="default" onClick={() => handleSearch()} className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         검색
                       </Button>
@@ -915,9 +913,7 @@ export default function IntegratedSearch() {
                         onChange={(e) => updateCurrentTabKeywords(e.target.value)}
                       />
                       <Button 
-                        variant="outline" 
-                        onClick={() => handleSearch()}
-                        className="whitespace-nowrap"
+                        variant="default" onClick={() => handleSearch()} className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         검색
                       </Button>
@@ -989,9 +985,7 @@ export default function IntegratedSearch() {
                         onChange={(e) => updateCurrentTabKeywords(e.target.value)}
                       />
                       <Button 
-                        variant="outline" 
-                        onClick={() => handleSearch()}
-                        className="whitespace-nowrap"
+                        variant="default" onClick={() => handleSearch()} className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         검색
                       </Button>
@@ -1064,9 +1058,7 @@ export default function IntegratedSearch() {
                           onChange={(e) => updateCurrentTabKeywords(e.target.value)}
                         />
                         <Button 
-                          variant="outline" 
-                          onClick={() => handleSearch()}
-                          className="whitespace-nowrap"
+                          variant="default" onClick={() => handleSearch()} className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           검색
                         </Button>
@@ -1160,9 +1152,7 @@ export default function IntegratedSearch() {
                           onChange={(e) => updateCurrentTabKeywords(e.target.value)}
                         />
                         <Button 
-                          variant="outline" 
-                          onClick={() => handleSearch()}
-                          className="whitespace-nowrap"
+                          variant="default" onClick={() => handleSearch()} className="whitespace-nowrap bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           검색
                         </Button>
