@@ -290,9 +290,9 @@ const TrendAnalysis: React.FC = () => {
                         {currentKeyword} 검색 결과
                       </CardTitle>
                       <CardDescription>
-                        월 검색량: {analysisData?.monthlySearches?.toLocaleString() || 0}회 • 
-                        PC: {analysisData?.pcRatio || 0}% • 
-                        모바일: {analysisData?.mobileRatio || 0}%
+                        월 검색량: {keywordData?.searchCount?.toLocaleString() || analysisData?.monthlySearches?.toLocaleString() || 0}회 • 
+                        PC: {keywordData?.pcSearchRatio || analysisData?.pcRatio || 0}% • 
+                        모바일: {keywordData?.mobileSearchRatio || analysisData?.mobileRatio || 0}%
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -303,15 +303,15 @@ const TrendAnalysis: React.FC = () => {
                           <div className="grid grid-cols-2 gap-4 mb-6">
                             <div className="bg-gray-50 p-4 rounded-lg">
                               <p className="text-sm text-gray-500 mb-1">상품 수</p>
-                              <p className="text-xl font-bold">{analysisData.productCount?.toLocaleString() || '0'}개</p>
+                              <p className="text-xl font-bold">{(keywordData?.productCount || analysisData?.productCount || 0).toLocaleString()}개</p>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-lg">
                               <p className="text-sm text-gray-500 mb-1">평균 가격</p>
-                              <p className="text-xl font-bold">{analysisData.averagePrice?.toLocaleString() || '0'}원</p>
+                              <p className="text-xl font-bold">{(keywordData?.averagePrice || analysisData?.averagePrice || 0).toLocaleString()}원</p>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-lg">
                               <p className="text-sm text-gray-500 mb-1">총 판매액</p>
-                              <p className="text-xl font-bold">{analysisData.totalSales ? Math.floor(analysisData.totalSales/10000) : '0'}만원</p>
+                              <p className="text-xl font-bold">{keywordData?.totalSales ? Math.floor(keywordData.totalSales/10000) : analysisData?.totalSales ? Math.floor(analysisData.totalSales/10000) : '0'}만원</p>
                             </div>
                             <div className="bg-gray-50 p-4 rounded-lg">
                               <p className="text-sm text-gray-500 mb-1">경쟁 강도</p>
@@ -347,8 +347,8 @@ const TrendAnalysis: React.FC = () => {
                                 </tr>
                               </thead>
                               <tbody className="bg-white divide-y divide-gray-200">
-                                {analysisData.products?.slice(0, 5).length > 0 ? (
-                                  analysisData.products.slice(0, 5).map((product: any, index: number) => (
+                                {(keywordData?.products?.length > 0 || analysisData?.products?.length > 0) ? (
+                                  (keywordData?.products || analysisData?.products || []).slice(0, 5).map((product: any, index: number) => (
                                     <tr key={index} className="hover:bg-gray-50">
                                       <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                                         {product.title}
