@@ -1,4 +1,6 @@
 import axios from "axios";
+import { format, subDays } from 'date-fns';
+
 // 네이버 API 인증 정보
 const NAVER_CLIENT_ID = "ErTaCUGQWfhKvcEnftat";
 const NAVER_CLIENT_SECRET = "Xoq9VSewrv";
@@ -137,5 +139,3 @@ function getFormattedDate(daysAgo: number): string {
   date.setDate(date.getDate() - daysAgo);
   return date.toISOString().split('T')[0];
 }
-
-import { format, subDays } from 'date-fns';

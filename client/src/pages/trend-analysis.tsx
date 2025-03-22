@@ -85,8 +85,19 @@ const TrendAnalysis: React.FC = () => {
         throw new Error("데이터를 가져오는데 실패했습니다.");
       }
       const data = await response.json();
+      
+      // 응답 데이터 확인 및 가공
+      console.log("검색 결과 데이터:", data);
+      
       setKeywordData(data);
       setCurrentKeyword(keyword);
+      
+      // 검색 결과가 올바르게 로드되었는지 로그로 확인
+      if (data && data.products && data.products.length > 0) {
+        console.log(`검색 결과: ${data.products.length}개 상품 로드됨`);
+      } else {
+        console.log("검색 결과: 상품 없음");
+      }
     } catch (error) {
       console.error("키워드 데이터 가져오기 오류:", error);
       toast({
@@ -109,11 +120,32 @@ const TrendAnalysis: React.FC = () => {
       }
       
       const data = await response.json();
-      setAnalysisData(data);
+      console.log("분석 결과 데이터:", data);
+      
+      // 데이터 형식이 올바른지 확인하고 필요한 경우 초기값 설정
+      const processedData = {
+        ...data,
+        monthlySearches: data.monthlySearches || 0,
+        pcRatio: data.pcRatio || 0,
+        mobileRatio: data.mobileRatio || 0,
+        productCount: data.productCount || 0,
+        averagePrice: data.averagePrice || 0,
+        totalSales: data.totalSales || 0,
+        products: Array.isArray(data.products) ? data.products : []
+      };
+      
+      setAnalysisData(processedData);
 
       // 키워드 분석 결과 저장
-      localStorage.setItem('currentKeywordAnalysis', JSON.stringify(data));
+      localStorage.setItem('currentKeywordAnalysis', JSON.stringify(processedData));
       localStorage.setItem('currentKeyword', keyword);
+      
+      // 분석 데이터의 상품 정보 로그 확인
+      if (processedData.products && processedData.products.length > 0) {
+        console.log(`분석 결과: ${processedData.products.length}개 상품 정보 로드됨`);
+      } else {
+        console.log("분석 결과: 상품 정보 없음");
+      }
       
       toast({
         title: "분석 완료",
