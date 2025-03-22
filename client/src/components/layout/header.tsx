@@ -25,7 +25,7 @@ const Header = () => {
               키워드인사이트
             </Link>
             <Link href="/trends" className={`text-sm font-medium ${isActive('/trends') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
-              트렌드분석
+              키워드 트래커
             </Link>
 
 
