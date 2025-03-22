@@ -1379,7 +1379,7 @@ export function CompetitorMonitoringContent({
 }
 
 // 나머지 필요한 렌더링 함수들
-// 이 렌더링 함수들은 컴포넌트 내부에서 정의됩니다.
+// 이제 CompetitorMonitoringContent 컴포넌트 내부에서 이 렌더링 함수들이 정의됩니다.
 
 // TOP_HEALTH_PRODUCTS 객체 정의(상위에 임포트해도 됨)
 const TOP_HEALTH_PRODUCTS = {
