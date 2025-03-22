@@ -28,6 +28,9 @@ const Header = () => {
               키워드 트래커
             </Link>
 
+            <Link href="/advanced-analysis" className={`text-sm font-medium ${isActive('/advanced-analysis') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
+              고급 분석
+            </Link>
 
             <Link href="/monitoring" className={`text-sm font-medium ${isActive('/monitoring') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
               경쟁사모니터링

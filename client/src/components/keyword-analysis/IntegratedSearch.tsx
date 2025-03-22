@@ -305,7 +305,7 @@ export default function IntegratedSearch() {
                       <td className="px-4 py-2 font-medium">{result.keyword}</td>
                       <td className="px-4 py-2 text-center">
                         {result.isExposed ? (
-                          <Badge variant="success" className="bg-green-100 text-green-800">노출됨</Badge>
+                          <Badge variant="outline" className="bg-green-100 text-green-800">노출됨</Badge>
                         ) : (
                           <Badge variant="outline" className="bg-gray-100 text-gray-800">미노출</Badge>
                         )}

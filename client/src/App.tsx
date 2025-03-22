@@ -13,6 +13,7 @@ import TrackRanking from "@/pages/track-ranking";
 import KeywordInsights from "@/pages/keyword-insights";
 import CompetitorMonitoring from "@/pages/competitor-monitoring-new";
 import TrendAnalysis from "@/pages/trend-analysis";
+import AdvancedAnalysis from "@/pages/advanced-analysis";
 import TestComponent from "@/components/test/TestComponent";
 
 function Router() {
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/tracking" component={TrackRanking} />
       <Route path="/monitoring" component={CompetitorMonitoring} />
       <Route path="/trends" component={TrendAnalysis} />
+      <Route path="/advanced-analysis" component={AdvancedAnalysis} />
       <Route component={NotFound} />
     </Switch>
   );
