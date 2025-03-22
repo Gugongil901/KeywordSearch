@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import {
@@ -14,6 +14,11 @@ import {
   Filler,
 } from "chart.js";
 import { Line, Bar } from "react-chartjs-2";
+import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 ChartJS.register(
   CategoryScale,
@@ -28,313 +33,273 @@ ChartJS.register(
 );
 
 const KeywordAnalysis: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>("overview");
-  const [chartPeriod, setChartPeriod] = useState<string>("daily");
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("analysis");
+  const [keyword, setKeyword] = useState<string>("");
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchResult, setSearchResult] = useState<any>(null);
 
-  // Search trend chart data
-  const searchTrendData = {
-    labels: ["1월", "2월", "3월", "4월", "5월", "6월", "7월"],
-    datasets: [
-      {
-        label: "검색량",
-        data: [1200, 1900, 3000, 5000, 4200, 3800, 6000],
-        borderColor: "rgba(59, 130, 246, 1)",
-        backgroundColor: "rgba(59, 130, 246, 0.1)",
-        fill: true,
-        tension: 0.4,
-      },
-    ],
+  // 키워드 검색 요청 처리
+  const handleKeywordSearch = async (event?: React.FormEvent) => {
+    if (event) {
+      event.preventDefault();
+    }
+    
+    if (!keyword.trim()) {
+      toast({
+        title: "키워드를 입력해주세요",
+        description: "분석할 키워드를 입력해야 합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSearching(true);
+    
+    try {
+      // 키워드 분석 API 호출
+      const response = await fetch(`/api/keyword/analysis?keyword=${encodeURIComponent(keyword)}`);
+      
+      if (!response.ok) {
+        throw new Error("키워드 분석 중 오류가 발생했습니다.");
+      }
+      
+      const data = await response.json();
+      setSearchResult(data);
+      setActiveTab("analysis");
+    } catch (error) {
+      console.error("키워드 검색 오류:", error);
+      toast({
+        title: "검색 오류",
+        description: "키워드 분석 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
+    }
   };
 
-  // Price distribution chart data
-  const priceDistributionData = {
-    labels: ["~1만원", "1~3만원", "3~5만원", "5~10만원", "10만원~"],
-    datasets: [
-      {
-        label: "상품 수",
-        data: [15, 30, 40, 10, 5],
-        backgroundColor: [
-          "rgba(59, 130, 246, 0.7)",
-          "rgba(59, 130, 246, 0.6)",
-          "rgba(59, 130, 246, 0.5)",
-          "rgba(59, 130, 246, 0.4)",
-          "rgba(59, 130, 246, 0.3)",
-        ],
-        borderColor: [
-          "rgba(59, 130, 246, 1)",
-          "rgba(59, 130, 246, 1)",
-          "rgba(59, 130, 246, 1)",
-          "rgba(59, 130, 246, 1)",
-          "rgba(59, 130, 246, 1)",
-        ],
-        borderWidth: 1,
-      },
-    ],
+  // 데모용 인기 키워드 목록
+  const popularKeywords = [
+    { keyword: "비타민", rank: 1, change: "up" },
+    { keyword: "루테인", rank: 2, change: "up" },
+    { keyword: "오메가3", rank: 3, change: "down" },
+    { keyword: "유산균", rank: 4, change: "same" },
+    { keyword: "종합비타민", rank: 5, change: "up" },
+    { keyword: "칼슘", rank: 6, change: "down" },
+    { keyword: "마그네슘", rank: 7, change: "up" },
+    { keyword: "철분", rank: 8, change: "down" },
+    { keyword: "콜라겐", rank: 9, change: "up" },
+  ];
+  
+  // 인기 키워드 클릭 핸들러
+  const handlePopularKeywordClick = (clickedKeyword: string) => {
+    setKeyword(clickedKeyword);
+    handleKeywordSearch();
   };
 
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        mode: "index" as const,
-        intersect: false,
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          display: true,
-          color: "rgba(0,0,0,0.05)",
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-      },
-    },
+  // 변화 아이콘 표시
+  const getChangeIcon = (change: string) => {
+    switch (change) {
+      case "up":
+        return <span className="text-green-600">▲</span>;
+      case "down":
+        return <span className="text-red-600">▼</span>;
+      default:
+        return <span className="text-gray-500">-</span>;
+    }
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
-      <div className="text-center mb-10">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="28"
-            height="28"
+            width="24"
+            height="24"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="lucide lucide-gem inline-block mr-2 text-primary"
+            className="lucide lucide-bar-chart-2 inline-block mr-2 text-primary"
           >
-            <path d="M6 3h12l4 6-10 13L2 9Z" />
-            <path d="M11 3 8 9l4 13 4-13-3-6" />
-            <path d="M2 9h20" />
+            <line x1="18" x2="18" y1="20" y2="10" />
+            <line x1="12" x2="12" y1="20" y2="4" />
+            <line x1="6" x2="6" y1="20" y2="14" />
           </svg>
-          매출상승의 핵심, 키워드에 대한 모든 것
+          셀러를 위한 모든 데이터 분석
         </h2>
-        <p className="text-gray-500 max-w-3xl mx-auto">
-          키워드 데이터만큼은 구글, 네이버 대신 키워드 스카우터! <br />
-          키워드의 지표, 차트, 등록된 상품, 연관 키워드까지 모두 확인해보세요.
+        <p className="text-gray-500 max-w-3xl mx-auto text-sm">
+          네이버 쇼핑 데이터를 기반으로 키워드 트렌드, 인기 상품 정보 제공
         </p>
-        <div className="mt-6 flex justify-center space-x-4">
-          <Link href="/keyword">
-            <Button className="bg-primary text-white px-6 py-3 rounded-md font-medium hover:bg-primary/90">
-              키워드분석 바로가기
-            </Button>
-          </Link>
-          <Link href="/guide/keyword">
-            <Button variant="outline" className="bg-white border border-primary text-primary px-6 py-3 rounded-md font-medium hover:bg-gray-50">
-              자세히 알아보기
-            </Button>
-          </Link>
+      </div>
+
+      {/* 키워드 검색 폼 */}
+      <form onSubmit={handleKeywordSearch} className="mb-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+          <Input
+            type="text"
+            placeholder="상품명 검색(예: 오메가3, 루테인, 콘드로이친)"
+            className="pl-10 pr-4 py-2 h-12 text-base border rounded-md shadow-sm focus:ring-primary focus:border-primary"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+          />
+          <Button 
+            type="submit" 
+            className="absolute right-0 top-0 bg-primary text-white px-4 h-12 rounded-r-md"
+            disabled={isSearching}
+          >
+            {isSearching ? "검색 중..." : "검색"}
+          </Button>
         </div>
-      </div>
+      </form>
 
-      {/* Keyword Analysis Tabs */}
-      <div className="mb-4 border-b border-gray-200">
-        <ul className="flex flex-wrap -mb-px">
-          <li className="mr-2">
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={`inline-block py-2 px-4 font-medium text-sm ${
-                activeTab === "overview"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-500 hover:text-primary"
-              }`}
-            >
-              키워드 개요
-            </button>
-          </li>
-          <li className="mr-2">
-            <button
-              onClick={() => setActiveTab("products")}
-              className={`inline-block py-2 px-4 font-medium text-sm ${
-                activeTab === "products"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-500 hover:text-primary"
-              }`}
-            >
-              상품 목록
-            </button>
-          </li>
-          <li className="mr-2">
-            <button
-              onClick={() => setActiveTab("related")}
-              className={`inline-block py-2 px-4 font-medium text-sm ${
-                activeTab === "related"
-                  ? "text-primary border-b-2 border-primary"
-                  : "text-gray-500 hover:text-primary"
-              }`}
-            >
-              연관 키워드
-            </button>
-          </li>
-        </ul>
-      </div>
+      {/* 탭 컨테이너 */}
+      <Tabs defaultValue="trending" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsTrigger value="trending">인기 키워드</TabsTrigger>
+          <TabsTrigger value="analysis" disabled={!searchResult}>키워드 분석</TabsTrigger>
+        </TabsList>
 
-      {/* Content based on active tab */}
-      {activeTab === "overview" && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Key Metrics */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">상품수</h3>
-                <div className="text-xl font-bold text-primary">
-                  58,432 <span className="text-sm font-normal">개</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">한 달 검색수</h3>
-                <div className="text-xl font-bold text-primary">
-                  15,230 <span className="text-sm font-normal">회</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">검색 비율</h3>
-                <div className="flex">
-                  <div className="mr-4">
-                    <span className="text-xs text-gray-500">PC</span>
-                    <p className="text-lg font-bold text-primary">32%</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-gray-500">모바일</span>
-                    <p className="text-lg font-bold text-primary">68%</p>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">6개월 매출</h3>
-                <div className="text-xl font-bold text-primary">
-                  2,543 <span className="text-sm font-normal">만원</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">6개월 판매량</h3>
-                <div className="text-xl font-bold text-primary">
-                  4,876 <span className="text-sm font-normal">개</span>
-                </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h3 className="text-xs text-gray-500 mb-1">평균 가격</h3>
-                <div className="text-xl font-bold text-primary">
-                  52,150 <span className="text-sm font-normal">원</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Chart */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-medium">검색량 추이</h3>
-                <div className="flex space-x-2">
-                  <button
-                    className={`text-xs px-2 py-1 rounded ${
-                      chartPeriod === "daily"
-                        ? "bg-primary text-white"
-                        : "bg-gray-200 text-gray-900"
-                    }`}
-                    onClick={() => setChartPeriod("daily")}
+        {/* 인기 키워드 탭 콘텐츠 */}
+        <TabsContent value="trending" className="py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 인기 키워드 */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="text-base font-medium mb-4 flex justify-between items-center">
+                <span>인기 키워드</span>
+                <span className="text-xs text-gray-500">2025.03.22 기준</span>
+              </h3>
+              <ul className="divide-y divide-gray-100">
+                {popularKeywords.map((item, index) => (
+                  <li 
+                    key={index} 
+                    className="py-2 flex items-center cursor-pointer hover:bg-gray-100"
+                    onClick={() => handlePopularKeywordClick(item.keyword)}
                   >
-                    일간
-                  </button>
-                  <button
-                    className={`text-xs px-2 py-1 rounded ${
-                      chartPeriod === "weekly"
-                        ? "bg-primary text-white"
-                        : "bg-gray-200 text-gray-900"
-                    }`}
-                    onClick={() => setChartPeriod("weekly")}
-                  >
-                    주간
-                  </button>
-                  <button
-                    className={`text-xs px-2 py-1 rounded ${
-                      chartPeriod === "monthly"
-                        ? "bg-primary text-white"
-                        : "bg-gray-200 text-gray-900"
-                    }`}
-                    onClick={() => setChartPeriod("monthly")}
-                  >
-                    월간
-                  </button>
-                </div>
-              </div>
-              <div className="h-48">
-                <Line data={searchTrendData} options={chartOptions} />
-              </div>
-            </div>
-          </div>
-
-          {/* Competitive Analysis */}
-          <div className="col-span-1">
-            <div className="bg-gray-50 p-4 rounded-lg mb-4">
-              <h3 className="font-medium mb-4">경쟁 분석</h3>
-              <ul className="space-y-3">
-                <li className="flex justify-between items-center">
-                  <span className="text-sm">경쟁 종합 지표</span>
-                  <span className="text-sm font-medium text-green-600">
-                    아주좋음
-                  </span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="text-sm">경쟁강도</span>
-                  <span className="text-sm font-medium text-green-600">
-                    1.74{" "}
-                    <span className="text-xs">아주좋음</span>
-                  </span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="text-sm">실거래상품 비율</span>
-                  <span className="text-sm font-medium text-green-600">
-                    63% <span className="text-xs">좋음</span>
-                  </span>
-                </li>
-                <li className="flex justify-between items-center">
-                  <span className="text-sm">해외상품 비율</span>
-                  <span className="text-sm font-medium text-red-500">
-                    10% <span className="text-xs">나쁨</span>
-                  </span>
-                </li>
+                    <span className="w-8 text-center font-medium text-gray-500">{item.rank}</span>
+                    <span className="flex-grow">{item.keyword}</span>
+                    {getChangeIcon(item.change)}
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Distribution Chart */}
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium mb-4">가격대별 분포</h3>
-              <div className="h-48">
-                <Bar data={priceDistributionData} options={chartOptions} />
-              </div>
+            {/* 카테고리별 키워드 */}
+            <div className="bg-gray-50 rounded-lg p-4">
+              <h3 className="text-base font-medium mb-4 flex justify-between items-center">
+                <span>카테고리별 키워드</span>
+                <span className="text-xs text-gray-500">2025.03.22 기준</span>
+              </h3>
+              <ul className="divide-y divide-gray-100">
+                {popularKeywords.slice(0, 5).map((item, index) => (
+                  <li 
+                    key={index} 
+                    className="py-2 flex items-center cursor-pointer hover:bg-gray-100"
+                    onClick={() => handlePopularKeywordClick(item.keyword)}
+                  >
+                    <span className="w-8 text-center font-medium text-gray-500">{index + 1}</span>
+                    <span className="flex-grow">{item.keyword}</span>
+                    {getChangeIcon(item.change)}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-        </div>
-      )}
+        </TabsContent>
 
-      {/* Placeholder for other tabs */}
-      {activeTab === "products" && (
-        <div className="py-4 text-center text-gray-500">
-          이 데모에서는 상품 목록 탭의 내용이 표시되지 않습니다.
-          <br />
-          실제 서비스에서는 이 키워드에 해당하는 상품 목록이 표시됩니다.
-        </div>
-      )}
-      {activeTab === "related" && (
-        <div className="py-4 text-center text-gray-500">
-          이 데모에서는 연관 키워드 탭의 내용이 표시되지 않습니다.
-          <br />
-          실제 서비스에서는 이 키워드와 연관된 키워드 목록이 표시됩니다.
-        </div>
-      )}
+        {/* 키워드 분석 탭 콘텐츠 */}
+        <TabsContent value="analysis" className="py-4">
+          {searchResult ? (
+            <div>
+              {/* 키워드 분석 결과 헤더 */}
+              <div className="mb-6">
+                <h3 className="text-xl font-semibold mb-2">{searchResult.keyword} 검색 결과</h3>
+                <div className="text-sm text-gray-500">월 검색량: {searchResult.monthlySearches?.toLocaleString() || 0}회 • PC: {searchResult.pcRatio || 0}% • 모바일: {searchResult.mobileRatio || 0}%</div>
+              </div>
+
+              {/* 분석 지표 요약 */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-500 mb-1">상품 수</p>
+                  <p className="text-2xl font-bold">{searchResult.productCount?.toLocaleString() || '0'}개</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-500 mb-1">평균 가격</p>
+                  <p className="text-2xl font-bold">{searchResult.averagePrice?.toLocaleString() || '0'}원</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-500 mb-1">총 판매액</p>
+                  <p className="text-2xl font-bold">{searchResult.totalSales ? Math.floor(searchResult.totalSales/10000) : '0'}만원</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-500 mb-1">경쟁 강도</p>
+                  <p className="text-2xl font-bold text-red-600">매우 높음</p>
+                </div>
+              </div>
+
+              {/* 상세 지표 */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-500 mb-1">실거래 상품 비율</p>
+                  <p className="text-xl font-bold">{searchResult.realProductRatio || '0'}%</p>
+                  <p className="text-xs text-gray-500">리뷰가 있는 상품 비율</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-500 mb-1">해외 상품 비율</p>
+                  <p className="text-xl font-bold">{searchResult.foreignProductRatio || '5'}%</p>
+                  <p className="text-xs text-gray-500">해외 브랜드 제품 비율</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-500 mb-1">클릭당 경쟁상품</p>
+                  <p className="text-xl font-bold">{searchResult.competitionIndex ? searchResult.competitionIndex.toFixed(1) : '0'}개</p>
+                  <p className="text-xs text-gray-500">CTR 3% 가정</p>
+                </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <p className="text-sm text-gray-500 mb-1">키워드 점수</p>
+                  <p className="text-xl font-bold">{searchResult.score || '0'}</p>
+                  <p className="text-xs text-gray-500">검색량 / 상품수 (높을수록 좋음)</p>
+                </div>
+              </div>
+
+              {/* 상위 상품 섹션 */}
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-4">상위 상품</h3>
+                <div className="bg-white border border-gray-200 rounded-lg mb-6">
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">상품명</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">가격대</th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">리뷰 수</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {searchResult.products?.slice(0, 5).map((product: any, index: number) => (
+                          <tr key={index} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.title}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.price.toLocaleString()}원</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.reviewCount}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="py-12 text-center text-gray-500">
+              키워드를 검색하면 분석 결과가 표시됩니다.
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
