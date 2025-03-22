@@ -382,12 +382,29 @@ export const PopoverColorSelector: React.FC = () => {
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="outline" size="sm" className="h-8 gap-1">
-          <Paintbrush size={14} />
-          <span className="hidden sm:inline">테마</span>
+          <span className="font-medium">테마</span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="end">
-        <ColorPaletteSelector isPopover />
+      <PopoverContent className="w-auto p-4" align="end">
+        <h4 className="mb-3 font-medium text-center">색상 테마 선택</h4>
+        <div className="grid grid-cols-5 gap-2">
+          {defaultPalettes.map((palette) => (
+            <button
+              key={palette.id}
+              onClick={() => {
+                const fullPalette = getFullPaletteById(palette.id);
+                applyPaletteToDocument(fullPalette);
+              }}
+              className="w-12 h-12 rounded-full border-2 flex items-center justify-center transition-all hover:scale-110"
+              style={{ 
+                backgroundColor: palette.primary,
+                borderColor: palette.id === getPaletteFromLocalStorage() ? '#000' : 'transparent'
+              }}
+              aria-label={palette.name}
+              title={palette.name}
+            />
+          ))}
+        </div>
       </PopoverContent>
     </Popover>
   );
