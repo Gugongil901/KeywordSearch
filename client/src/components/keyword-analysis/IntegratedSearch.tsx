@@ -79,6 +79,7 @@ interface BestKeywordsResult {
   timestamp: string;
 }
 
+// 서버에서 가져오는 키워드로 대체
 const DEFAULT_KEYWORDS = [
   "비타민", "종합비타민", "멀티비타민", "마그네슘", "철분제", 
   "프로바이오틱스", "루테인", "비타민D", "비타민C", "오메가3",
@@ -95,6 +96,8 @@ export default function IntegratedSearch() {
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [keywordLimit, setKeywordLimit] = useState(10);
+  const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
+  const [isLoadingKeywords, setIsLoadingKeywords] = useState(false);
 
   const handleSearch = async () => {
     if (isLoading) return;
@@ -193,8 +196,52 @@ export default function IntegratedSearch() {
   };
 
   const handleUseDefaultKeywords = () => {
-    setKeywords(DEFAULT_KEYWORDS.join(', '));
+    if (availableKeywords.length > 0) {
+      setKeywords(availableKeywords.join(', '));
+    } else {
+      setKeywords(DEFAULT_KEYWORDS.join(', '));
+    }
   };
+  
+  // 서버에서 키워드 목록 가져오기
+  useEffect(() => {
+    const fetchKeywords = async () => {
+      setIsLoadingKeywords(true);
+      try {
+        // 활성 탭에 따라 적절한 API 엔드포인트 선택
+        let endpoint = '/api/advanced-analysis/ad-keywords';
+        
+        switch (activeTab) {
+          case 'ad-keywords':
+            endpoint = '/api/advanced-analysis/ad-keywords';
+            break;
+          case 'page-exposure':
+            endpoint = '/api/advanced-analysis/page-keywords';
+            break;
+          case 'product-ranking':
+          case 'best-keywords':
+            endpoint = '/api/advanced-analysis/product-keywords';
+            break;
+        }
+        
+        const { data } = await axios.get(endpoint);
+        
+        if (data.success && data.data && data.data.keywords) {
+          setAvailableKeywords(data.data.keywords);
+        } else {
+          console.warn('키워드 목록을 가져오지 못했습니다.');
+        }
+      } catch (error) {
+        console.error('키워드 목록 로딩 오류:', error);
+        // 오류 발생 시 기본 키워드 사용
+        setAvailableKeywords(DEFAULT_KEYWORDS);
+      } finally {
+        setIsLoadingKeywords(false);
+      }
+    };
+    
+    fetchKeywords();
+  }, [activeTab]); // 탭이 변경될 때마다 다시 로드
 
   const renderAdKeywordResults = (data: AdKeywordResult) => (
     <div className="space-y-4">

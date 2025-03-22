@@ -286,8 +286,11 @@ router.get('/all-keywords', async (_req: Request, res: Response) => {
       productRankingAnalyzer.getKnownKeywords()
     ]);
     
-    // 중복 제거를 위한 Set 사용
-    const allKeywords = [...new Set([...adKeywords, ...pageKeywords, ...productKeywords])];
+    // 중복 제거를 위한 필터 사용
+    const combinedKeywords = [...adKeywords, ...pageKeywords, ...productKeywords];
+    const allKeywords = combinedKeywords.filter((value, index, self) => 
+      self.indexOf(value) === index
+    );
     
     res.json({
       success: true,
