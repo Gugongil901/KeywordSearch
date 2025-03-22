@@ -67,8 +67,12 @@ export function ProductImage({
 
   // 브랜드 웹사이트 URL 가져오기
   const getBrandUrl = () => {
-    if (competitor && BRAND_WEBSITES[competitor]) {
-      return BRAND_WEBSITES[competitor];
+    if (!competitor) return null;
+    
+    // 타입 안전하게 확인
+    const brandId = competitor as keyof typeof BRAND_WEBSITES;
+    if (BRAND_WEBSITES[brandId]) {
+      return BRAND_WEBSITES[brandId];
     }
     return null;
   };

@@ -237,7 +237,7 @@ export function CompetitorMonitoringContent({
   onCompetitorsChange 
 }: CompetitorMonitoringContentProps) {
   // 상태 관리
-  const [competitors, setCompetitors] = useState<string[]>(['drlin', 'naturalplus', 'anguk']);
+  const [competitors, setCompetitors] = useState<string[]>(['drlin', 'naturalplus', 'anguk', 'koryo']);
   const [monitoringFrequency, setMonitoringFrequency] = useState<'daily' | 'weekly'>('weekly');
   const [alertThresholds, setAlertThresholds] = useState({
     priceChangePercent: 5,
@@ -248,7 +248,7 @@ export function CompetitorMonitoringContent({
   const [loading, setLoading] = useState<boolean>(false);
   const [configOpen, setConfigOpen] = useState<boolean>(false);
   const [monitoringResult, setMonitoringResult] = useState<MonitoringResult | null>(null);
-  const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>('닥터린'); // 기본값으로 첫 번째 경쟁사를 이름으로 설정
+  const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>('drlin'); // 기본값으로 첫 번째 경쟁사 ID로 설정
   const [error, setError] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<string>('insights'); // 기본값을 인사이트로 변경
   const [keywordDebounceTimeout, setKeywordDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -950,14 +950,14 @@ export function CompetitorMonitoringContent({
                       </CardHeader>
                       <CardContent className="py-2">
                         <div className="space-y-2">
-                          {/* 경쟁사 데이터 표시 */}
-                          {Object.keys(monitoringResult.changesDetected || {}).map((competitorId) => {
-                            // 경쟁사 ID로 브랜드 찾기 (ID가 아닌 이름으로도 찾을 수 있도록)
+                          {/* 경쟁사 데이터 표시 - 모든 모니터링 중인 경쟁사 표시 */}
+                          {competitors.map((competitorId) => {
+                            // 경쟁사 ID로 브랜드 찾기
                             const brand = HEALTH_SUPPLEMENT_BRANDS.find(
-                              b => b.id === competitorId || b.name === competitorId
+                              b => b.id === competitorId
                             );
-                            // 해당 경쟁사 데이터 가져오기
-                            const competitorData = monitoringResult.changesDetected[competitorId];
+                            // 해당 경쟁사 데이터 가져오기 (변경사항이 없을 수도 있음)
+                            const competitorData = monitoringResult.changesDetected?.[competitorId];
                             
                             // 변경사항 있는지 확인 (안전하게 null 체크)
                             const hasChanges = competitorData && (
