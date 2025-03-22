@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Settings, RefreshCw, Search } from 'lucide-react';
-import { competitor_monitoring_content } from '../components/competitor-monitoring-content';
+import { CompetitorMonitoringContent } from '../components/competitor-monitoring-content';
 
 export default function CompetitorMonitoring() {
   const [keyword, setKeyword] = useState('');
@@ -70,7 +70,7 @@ export default function CompetitorMonitoring() {
         </Card>
         
         <div className="bg-white rounded-lg shadow p-4">
-          {competitor_monitoring_content()}
+          <CompetitorMonitoringContent />
         </div>
       </div>
     </div>

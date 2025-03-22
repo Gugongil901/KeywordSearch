@@ -207,7 +207,7 @@ interface CompetitorInsight {
   };
 }
 
-export function competitor_monitoring_content() {
+export function CompetitorMonitoringContent() {
   // 상태 관리
   const [keyword, setKeyword] = useState<string>('영양제');
   const [competitors, setCompetitors] = useState<string[]>([]);
@@ -1143,7 +1143,12 @@ function renderPriceChanges(changes: PriceChange[], competitor: string) {
       <h4 className="text-sm font-medium mb-2">가격 변경 ({changes.length}개)</h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {changes.map((change, index) => (
-          <PriceChangeCard key={`${change.product.productId}-price-${index}`} change={change} />
+          <PriceChangeCard 
+            key={`${change.product.productId}-price-${index}`} 
+            change={change} 
+            brandName={competitor}
+            brandId={competitor.toLowerCase().replace(/\s+/g, '')}
+          />
         ))}
       </div>
       <Separator className="my-4" />
@@ -1159,7 +1164,12 @@ function renderRankChanges(changes: RankChange[], competitor: string) {
       <h4 className="text-sm font-medium mb-2">순위 변경 ({changes.length}개)</h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {changes.map((change, index) => (
-          <RankChangeCard key={`${change.product.productId}-rank-${index}`} change={change} />
+          <RankChangeCard 
+            key={`${change.product.productId}-rank-${index}`} 
+            change={change} 
+            brandName={competitor}
+            brandId={competitor.toLowerCase().replace(/\s+/g, '')}
+          />
         ))}
       </div>
       <Separator className="my-4" />
@@ -1175,7 +1185,12 @@ function renderReviewChanges(changes: ReviewChange[], competitor: string) {
       <h4 className="text-sm font-medium mb-2">리뷰 변경 ({changes.length}개)</h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {changes.map((change, index) => (
-          <ReviewChangeCard key={`${change.product.productId}-review-${index}`} change={change} />
+          <ReviewChangeCard 
+            key={`${change.product.productId}-review-${index}`} 
+            change={change} 
+            brandName={competitor}
+            brandId={competitor.toLowerCase().replace(/\s+/g, '')}
+          />
         ))}
       </div>
       <Separator className="my-4" />
@@ -1191,7 +1206,12 @@ function renderNewProducts(changes: NewProductAlert[], competitor: string) {
       <h4 className="text-sm font-medium mb-2">신제품 ({changes.length}개)</h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {changes.map((alert, index) => (
-          <NewProductCard key={`${alert.product.productId}-new-${index}`} alert={alert} />
+          <NewProductCard 
+            key={`${alert.product.productId}-new-${index}`} 
+            product={alert.product} 
+            brandName={competitor}
+            brandId={competitor.toLowerCase().replace(/\s+/g, '')}
+          />
         ))}
       </div>
       <Separator className="my-4" />
