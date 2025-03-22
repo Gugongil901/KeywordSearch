@@ -172,10 +172,10 @@ const HealthSupplement = () => {
                   {BRANDS.map(brand => (
                     <Button
                       key={brand.id}
-                      variant={selectedBrands.includes(brand.id) ? "default" : "outline"}
+                      variant={selectedBrands.includes(brand.id) ? "outline" : "outline"}
                       size="sm"
                       onClick={() => toggleBrandSelection(brand.id)}
-                      className="text-xs"
+                      className={`text-xs ${selectedBrands.includes(brand.id) ? 'bg-blue-600 text-white hover:bg-blue-700' : ''}`}
                     >
                       {brand.name}
                     </Button>
