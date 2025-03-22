@@ -15,6 +15,8 @@ import { formatNumber, formatDate, formatPercent, getChangeColorClass } from "@/
 // 차트 컴포넌트 임포트
 import { StrengthWeaknessChart } from "@/components/charts/strength-weakness-radar";
 import { CompetitorComparisonChart } from "@/components/charts/competitor-comparison-chart";
+// 색상 팔레트 선택기
+import { ColorPaletteSelector, COLOR_PALETTES } from "@/components/ui/color-palette-selector";
 // 공통 상수 임포트
 import { DEFAULT_PRODUCT_IMAGES } from "@/constants/images";
 
@@ -291,6 +293,13 @@ export function CompetitorMonitoringContent({
         if (savedSelectedCompetitor) {
           setSelectedCompetitor(savedSelectedCompetitor);
           console.log('로컬 스토리지에서 선택된 경쟁사 불러옴:', savedSelectedCompetitor);
+        }
+        
+        // 선택된 색상 팔레트 ID 불러오기
+        const savedColorPaletteId = localStorage.getItem('selectedColorPaletteId');
+        if (savedColorPaletteId) {
+          setSelectedColorPaletteId(savedColorPaletteId);
+          console.log('로컬 스토리지에서 색상 팔레트 불러옴:', savedColorPaletteId);
         }
       } catch (err) {
         console.warn('로컬 스토리지에서 데이터 불러오기 실패:', err);
@@ -994,6 +1003,22 @@ export function CompetitorMonitoringContent({
               </TabsContent>
               
               <TabsContent value="insights">
+                {/* 차트 설정 */}
+                <div className="flex justify-end mb-2">
+                  <ColorPaletteSelector
+                    selectedPaletteId={selectedColorPaletteId}
+                    onSelectPalette={(palette) => {
+                      setSelectedColorPaletteId(palette.id);
+                      // 로컬 스토리지에 선택된 팔레트 ID 저장
+                      try {
+                        localStorage.setItem('selectedColorPaletteId', palette.id);
+                      } catch (err) {
+                        console.warn('색상 팔레트 ID 저장 실패:', err);
+                      }
+                    }}
+                  />
+                </div>
+                
                 {/* 경쟁사 비교 차트 섹션 */}
                 <div className="mb-4">
                   <CompetitorComparisonChart
@@ -1003,6 +1028,7 @@ export function CompetitorMonitoringContent({
                     metric="marketShare"
                     title="경쟁사 시장 점유율 비교"
                     description="선택된 경쟁사들의 시장 점유율을 비교합니다."
+                    colorPalette={COLOR_PALETTES.find(p => p.id === selectedColorPaletteId) || COLOR_PALETTES[0]}
                   />
                 </div>
                 
