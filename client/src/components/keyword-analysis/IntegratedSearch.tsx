@@ -127,7 +127,7 @@ export default function IntegratedSearch() {
   const [availableKeywords, setAvailableKeywords] = useState<string[]>([]);
   const [isLoadingKeywords, setIsLoadingKeywords] = useState(false);
 
-  const handleSearch = async () => {
+  const handleSearch = async (event?: React.MouseEvent<HTMLButtonElement>) => {
     if (isLoading) return;
     
     setIsLoading(true);
@@ -136,9 +136,10 @@ export default function IntegratedSearch() {
     let apiMethod = 'post';
     
     try {
+      const searchTab = activeTab;
       const keywordArray = keywords.split(',').map(k => k.trim()).filter(k => k);
       
-      if (keywordArray.length === 0) {
+      if (keywordArray.length === 0 && searchTab !== 'niche-keywords') {
         throw new Error('키워드를 하나 이상 입력해주세요');
       }
       
@@ -149,7 +150,7 @@ export default function IntegratedSearch() {
         productName: '종합비타민 프리미엄'
       };
       
-      switch (activeTab) {
+      switch (searchTab) {
         case 'ad-keywords':
           endpoint = '/api/advanced-analysis/ad-filter';
           requestData = { keywords: keywordArray };
@@ -197,7 +198,7 @@ export default function IntegratedSearch() {
       
       if (data.success) {
         setSearchResult({
-          type: activeTab as any,
+          type: searchTab as any,
           data: data.data,
           timestamp: new Date().toISOString()
         });
@@ -775,7 +776,7 @@ export default function IntegratedSearch() {
                     onClick={handleUseDefaultKeywords}
                     className="whitespace-nowrap"
                   >
-                    기본 키워드
+                    검색
                   </Button>
                 </div>
               </div>
@@ -824,7 +825,7 @@ export default function IntegratedSearch() {
                       onClick={handleUseDefaultKeywords}
                       className="whitespace-nowrap"
                     >
-                      추천 키워드
+                      검색
                     </Button>
                   </div>
                   
@@ -892,7 +893,7 @@ export default function IntegratedSearch() {
                       onClick={handleUseDefaultKeywords}
                       className="whitespace-nowrap"
                     >
-                      추천 키워드
+                      검색
                     </Button>
                   </div>
                   
@@ -960,7 +961,7 @@ export default function IntegratedSearch() {
                       onClick={handleUseDefaultKeywords}
                       className="whitespace-nowrap"
                     >
-                      추천 키워드
+                      검색
                     </Button>
                   </div>
                   
@@ -1056,7 +1057,7 @@ export default function IntegratedSearch() {
                       onClick={handleUseDefaultKeywords}
                       className="whitespace-nowrap"
                     >
-                      추천 키워드
+                      검색
                     </Button>
                   </div>
                   
