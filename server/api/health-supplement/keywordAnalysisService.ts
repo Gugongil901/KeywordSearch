@@ -281,9 +281,10 @@ export class KeywordAnalysisService {
     };
     top10Keywords: Array<{
       keyword: string;
-      rank: number;
-      prevRank?: number;
+      rank: number | null;
+      prevRank?: number | null;
       change?: number;
+      error?: string;
     }>;
     allRankings: Array<{
       keyword: string;
