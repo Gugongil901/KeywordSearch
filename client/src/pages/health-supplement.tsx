@@ -272,7 +272,7 @@ const HealthSupplement = () => {
                       key={keyword} 
                       className={`px-3 py-2 rounded-md text-sm cursor-pointer transition-colors ${
                         selectedKeywords.includes(keyword) 
-                          ? 'bg-primary text-white'
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
                           : 'bg-gray-100 hover:bg-gray-200'
                       }`}
                       onClick={() => {
