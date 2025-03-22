@@ -1313,6 +1313,19 @@ export function CompetitorMonitoringContent({
                                 </div>
                               </TabsContent>
                             </Tabs>
+                            
+                            {/* 레이더 차트 추가 */}
+                            <div className="mt-6">
+                              <h3 className="text-sm font-medium text-gray-500 mb-3">종합 성과 분석</h3>
+                              <CompetitorComparisonChart
+                                insights={competitorInsights}
+                                competitors={[selectedCompetitor]}
+                                chartType="radar"
+                                title="성과 레이더 차트"
+                                description="위협 수준, 시장 점유율, 성장률을 종합적으로 분석합니다."
+                                height={250}
+                              />
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
