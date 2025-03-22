@@ -3,7 +3,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Layout from "@/components/layout";
 
 const placeholderTrendData = {
   daily: [
@@ -143,7 +142,7 @@ const TrendAnalysis: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <div className="bg-gray-50 min-h-screen">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-2xl md:text-3xl font-bold mb-6">트렌드 분석</h1>
@@ -350,7 +349,7 @@ const TrendAnalysis: React.FC = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

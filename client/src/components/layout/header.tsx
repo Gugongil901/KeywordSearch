@@ -24,7 +24,7 @@ const Header = () => {
             <Link href="/insights" className={`text-sm font-medium ${isActive('/insights') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
               키워드인사이트
             </Link>
-            <Link href="/" className={`text-sm font-medium ${isActive('/') && !location.includes('/') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
+            <Link href="/trends" className={`text-sm font-medium ${isActive('/trends') ? 'text-primary border-b-2 border-primary' : 'text-gray-900 hover:text-primary'}`}>
               트렌드분석
             </Link>
 
