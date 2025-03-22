@@ -947,25 +947,25 @@ export function CompetitorMonitoringContent({
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <Tabs defaultValue="insights" value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-              <TabsList className="w-full rounded-none justify-start bg-gray-100 p-0 h-auto">
-                <TabsTrigger 
-                  value="changes" 
-                  className="data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-700 rounded-none py-3 flex-1 max-w-[200px]"
+            <div className="w-full">
+              <div className="w-full rounded-none justify-start bg-gray-100 p-0 h-auto flex">
+                <button 
+                  onClick={() => setSelectedTab('changes')}
+                  className={`flex items-center py-3 flex-1 max-w-[200px] ${selectedTab === 'changes' ? 'bg-white border-b-2 border-blue-500 text-blue-700' : 'text-gray-600'}`}
                 >
-                  <LineChart className="h-4 w-4 mr-2" />
+                  <LineChart className="h-4 w-4 mx-2" />
                   변경사항
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="insights" 
-                  className="data-[state=active]:bg-white data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:text-blue-700 rounded-none py-3 flex-1 max-w-[200px]"
+                </button>
+                <button 
+                  onClick={() => setSelectedTab('insights')}
+                  className={`flex items-center py-3 flex-1 max-w-[200px] ${selectedTab === 'insights' ? 'bg-white border-b-2 border-blue-500 text-blue-700' : 'text-gray-600'}`}
                 >
-                  <Lightbulb className="h-4 w-4 mr-2" />
+                  <Lightbulb className="h-4 w-4 mx-2" />
                   경쟁사 인사이트
-                </TabsTrigger>
-              </TabsList>
+                </button>
+              </div>
               
-              <TabsContent value="changes">
+              {selectedTab === 'changes' && (
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                   <div className="lg:col-span-1">
                     <Card>
@@ -1149,11 +1149,12 @@ export function CompetitorMonitoringContent({
                     )}
                   </div>
                 </div>
-              </TabsContent>
+              )}
               
-              <TabsContent value="insights">
-                {/* 차트 설정 */}
-                <div className="flex justify-end mb-2">
+              {selectedTab === 'insights' && (
+                <div>
+                  {/* 차트 설정 */}
+                  <div className="flex justify-end mb-2">
                   <ColorPaletteSelector
                     selectedPaletteId={selectedColorPaletteId}
                     onSelectPalette={(palette) => {
@@ -1533,8 +1534,9 @@ export function CompetitorMonitoringContent({
                     )}
                   </div>
                 </div>
-              </TabsContent>
-            </Tabs>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
