@@ -6,7 +6,12 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Settings, RefreshCw, Search } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Settings, RefreshCw, Search, LineChart } from 'lucide-react';
 import { CompetitorMonitoringContent } from '../components/competitor-monitoring-content';
 
 // 경쟁사 브랜드 목록 (competitor-monitoring-content.tsx에서 가져옴)
@@ -30,6 +35,22 @@ export default function CompetitorMonitoring() {
   const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>(['drlin', 'naturalplus', 'anguk']);
   const [searchValue, setSearchValue] = useState('루테인'); // 검색창에 표시될 값
   const [isSearching, setIsSearching] = useState(false); // 검색 중 상태
+  const [configOpen, setConfigOpen] = useState(false); // 설정 다이얼로그 상태
+  const [monitoringFrequency, setMonitoringFrequency] = useState<'daily' | 'weekly'>('weekly');
+  const [alertThresholds, setAlertThresholds] = useState({
+    priceChangePercent: 5,
+    newProduct: true,
+    rankChange: true,
+    reviewChangePercent: 10
+  });
+  
+  // 임계값 변경 처리
+  const handleThresholdChange = (key: string, value: any) => {
+    setAlertThresholds(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
   
   // 키워드 검색 처리
   const handleSearch = () => {
@@ -109,18 +130,28 @@ export default function CompetitorMonitoring() {
                 />
                 <Search className="h-4 w-4 text-blue-500 absolute left-3 top-3.5" />
               </div>
-              <Button 
-                type="submit" 
-                onClick={handleSearch} 
-                disabled={isSearching}
-                className="bg-blue-600 hover:bg-blue-700 transition-all h-11 px-5"
-              >
-                {isSearching ? (
-                  <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> 검색 중...</>
-                ) : (
-                  <><Search className="h-4 w-4 mr-2" /> 검색</>
-                )}
-              </Button>
+              <div className="flex space-x-2">
+                <Button 
+                  type="submit" 
+                  onClick={handleSearch} 
+                  disabled={isSearching}
+                  className="bg-blue-600 hover:bg-blue-700 transition-all h-11 px-4"
+                >
+                  {isSearching ? (
+                    <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> 검색 중...</>
+                  ) : (
+                    <><Search className="h-4 w-4 mr-2" /> 검색</>
+                  )}
+                </Button>
+                <Button 
+                  onClick={() => setConfigOpen(true)} 
+                  variant="outline"
+                  className="border-blue-200 hover:bg-blue-50 transition-all h-11"
+                >
+                  <Settings className="h-4 w-4 mr-2 text-blue-600" />
+                  설정
+                </Button>
+              </div>
             </div>
             
             {selectedCompetitors.length > 0 && (
@@ -165,6 +196,119 @@ export default function CompetitorMonitoring() {
           />
         </div>
       </div>
+      
+      {/* 설정 다이얼로그 */}
+      <Dialog open={configOpen} onOpenChange={setConfigOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-blue-800">
+              <Settings className="h-5 w-5 text-blue-600" />
+              모니터링 설정
+            </DialogTitle>
+            <DialogDescription>
+              모니터링 주기와 알림 조건을 설정하세요
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-2">
+            <div className="grid gap-2">
+              <Label htmlFor="frequency" className="text-sm font-medium text-gray-700">
+                모니터링 주기
+              </Label>
+              <Select 
+                value={monitoringFrequency}
+                onValueChange={(value) => setMonitoringFrequency(value as 'daily' | 'weekly')}
+              >
+                <SelectTrigger id="frequency">
+                  <SelectValue placeholder="주기 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">매일</SelectItem>
+                  <SelectItem value="weekly">주 1회</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid gap-3 pt-2">
+              <h4 className="text-sm font-medium text-gray-700">알림 조건</h4>
+              
+              <div className="flex items-center justify-between py-1 border-b border-gray-100">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">가격 변동</Label>
+                  <p className="text-xs text-gray-500">가격이 {alertThresholds.priceChangePercent}% 이상 변경되면 알림</p>
+                </div>
+                <div className="flex items-center">
+                  <input 
+                    type="number" 
+                    value={alertThresholds.priceChangePercent} 
+                    onChange={(e) => handleThresholdChange('priceChangePercent', parseInt(e.target.value))}
+                    className="w-14 h-7 rounded border border-gray-200 text-center text-sm mr-2"
+                    min={1}
+                    max={50}
+                  />
+                  <span className="text-xs text-gray-600">%</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between py-1 border-b border-gray-100">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">새 제품 출시</Label>
+                  <p className="text-xs text-gray-500">새 제품 등록 시 알림</p>
+                </div>
+                <Switch 
+                  checked={alertThresholds.newProduct}
+                  onCheckedChange={(checked) => handleThresholdChange('newProduct', checked)}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between py-1 border-b border-gray-100">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">순위 변경</Label>
+                  <p className="text-xs text-gray-500">제품 순위 변동 시 알림</p>
+                </div>
+                <Switch 
+                  checked={alertThresholds.rankChange}
+                  onCheckedChange={(checked) => handleThresholdChange('rankChange', checked)}
+                />
+              </div>
+              
+              <div className="flex items-center justify-between py-1">
+                <div className="space-y-0.5">
+                  <Label className="text-sm">리뷰 증가</Label>
+                  <p className="text-xs text-gray-500">리뷰가 {alertThresholds.reviewChangePercent}% 이상 증가하면 알림</p>
+                </div>
+                <div className="flex items-center">
+                  <input 
+                    type="number" 
+                    value={alertThresholds.reviewChangePercent} 
+                    onChange={(e) => handleThresholdChange('reviewChangePercent', parseInt(e.target.value))}
+                    className="w-14 h-7 rounded border border-gray-200 text-center text-sm mr-2"
+                    min={5}
+                    max={100}
+                  />
+                  <span className="text-xs text-gray-600">%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setConfigOpen(false)}
+              className="border-gray-300"
+            >
+              취소
+            </Button>
+            <Button 
+              onClick={() => setConfigOpen(false)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              설정 저장
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

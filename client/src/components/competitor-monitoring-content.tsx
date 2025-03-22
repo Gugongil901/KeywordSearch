@@ -680,16 +680,6 @@ export function CompetitorMonitoringContent({
           <h3 className="text-xl font-semibold mb-1">경쟁사 모니터링</h3>
           <p className="text-sm text-gray-500">경쟁사 제품의 가격, 순위, 리뷰 변화를 지속적으로 모니터링합니다.</p>
         </div>
-        <div className="flex items-center mt-3 md:mt-0 space-x-2">
-          <Button variant="outline" size="sm" onClick={() => setConfigOpen(true)}>
-            <Settings className="h-4 w-4 mr-2" />
-            설정
-          </Button>
-          <Button size="sm" onClick={checkChanges} disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-            변경 확인
-          </Button>
-        </div>
       </div>
     );
   };
