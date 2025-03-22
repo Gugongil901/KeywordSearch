@@ -20,7 +20,7 @@ interface CompetitorProduct {
   rank: number;
   image?: string;
   url?: string;
-  collectedAt: string;
+  collectedAt?: string;
 }
 
 interface PriceChange {
