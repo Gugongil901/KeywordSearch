@@ -251,6 +251,11 @@ export function CompetitorMonitoringContent({
       onCompetitorsChange(newCompetitors);
     }
     
+    // 방금 선택된 경쟁사를 현재 선택된 경쟁사로 설정
+    if (!competitors.includes(competitorId) && newCompetitors.includes(competitorId)) {
+      setSelectedCompetitor(competitorId);
+    }
+    
     // 경쟁사가 선택되면 자동으로 변경사항 확인
     if (keyword && newCompetitors.length > 0) {
       checkChanges();
@@ -292,6 +297,14 @@ export function CompetitorMonitoringContent({
       clearInterval(insightRefreshTimer);
     };
   }, []);
+  
+  // 선택된 경쟁사가 변경될 때마다 해당 경쟁사의 인사이트 데이터 유지
+  useEffect(() => {
+    if (selectedCompetitor) {
+      // 선택된 경쟁사가 변경될 때마다 인사이트 데이터를 새로 로드
+      loadCompetitorInsights();
+    }
+  }, [selectedCompetitor]);
   
   // 임계값 변경 처리
   const handleThresholdChange = (key: string, value: any) => {
@@ -791,14 +804,19 @@ export function CompetitorMonitoringContent({
                       </CardHeader>
                       <CardContent className="py-2">
                         <div className="space-y-2">
-                          {Object.keys(monitoringResult.changesDetected).map((competitorId) => {
+                          {/* 선택된 경쟁사 목록에서 표시할 경쟁사 - api 응답 기준이 아니라 사용자가 선택한 경쟁사 기준 */}
+                          {competitors.map((competitorId) => {
                             const brand = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitorId);
-                            const changes = monitoringResult.changesDetected[competitorId];
-                            const hasChanges = 
-                              changes.priceChanges.length > 0 || 
-                              changes.newProducts.length > 0 || 
-                              changes.rankChanges.length > 0 || 
-                              changes.reviewChanges.length > 0;
+                            // monitoringResult에 해당 경쟁사 데이터가 있는지 확인
+                            const competitorData = monitoringResult.changesDetected[competitorId];
+                            
+                            // 변경사항 있는지 확인
+                            const hasChanges = competitorData && (
+                              competitorData.priceChanges.length > 0 || 
+                              competitorData.newProducts.length > 0 || 
+                              competitorData.rankChanges.length > 0 || 
+                              competitorData.reviewChanges.length > 0
+                            );
                               
                             return (
                               <div 
@@ -810,7 +828,7 @@ export function CompetitorMonitoringContent({
                                   <div className="flex items-center">
                                     <div className="font-medium">{brand?.name || competitorId}</div>
                                   </div>
-                                  {changes.alerts && (
+                                  {competitorData && competitorData.alerts && (
                                     <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200">
                                       <AlertCircle className="h-3 w-3 mr-1" />
                                       변경
@@ -820,17 +838,17 @@ export function CompetitorMonitoringContent({
                                 <div className="text-xs text-gray-500 mt-1">
                                   {hasChanges ? (
                                     <div className="flex items-center space-x-2">
-                                      {changes.priceChanges.length > 0 && 
-                                        <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded-full">가격 {changes.priceChanges.length}</span>
+                                      {competitorData.priceChanges.length > 0 && 
+                                        <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded-full">가격 {competitorData.priceChanges.length}</span>
                                       }
-                                      {changes.rankChanges.length > 0 && 
-                                        <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded-full">순위 {changes.rankChanges.length}</span>
+                                      {competitorData.rankChanges.length > 0 && 
+                                        <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded-full">순위 {competitorData.rankChanges.length}</span>
                                       }
-                                      {changes.reviewChanges.length > 0 && 
-                                        <span className="px-1.5 py-0.5 bg-green-50 text-green-700 rounded-full">리뷰 {changes.reviewChanges.length}</span>
+                                      {competitorData.reviewChanges.length > 0 && 
+                                        <span className="px-1.5 py-0.5 bg-green-50 text-green-700 rounded-full">리뷰 {competitorData.reviewChanges.length}</span>
                                       }
-                                      {changes.newProducts.length > 0 && 
-                                        <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-full">신제품 {changes.newProducts.length}</span>
+                                      {competitorData.newProducts.length > 0 && 
+                                        <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-full">신제품 {competitorData.newProducts.length}</span>
                                       }
                                     </div>
                                   ) : (
@@ -918,41 +936,50 @@ export function CompetitorMonitoringContent({
                       <CardContent className="py-2">
                         <div className="space-y-2">
                           {Object.keys(competitorInsights).length > 0 ? (
-                            Object.entries(competitorInsights).map(([id, insight]) => {
-                              const threatLevel = insight.threatLevel;
-                              let threatBadge;
-                              
-                              if (threatLevel >= 80) {
-                                threatBadge = <Badge className="bg-red-100 text-red-800 hover:bg-red-200">매우 높음</Badge>;
-                              } else if (threatLevel >= 60) {
-                                threatBadge = <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">높음</Badge>;
-                              } else if (threatLevel >= 40) {
-                                threatBadge = <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">중간</Badge>;
-                              } else {
-                                threatBadge = <Badge className="bg-green-100 text-green-800 hover:bg-green-200">낮음</Badge>;
-                              }
-                              
-                              return (
-                                <div 
-                                  key={id}
-                                  className={`p-2 rounded-md cursor-pointer ${selectedCompetitor === id ? 'bg-primary/10' : 'hover:bg-gray-100'}`}
-                                  onClick={() => setSelectedCompetitor(id)}
-                                >
-                                  <div className="flex items-center justify-between">
-                                    <div className="font-medium">{insight.competitor}</div>
-                                    {threatBadge}
+                            Object.entries(competitorInsights)
+                              // 선택된 경쟁사만 필터링 (모니터링 섹션에 선택된 경쟁사만 표시)
+                              .filter(([id, _]) => competitors.includes(id))
+                              .map(([id, insight]) => {
+                                const threatLevel = insight.threatLevel;
+                                let threatBadge;
+                                
+                                if (threatLevel >= 80) {
+                                  threatBadge = <Badge className="bg-red-100 text-red-800 hover:bg-red-200">매우 높음</Badge>;
+                                } else if (threatLevel >= 60) {
+                                  threatBadge = <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">높음</Badge>;
+                                } else if (threatLevel >= 40) {
+                                  threatBadge = <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">중간</Badge>;
+                                } else {
+                                  threatBadge = <Badge className="bg-green-100 text-green-800 hover:bg-green-200">낮음</Badge>;
+                                }
+                                
+                                return (
+                                  <div 
+                                    key={id}
+                                    className={`p-2 rounded-md cursor-pointer ${selectedCompetitor === id ? 'bg-primary/10' : 'hover:bg-gray-100'}`}
+                                    onClick={() => setSelectedCompetitor(id)}
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <div className="font-medium">{insight.competitor}</div>
+                                      {threatBadge}
+                                    </div>
+                                    <div className="flex items-center text-xs text-gray-500 mt-1">
+                                      <span>시장점유율: {insight.marketShare}%</span>
+                                      <span className="mx-2">•</span>
+                                      <span>성장률: {insight.growthRate > 0 ? '+' : ''}{insight.growthRate}%</span>
+                                    </div>
                                   </div>
-                                  <div className="flex items-center text-xs text-gray-500 mt-1">
-                                    <span>시장점유율: {insight.marketShare}%</span>
-                                    <span className="mx-2">•</span>
-                                    <span>성장률: {insight.growthRate > 0 ? '+' : ''}{insight.growthRate}%</span>
-                                  </div>
-                                </div>
-                              );
-                            })
+                                );
+                              })
                           ) : (
                             <div className="py-2 text-sm text-gray-500">
                               경쟁사 인사이트 로딩 중...
+                            </div>
+                          )}
+                          {Object.keys(competitorInsights).length > 0 && 
+                           Object.entries(competitorInsights).filter(([id, _]) => competitors.includes(id)).length === 0 && (
+                            <div className="py-2 text-sm text-gray-500">
+                              선택된 경쟁사가 없습니다. 경쟁사를 선택해주세요.
                             </div>
                           )}
                         </div>
