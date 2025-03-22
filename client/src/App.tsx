@@ -34,7 +34,9 @@ function App() {
       <div className="min-h-screen flex flex-col bg-gray-50">
         <Header />
         <main className="flex-1">
-          <Router />
+          <div className="max-w-5xl mx-auto w-full">
+            <Router />
+          </div>
         </main>
         <Footer />
       </div>
