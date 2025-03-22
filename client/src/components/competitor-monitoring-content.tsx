@@ -975,11 +975,17 @@ export function CompetitorMonitoringContent({
                         <div className="space-y-2">
                           {/* 경쟁사 데이터 표시 - 모든 모니터링 중인 경쟁사 표시 */}
                           {competitors.filter(competitorId => {
+                            // 변경사항만 표시 옵션이 꺼져 있으면 모든 경쟁사 표시
                             if (!showOnlyChanges) return true;
                             
+                            // 모니터링 결과가 없으면 모든 경쟁사 표시
+                            if (!monitoringResult || !monitoringResult.changesDetected) return true;
+                            
+                            // 해당 경쟁사의 데이터가 없으면 필터링
                             const competitorData = monitoringResult.changesDetected?.[competitorId];
                             if (!competitorData) return false;
                             
+                            // 변경사항이 하나라도 있으면 표시
                             return (
                               (competitorData.priceChanges && competitorData.priceChanges.length > 0) || 
                               (competitorData.newProducts && competitorData.newProducts.length > 0) || 
@@ -1000,7 +1006,6 @@ export function CompetitorMonitoringContent({
                               (competitorData.newProducts && competitorData.newProducts.length > 0) || 
                               (competitorData.rankChanges && competitorData.rankChanges.length > 0) || 
                               (competitorData.reviewChanges && competitorData.reviewChanges.length > 0)
-                            );iewChanges && competitorData.reviewChanges.length > 0)
                             );
                               
                             return (

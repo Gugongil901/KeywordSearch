@@ -4,17 +4,17 @@
  * 특정 키워드의 경쟁사 제품을 모니터링하고 가격, 순위, 리뷰 등의 변화를 감지하는 시스템
  */
 
-import { DatabaseConnector } from '../collectors/database-connector';
-import { NaverDataCollector } from '../collectors/naver-data-collector';
-import { CompetitorAnalyzer } from '../analyzers/competitor-analyzer';
+import { DatabaseConnector } from './server/api/collectors/database-connector';
+import { NaverDataCollector } from './server/api/collectors/naver-data-collector';
+import { CompetitorAnalyzer } from './server/api/analyzers/competitor-analyzer';
 import { 
   CompetitorProduct, 
   MonitoringConfig, 
   MonitoringResult, 
   CompetitorChanges,
   MonitoringThresholds
-} from '../../../shared/schema';
-import { logger } from '../../utils/logger';
+} from './shared/schema';
+import { logger } from './server/utils/logger';
 
 export class CompetitorMonitoringSystem {
   private db: DatabaseConnector;

@@ -570,7 +570,7 @@ export function getFallbackKeywords(category: string): string[] {
       ];
     case 'baby':
       return [
-        '기저귀', '이유식', '유모차', '분유', ''젖병', '아기과자', 
+        '기저귀', '이유식', '유모차', '분유', '젖병', '아기과자', 
         '이유식재료', '장난감', '아기옷', '물티슈'
       ];
     case 'sports':
