@@ -310,17 +310,17 @@ export function CompetitorMonitoringContent({
         try {
           const savedSelectedCompetitor = localStorage.getItem('selectedCompetitor');
           if (savedSelectedCompetitor) {
-            // 경쟁사 ID나 이름 모두 지원
+            // 이름으로 저장된 경우 ID로 변환
             const existingBrand = HEALTH_SUPPLEMENT_BRANDS.find(
               b => b.id === savedSelectedCompetitor || b.name === savedSelectedCompetitor
             );
             
             if (existingBrand) {
-              // 이름으로 저장 (API 응답과 일치시키기 위해)
-              setSelectedCompetitor(existingBrand.name);
-              console.log('로컬 스토리지에서 선택된 경쟁사 불러옴:', existingBrand.name);
+              // ID로 저장 (일관성을 위해)
+              setSelectedCompetitor(existingBrand.id);
+              console.log('로컬 스토리지에서 선택된 경쟁사 불러옴(ID로 변환):', existingBrand.id);
             } else {
-              // 직접 사용 (이미 이름일 수 있음)
+              // ID로 간주하고 사용
               setSelectedCompetitor(savedSelectedCompetitor);
               console.log('로컬 스토리지에서 선택된 경쟁사 불러옴:', savedSelectedCompetitor);
             }
@@ -353,12 +353,11 @@ export function CompetitorMonitoringContent({
       
       // 경쟁사가 있고 아직 선택된 경쟁사가 없으면 첫 번째 경쟁사 선택
       if (competitors.length > 0 && !selectedCompetitor) {
-        // 경쟁사 ID로 경쟁사 이름 찾기 (API 응답과 일치시키기 위해 이름 사용)
-        const competitor = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitors[0]);
-        const competitorName = competitor?.name || competitors[0];
-        setSelectedCompetitor(competitorName);
-        localStorage.setItem('selectedCompetitor', competitorName);
-        console.log('새 경쟁사 선택(자동):', competitorName);
+        // 일관성을 위해 ID를 사용
+        const competitorId = competitors[0];
+        setSelectedCompetitor(competitorId);
+        localStorage.setItem('selectedCompetitor', competitorId);
+        console.log('새 경쟁사 선택(자동/ID):', competitorId);
       }
       
       // 만약 선택된 경쟁사가 현재 경쟁사 목록에 없으면 첫 번째 경쟁사로 변경
@@ -370,12 +369,11 @@ export function CompetitorMonitoringContent({
         );
         
         if (!isIncluded) {
-          // 경쟁사 ID로 경쟁사 이름 찾기 (API 응답과 일치시키기 위해 이름 사용)
-          const competitor = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitors[0]);
-          const competitorName = competitor?.name || competitors[0];
-          setSelectedCompetitor(competitorName);
-          localStorage.setItem('selectedCompetitor', competitorName);
-          console.log('경쟁사 목록 변경으로 새 경쟁사 선택:', competitorName);
+          // 일관성을 위해 ID를 사용
+          const competitorId = competitors[0];
+          setSelectedCompetitor(competitorId);
+          localStorage.setItem('selectedCompetitor', competitorId);
+          console.log('경쟁사 목록 변경으로 새 경쟁사 선택(ID):', competitorId);
         }
       }
     }
@@ -563,9 +561,21 @@ export function CompetitorMonitoringContent({
           );
             
           if (!selectedCompetitor || !found) {
-            const newCompetitor = availableCompetitors[0];
-            setSelectedCompetitor(newCompetitor);
-            console.log('API 응답에서 새 경쟁사로 변경:', newCompetitor);
+            // API 응답에서는 이름을 사용하므로 매핑해서 ID 얻기
+            const brandName = availableCompetitors[0];
+            const brand = HEALTH_SUPPLEMENT_BRANDS.find(b => b.name === brandName);
+            
+            if (brand) {
+              // ID 사용
+              setSelectedCompetitor(brand.id);
+              localStorage.setItem('selectedCompetitor', brand.id);
+              console.log('API 응답에서 새 경쟁사로 변경(ID):', brand.id);
+            } else {
+              // 직접 사용 (ID일 수도 있음)
+              setSelectedCompetitor(brandName);
+              localStorage.setItem('selectedCompetitor', brandName);
+              console.log('API 응답에서 새 경쟁사로 변경(미매핑):', brandName);
+            }
           }
         }
       }
