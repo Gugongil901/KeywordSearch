@@ -296,7 +296,7 @@ const KeywordAnalysis: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {searchResult.products?.slice(0, 5).map((product: any, index: number) => (
+                        {searchResult.products?.slice(0, 10).map((product: any, index: number) => (
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{product.title}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{product.price.toLocaleString()}원</td>
