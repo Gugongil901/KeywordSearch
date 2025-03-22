@@ -461,7 +461,7 @@ export default function IntegratedSearch() {
         <CardHeader>
           <CardTitle>최적 키워드 분석</CardTitle>
           <CardDescription>
-            상품 "{data.productInfo.productName}" (ID: {data.productInfo.productId})의 최적 키워드 {data.count}개
+            건강보조제 브랜드 제품에 대한 최적 키워드 분석 결과 {data.count}개
           </CardDescription>
         </CardHeader>
         <CardContent>
