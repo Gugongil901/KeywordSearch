@@ -242,6 +242,12 @@ export function CompetitorMonitoringContent({
   const [keywordDebounceTimeout, setKeywordDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
   const [competitorInsights, setCompetitorInsights] = useState<Record<string, CompetitorInsight>>({});
   const [selectedColorPaletteId, setSelectedColorPaletteId] = useState<string>('pastel'); // 기본 색상 팔레트
+
+  // 정렬 상태
+  const [priceChangeSortBy, setPriceChangeSortBy] = useState<string>("percent-desc");
+  const [rankChangeSortBy, setRankChangeSortBy] = useState<string>("change-desc");
+  const [reviewChangeSortBy, setReviewChangeSortBy] = useState<string>("percent-desc");
+  const [newProductSortBy, setNewProductSortBy] = useState<string>("price-desc");
   
   const { toast } = useToast();
   
@@ -1376,10 +1382,8 @@ export function CompetitorMonitoringContent({
 function renderPriceChanges(changes: PriceChange[], competitor: string) {
   if (changes.length === 0) return null;
   
-  const [sortBy, setSortBy] = useState<string>("percent-desc");
-  
   const sortedChanges = [...changes].sort((a, b) => {
-    switch (sortBy) {
+    switch (priceChangeSortBy) {
       case "percent-desc":
         return b.changePercent - a.changePercent;
       case "percent-asc":
@@ -1413,8 +1417,8 @@ function renderPriceChanges(changes: PriceChange[], competitor: string) {
         <div className="flex items-center">
           <ArrowUpDown className="h-4 w-4 mr-1 text-gray-500" />
           <SortSelect
-            value={sortBy}
-            onChange={setSortBy}
+            value={priceChangeSortBy}
+            onChange={setPriceChangeSortBy}
             options={sortOptions}
             placeholder="정렬"
             className="h-7 ml-1"
@@ -1439,10 +1443,8 @@ function renderPriceChanges(changes: PriceChange[], competitor: string) {
 function renderRankChanges(changes: RankChange[], competitor: string) {
   if (changes.length === 0) return null;
   
-  const [sortBy, setSortBy] = useState<string>("change-desc");
-  
   const sortedChanges = [...changes].sort((a, b) => {
-    switch (sortBy) {
+    switch (rankChangeSortBy) {
       case "change-desc":
         return b.change - a.change;
       case "change-asc":
@@ -1476,8 +1478,8 @@ function renderRankChanges(changes: RankChange[], competitor: string) {
         <div className="flex items-center">
           <ArrowUpDown className="h-4 w-4 mr-1 text-gray-500" />
           <SortSelect
-            value={sortBy}
-            onChange={setSortBy}
+            value={rankChangeSortBy}
+            onChange={setRankChangeSortBy}
             options={sortOptions}
             placeholder="정렬"
             className="h-7 ml-1"
@@ -1502,10 +1504,8 @@ function renderRankChanges(changes: RankChange[], competitor: string) {
 function renderReviewChanges(changes: ReviewChange[], competitor: string) {
   if (changes.length === 0) return null;
   
-  const [sortBy, setSortBy] = useState<string>("percent-desc");
-  
   const sortedChanges = [...changes].sort((a, b) => {
-    switch (sortBy) {
+    switch (reviewChangeSortBy) {
       case "percent-desc":
         return b.changePercent - a.changePercent;
       case "percent-asc":
@@ -1539,8 +1539,8 @@ function renderReviewChanges(changes: ReviewChange[], competitor: string) {
         <div className="flex items-center">
           <ArrowUpDown className="h-4 w-4 mr-1 text-gray-500" />
           <SortSelect
-            value={sortBy}
-            onChange={setSortBy}
+            value={reviewChangeSortBy}
+            onChange={setReviewChangeSortBy}
             options={sortOptions}
             placeholder="정렬"
             className="h-7 ml-1"
@@ -1565,10 +1565,8 @@ function renderReviewChanges(changes: ReviewChange[], competitor: string) {
 function renderNewProducts(changes: NewProductAlert[], competitor: string) {
   if (changes.length === 0) return null;
   
-  const [sortBy, setSortBy] = useState<string>("price-desc");
-  
   const sortedChanges = [...changes].sort((a, b) => {
-    switch (sortBy) {
+    switch (newProductSortBy) {
       case "price-desc":
         return b.product.price - a.product.price;
       case "price-asc":
@@ -1608,8 +1606,8 @@ function renderNewProducts(changes: NewProductAlert[], competitor: string) {
         <div className="flex items-center">
           <ArrowUpDown className="h-4 w-4 mr-1 text-gray-500" />
           <SortSelect
-            value={sortBy}
-            onChange={setSortBy}
+            value={newProductSortBy}
+            onChange={setNewProductSortBy}
             options={sortOptions}
             placeholder="정렬"
             className="h-7 ml-1"
