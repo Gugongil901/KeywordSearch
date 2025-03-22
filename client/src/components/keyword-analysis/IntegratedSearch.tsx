@@ -834,7 +834,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'ad-keywords' ? renderResults() : null}
+          {searchResult?.type === 'ad-keywords' && renderResults()}
         </TabsContent>
         
         <TabsContent value="page-exposure" className="space-y-4 pt-4">
@@ -908,7 +908,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'page-exposure' ? renderResults() : null}
+          {searchResult?.type === 'page-exposure' && renderResults()}
         </TabsContent>
         
         <TabsContent value="product-ranking" className="space-y-4 pt-4">
