@@ -799,7 +799,7 @@ export function CompetitorMonitoringContent({
                 </CardDescription>
               </div>
               <Badge variant="outline" className="bg-blue-100 text-blue-600 border-blue-200 mt-2 sm:mt-0">
-                모니터링 대상: {Object.keys(monitoringResult.changesDetected).length}개 경쟁사
+                모니터링 대상: {competitors.length}개 경쟁사
               </Badge>
             </div>
           </CardHeader>
@@ -962,49 +962,61 @@ export function CompetitorMonitoringContent({
                       </CardHeader>
                       <CardContent className="py-2">
                         <div className="space-y-2">
-                          {Object.keys(competitorInsights).length > 0 ? (
-                            Object.entries(competitorInsights)
-                              // 선택된 경쟁사만 필터링 (모니터링 섹션에 선택된 경쟁사만 표시)
-                              .filter(([id, _]) => competitors.includes(id))
-                              .map(([id, insight]) => {
-                                const threatLevel = insight.threatLevel;
-                                let threatBadge;
-                                
-                                if (threatLevel >= 80) {
-                                  threatBadge = <Badge className="bg-red-100 text-red-800 hover:bg-red-200">매우 높음</Badge>;
-                                } else if (threatLevel >= 60) {
-                                  threatBadge = <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">높음</Badge>;
-                                } else if (threatLevel >= 40) {
-                                  threatBadge = <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">중간</Badge>;
-                                } else {
-                                  threatBadge = <Badge className="bg-green-100 text-green-800 hover:bg-green-200">낮음</Badge>;
-                                }
-                                
+                          {/* 선택된 경쟁사 목록을 기반으로 표시 */}
+                          {competitors.length > 0 ? (
+                            competitors.map((competitorId) => {
+                              // 해당 경쟁사 ID에 대한 인사이트가 있는지 확인
+                              const insight = competitorInsights[competitorId];
+                              if (!insight) {
+                                // 인사이트가 없으면 기본 정보만 표시
+                                const brand = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitorId);
                                 return (
                                   <div 
-                                    key={id}
-                                    className={`p-2 rounded-md cursor-pointer ${selectedCompetitor === id ? 'bg-primary/10' : 'hover:bg-gray-100'}`}
-                                    onClick={() => setSelectedCompetitor(id)}
+                                    key={competitorId}
+                                    className={`p-2 rounded-md cursor-pointer ${selectedCompetitor === competitorId ? 'bg-primary/10' : 'hover:bg-gray-100'}`}
+                                    onClick={() => setSelectedCompetitor(competitorId)}
                                   >
                                     <div className="flex items-center justify-between">
-                                      <div className="font-medium">{insight.competitor}</div>
-                                      {threatBadge}
-                                    </div>
-                                    <div className="flex items-center text-xs text-gray-500 mt-1">
-                                      <span>시장점유율: {insight.marketShare}%</span>
-                                      <span className="mx-2">•</span>
-                                      <span>성장률: {insight.growthRate > 0 ? '+' : ''}{insight.growthRate}%</span>
+                                      <div className="font-medium">{brand?.name || competitorId}</div>
+                                      <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-200">로드 중</Badge>
                                     </div>
                                   </div>
                                 );
-                              })
+                              }
+                              
+                              // 인사이트가 있으면 상세 정보 표시
+                              const threatLevel = insight.threatLevel;
+                              let threatBadge;
+                              
+                              if (threatLevel >= 80) {
+                                threatBadge = <Badge className="bg-red-100 text-red-800 hover:bg-red-200">매우 높음</Badge>;
+                              } else if (threatLevel >= 60) {
+                                threatBadge = <Badge className="bg-orange-100 text-orange-800 hover:bg-orange-200">높음</Badge>;
+                              } else if (threatLevel >= 40) {
+                                threatBadge = <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">중간</Badge>;
+                              } else {
+                                threatBadge = <Badge className="bg-green-100 text-green-800 hover:bg-green-200">낮음</Badge>;
+                              }
+                              
+                              return (
+                                <div 
+                                  key={competitorId}
+                                  className={`p-2 rounded-md cursor-pointer ${selectedCompetitor === competitorId ? 'bg-primary/10' : 'hover:bg-gray-100'}`}
+                                  onClick={() => setSelectedCompetitor(competitorId)}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="font-medium">{insight.competitor}</div>
+                                    {threatBadge}
+                                  </div>
+                                  <div className="flex items-center text-xs text-gray-500 mt-1">
+                                    <span>시장점유율: {insight.marketShare}%</span>
+                                    <span className="mx-2">•</span>
+                                    <span>성장률: {insight.growthRate > 0 ? '+' : ''}{insight.growthRate}%</span>
+                                  </div>
+                                </div>
+                              );
+                            })
                           ) : (
-                            <div className="py-2 text-sm text-gray-500">
-                              경쟁사 인사이트 로딩 중...
-                            </div>
-                          )}
-                          {Object.keys(competitorInsights).length > 0 && 
-                           Object.entries(competitorInsights).filter(([id, _]) => competitors.includes(id)).length === 0 && (
                             <div className="py-2 text-sm text-gray-500">
                               선택된 경쟁사가 없습니다. 경쟁사를 선택해주세요.
                             </div>
@@ -1015,11 +1027,20 @@ export function CompetitorMonitoringContent({
                   </div>
                   
                   <div className="lg:col-span-3">
-                    {!selectedCompetitor || !competitorInsights[selectedCompetitor] ? (
+                    {!selectedCompetitor ? (
+                      // 선택된 경쟁사가 없는 경우
                       <div className="flex flex-col items-center justify-center p-8 h-full">
                         <Info className="h-12 w-12 text-gray-300 mb-2" />
                         <p className="text-gray-500 text-center">
                           경쟁사를 선택하여 인사이트를 확인하세요.
+                        </p>
+                      </div>
+                    ) : !competitorInsights[selectedCompetitor] ? (
+                      // 선택된 경쟁사는 있지만 아직 인사이트 데이터가 로딩되지 않은 경우
+                      <div className="flex flex-col items-center justify-center p-8 h-full">
+                        <Loader2 className="h-12 w-12 text-gray-300 mb-2 animate-spin" />
+                        <p className="text-gray-500 text-center">
+                          {HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name || selectedCompetitor} 인사이트 로딩 중...
                         </p>
                       </div>
                     ) : (
