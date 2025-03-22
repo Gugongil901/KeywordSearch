@@ -1208,7 +1208,9 @@ export function CompetitorMonitoringContent({
                                   }}
                                 >
                                   <div className="flex items-center justify-between">
-                                    <div className="font-medium">{insight.competitor}</div>
+                                    <div className="font-medium">
+                                      {HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitorId)?.name || insight.competitor}
+                                    </div>
                                     {threatBadge}
                                   </div>
                                   <div className="flex items-center text-xs text-gray-500 mt-1">
@@ -1251,7 +1253,7 @@ export function CompetitorMonitoringContent({
                         <CardHeader className="py-3">
                           <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between">
                             <CardTitle className="text-base mb-1 xs:mb-0">
-                              {competitorInsights[selectedCompetitor].competitor} 인사이트
+                              {HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name || competitorInsights[selectedCompetitor].competitor} 인사이트
                             </CardTitle>
                             <div className="flex items-center text-xs gap-2">
                               <Badge variant="outline" className="bg-gray-50">

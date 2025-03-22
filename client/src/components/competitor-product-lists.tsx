@@ -11,6 +11,22 @@ import { RankChangeCard } from "@/components/rank-change-card";
 import { ReviewChangeCard } from "@/components/review-change-card";
 import { NewProductCard } from "@/components/new-product-card";
 
+// 건강기능식품 브랜드 상수
+const HEALTH_SUPPLEMENT_BRANDS = [
+  { id: 'drlin', name: '닥터린', searchTerm: '닥터린 영양제' },
+  { id: 'naturalplus', name: '내츄럴플러스', searchTerm: '내츄럴플러스 영양제' },
+  { id: 'esthermall', name: '에스더몰', searchTerm: '에스더포뮬러' },
+  { id: 'anguk', name: '안국건강', searchTerm: '안국건강 영양제' },
+  { id: 'koreaeundan', name: '고려은단', searchTerm: '고려은단 영양제' },
+  { id: 'nutrione', name: '뉴트리원', searchTerm: '뉴트리원 영양제' },
+  { id: 'ckdhc', name: '종근당건강', searchTerm: '종근당건강 영양제' },
+  { id: 'gnm', name: 'GNM 자연의품격', searchTerm: 'GNM 자연의품격 영양제' },
+  { id: 'nutriday', name: '뉴트리데이', searchTerm: '뉴트리데이 영양제' },
+  { id: 'jyns', name: '주영엔에스', searchTerm: '주영엔에스 영양제' },
+  { id: 'hanmi', name: '한미양행', searchTerm: '한미양행 영양제' },
+  { id: 'yuhan', name: '유한양행', searchTerm: '유한양행 비타민' }
+];
+
 // 인터페이스 타입
 interface CompetitorProduct {
   productId: string;
@@ -52,6 +68,9 @@ interface NewProductAlert {
 // 가격 변경 목록 컴포넌트
 export function PriceChangeList({ changes, competitor }: { changes: PriceChange[], competitor: string }) {
   const [sortBy, setSortBy] = useState<string>("percent-desc");
+  
+  // 경쟁사 ID에서 한글 이름으로 변환
+  const brandName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor)?.name || competitor;
   
   // 변경사항이 없을 때 메시지 표시
   if (changes.length === 0) {
@@ -114,7 +133,7 @@ export function PriceChangeList({ changes, competitor }: { changes: PriceChange[
           <PriceChangeCard 
             key={`${change.product.productId}-price-${index}`} 
             change={change} 
-            brandName={competitor}
+            brandName={brandName}
             brandId={competitor.toLowerCase().replace(/\s+/g, '')}
           />
         ))}
