@@ -6,10 +6,6 @@
 // 제품 이미지 컴포넌트 임포트
 import { ProductImage } from "@/components/ui/product-image";
 import { CompetitorProductImage } from "@/components/competitor-product-image-new";
-import { PriceChangeCard } from "@/components/price-change-card";
-import { RankChangeCard } from "@/components/rank-change-card";
-import { ReviewChangeCard } from "@/components/review-change-card";
-import { NewProductCard } from "@/components/new-product-card";
 import { ProductCard } from "@/components/product-card";
 import { formatNumber, formatDate, formatPercent, getChangeColorClass } from "@/utils/format";
 // 차트 컴포넌트 임포트
@@ -17,8 +13,8 @@ import { StrengthWeaknessChart } from "@/components/charts/strength-weakness-rad
 import { CompetitorComparisonChart } from "@/components/charts/competitor-comparison-chart";
 // 색상 팔레트 선택기
 import { ColorPaletteSelector, COLOR_PALETTES } from "@/components/ui/color-palette-selector";
-// 정렬 선택기
-import { SortSelect } from "@/components/ui/sort-select";
+// 새로운 제품 목록 컴포넌트 임포트
+import { PriceChangeList, RankChangeList, ReviewChangeList, NewProductList } from "@/components/competitor-product-lists";
 import { ArrowUpDown } from "lucide-react";
 // 공통 상수 임포트
 import { DEFAULT_PRODUCT_IMAGES } from "@/constants/images";
@@ -243,11 +239,7 @@ export function CompetitorMonitoringContent({
   const [competitorInsights, setCompetitorInsights] = useState<Record<string, CompetitorInsight>>({});
   const [selectedColorPaletteId, setSelectedColorPaletteId] = useState<string>('pastel'); // 기본 색상 팔레트
 
-  // 정렬 상태
-  const [priceChangeSortBy, setPriceChangeSortBy] = useState<string>("percent-desc");
-  const [rankChangeSortBy, setRankChangeSortBy] = useState<string>("change-desc");
-  const [reviewChangeSortBy, setReviewChangeSortBy] = useState<string>("percent-desc");
-  const [newProductSortBy, setNewProductSortBy] = useState<string>("price-desc");
+  // 이제 정렬 상태 변수가 각 리스트 컴포넌트에 내장됨
   
   const { toast } = useToast();
   
@@ -977,16 +969,28 @@ export function CompetitorMonitoringContent({
                         <CardContent className="py-2">
                           <div className="space-y-6">
                             {/* 가격 변경 */}
-                            {renderPriceChanges(monitoringResult.changesDetected[selectedCompetitor]?.priceChanges || [], selectedCompetitor)}
+                            <PriceChangeList 
+                              changes={monitoringResult.changesDetected[selectedCompetitor]?.priceChanges || []}
+                              competitor={selectedCompetitor}
+                            />
                             
                             {/* 순위 변경 */}
-                            {renderRankChanges(monitoringResult.changesDetected[selectedCompetitor]?.rankChanges || [], selectedCompetitor)}
+                            <RankChangeList 
+                              changes={monitoringResult.changesDetected[selectedCompetitor]?.rankChanges || []}
+                              competitor={selectedCompetitor}
+                            />
                             
                             {/* 리뷰 변경 */}
-                            {renderReviewChanges(monitoringResult.changesDetected[selectedCompetitor]?.reviewChanges || [], selectedCompetitor)}
+                            <ReviewChangeList 
+                              changes={monitoringResult.changesDetected[selectedCompetitor]?.reviewChanges || []}
+                              competitor={selectedCompetitor}
+                            />
                             
                             {/* 신제품 */}
-                            {renderNewProducts(monitoringResult.changesDetected[selectedCompetitor]?.newProducts || [], selectedCompetitor)}
+                            <NewProductList 
+                              changes={monitoringResult.changesDetected[selectedCompetitor]?.newProducts || []}
+                              competitor={selectedCompetitor}
+                            />
                             
                             {/* 모든 변경사항이 없는 경우 */}
                             {!monitoringResult.changesDetected[selectedCompetitor]?.priceChanges?.length &&
@@ -1378,8 +1382,7 @@ export function CompetitorMonitoringContent({
   );
 }
 
-// 나머지 필요한 렌더링 함수들
-// 이제 CompetitorMonitoringContent 컴포넌트 내부에서 이 렌더링 함수들이 정의됩니다.
+// 렌더링 콘텐츠 컴포넌트들 - 외부에서 독립적으로 정의
 
 // TOP_HEALTH_PRODUCTS 객체 정의(상위에 임포트해도 됨)
 const TOP_HEALTH_PRODUCTS = {
