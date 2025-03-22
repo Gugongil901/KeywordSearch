@@ -26,14 +26,20 @@ const HEALTH_SUPPLEMENT_BRANDS = [
 ];
 
 export default function CompetitorMonitoring() {
-  const [keyword, setKeyword] = useState('영양제');
-  const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>([]);
-  const [searchValue, setSearchValue] = useState(''); // 검색창에 표시될 값
+  const [keyword, setKeyword] = useState('루테인');
+  const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>(['drlin', 'naturalplus', 'anguk']);
+  const [searchValue, setSearchValue] = useState('루테인'); // 검색창에 표시될 값
+  const [isSearching, setIsSearching] = useState(false); // 검색 중 상태
   
   // 키워드 검색 처리
   const handleSearch = () => {
     if (searchValue.trim()) {
-      setKeyword(searchValue.trim());
+      setIsSearching(true);
+      // 약간의 지연 효과를 주어 사용자에게 검색이 실행됨을 알림
+      setTimeout(() => {
+        setKeyword(searchValue.trim());
+        setIsSearching(false);
+      }, 300);
     }
   };
   
@@ -56,58 +62,102 @@ export default function CompetitorMonitoring() {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
-      <div className="p-4">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-gray-50 to-gray-50 pb-10">
+      <div className="container mx-auto max-w-6xl p-4">
         <div className="flex flex-col mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-semibold">경쟁사 모니터링</h2>
+          <div className="flex items-center justify-between mb-3 bg-white p-4 rounded-lg shadow-md border-b-2 border-blue-500">
+            <div className="flex items-center">
+              <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 mr-3">
+                <RefreshCw className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-blue-900">경쟁사 모니터링</h2>
+                <p className="text-blue-600 text-sm">실시간 건강기능식품 시장 분석</p>
+              </div>
+            </div>
+            
+            <div className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full shadow-sm">
+              Pro 버전
+            </div>
           </div>
           
-          <p className="text-gray-500 text-sm">
-            경쟁사 제품의 가격, 순위, 리뷰 변화를 지속적으로 모니터링합니다.
+          <p className="text-gray-600 text-sm bg-white p-3 rounded-lg shadow-sm my-2 border-l-4 border-blue-400">
+            경쟁사 제품의 <span className="font-semibold text-blue-700">가격</span>, <span className="font-semibold text-blue-700">순위</span>, <span className="font-semibold text-blue-700">리뷰</span> 변화를 지속적으로 모니터링하고 즉각적인 알림을 받을 수 있습니다.
           </p>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-lg">모니터링 설정</CardTitle>
+        <Card className="mb-6 shadow-lg border-0">
+          <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg pb-2">
+            <CardTitle className="text-lg flex items-center text-blue-800">
+              <Search className="h-5 w-5 mr-2 text-blue-600" />
+              키워드 검색
+            </CardTitle>
             <CardDescription>
-              모니터링할 키워드와 경쟁사를 선택하세요
+              제품 키워드를 입력하여 건강기능식품 경쟁사를 모니터링하세요
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex space-x-2 mb-4">
-              <Input 
-                type="text" 
-                placeholder="예: 루테인, 비타민, 프로바이오틱스" 
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="flex-1"
-              />
-              <Button type="submit" onClick={handleSearch}>
-                <Search className="h-4 w-4 mr-2" />
-                검색
+          <CardContent className="pt-5">
+            <div className="flex space-x-2 mb-5 relative">
+              <div className="relative flex-1">
+                <Input 
+                  type="text" 
+                  placeholder="예: 루테인, 비타민, 프로바이오틱스" 
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="pl-10 h-11 border-blue-200 focus:border-blue-400 transition-all shadow-sm"
+                />
+                <Search className="h-4 w-4 text-blue-500 absolute left-3 top-3.5" />
+              </div>
+              <Button 
+                type="submit" 
+                onClick={handleSearch} 
+                disabled={isSearching}
+                className="bg-blue-600 hover:bg-blue-700 transition-all h-11 px-5"
+              >
+                {isSearching ? (
+                  <><RefreshCw className="h-4 w-4 mr-2 animate-spin" /> 검색 중...</>
+                ) : (
+                  <><Search className="h-4 w-4 mr-2" /> 검색</>
+                )}
               </Button>
             </div>
             
             {selectedCompetitors.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                <p className="text-sm text-gray-500 w-full mb-1">선택된 경쟁사:</p>
-                {selectedCompetitors.map((competitorId) => (
-                  <div 
-                    key={competitorId}
-                    className="border rounded-md px-3 py-1.5 text-sm flex items-center justify-between gap-2 bg-gray-50"
-                  >
-                    {getCompetitorName(competitorId)}
-                  </div>
-                ))}
+              <div className="flex flex-wrap gap-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                <p className="text-sm font-medium text-gray-600 w-full mb-2 flex items-center">
+                  <Settings className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
+                  모니터링 중인 경쟁사 ({selectedCompetitors.length}개)
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedCompetitors.map((competitorId) => (
+                    <div 
+                      key={competitorId}
+                      className="border border-blue-200 rounded-full px-3 py-1 text-sm flex items-center justify-between gap-1 bg-white text-blue-700 shadow-sm"
+                    >
+                      {getCompetitorName(competitorId)}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
         
-        <div className="bg-white rounded-lg shadow p-4">
+        <div className="bg-white rounded-lg shadow-lg p-5 border border-gray-100">
+          <div className="flex items-center justify-between mb-2 pb-2 border-b">
+            <div className="flex items-center">
+              <span className="flex items-center justify-center h-7 w-7 rounded-full bg-blue-100 mr-2">
+                <RefreshCw className="h-4 w-4 text-blue-600" />
+              </span>
+              <h3 className="text-md font-medium text-gray-700">모니터링 결과</h3>
+            </div>
+            {isSearching && (
+              <div className="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded-full animate-pulse">
+                데이터 업데이트 중...
+              </div>
+            )}
+          </div>
           <CompetitorMonitoringContent 
             keyword={keyword}
             onKeywordChange={setKeyword}
