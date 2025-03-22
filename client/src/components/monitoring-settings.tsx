@@ -44,20 +44,20 @@ const monitoringFormSchema = z.object({
 
 type MonitoringFormValues = z.infer<typeof monitoringFormSchema>;
 
-// 경쟁사 목록 (샘플 데이터)
+// 경쟁사 목록 (ID 값 사용)
 const COMPETITOR_OPTIONS = [
-  { label: '닥터린', value: '닥터린' },
-  { label: '내츄럴플러스', value: '내츄럴플러스' },
-  { label: '에스더몰', value: '에스더몰' },
-  { label: '안국건강', value: '안국건강' },
-  { label: '고려은단', value: '고려은단' },
-  { label: '뉴트리원', value: '뉴트리원' },
-  { label: '종근당건강', value: '종근당건강' },
-  { label: 'GNM 자연의품격', value: 'GNM 자연의품격' },
-  { label: '뉴트리데이', value: '뉴트리데이' },
-  { label: '주영엔에스', value: '주영엔에스' },
-  { label: '한미양행', value: '한미양행' },
-  { label: '유한양행', value: '유한양행' },
+  { label: '닥터린', value: 'drlin' },
+  { label: '내츄럴플러스', value: 'naturalplus' },
+  { label: '에스더몰', value: 'esthermall' },
+  { label: '안국건강', value: 'anguk' },
+  { label: '고려은단', value: 'koreaeundan' },
+  { label: '뉴트리원', value: 'nutrione' },
+  { label: '종근당건강', value: 'ckdhc' },
+  { label: 'GNM 자연의품격', value: 'gnm' },
+  { label: '뉴트리데이', value: 'nutriday' },
+  { label: '주영엔에스', value: 'jyns' },
+  { label: '한미양행', value: 'hanmi' },
+  { label: '유한양행', value: 'yuhan' },
 ];
 
 interface MonitoringSettingsProps {
