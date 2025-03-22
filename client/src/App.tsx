@@ -2,6 +2,8 @@ import { Switch, Route } from "wouter";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
+import { useEffect } from "react";
+import { getPaletteFromLocalStorage, getFullPaletteById, applyPaletteToDocument } from "@/components/theme/ColorPaletteSelector";
 
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
@@ -15,6 +17,7 @@ import CompetitorMonitoring from "@/pages/competitor-monitoring-new";
 import TrendAnalysis from "@/pages/trend-analysis";
 import AdvancedAnalysis from "@/pages/advanced-analysis";
 import HealthSupplement from "@/pages/health-supplement";
+import ThemeSettings from "@/pages/theme-settings";
 import TestComponent from "@/components/test/TestComponent";
 
 function Router() {
@@ -29,12 +32,21 @@ function Router() {
       <Route path="/trends" component={TrendAnalysis} />
       <Route path="/advanced-analysis" component={AdvancedAnalysis} />
       <Route path="/health-supplement" component={HealthSupplement} />
+      <Route path="/theme-settings" component={ThemeSettings} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
+  // 앱 로드 시 저장된 테마 적용
+  useEffect(() => {
+    const savedPaletteId = getPaletteFromLocalStorage();
+    const fullPalette = getFullPaletteById(savedPaletteId);
+    applyPaletteToDocument(fullPalette);
+    console.log('앱 시작 시 테마 적용:', fullPalette.name);
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen flex flex-col bg-gray-50">

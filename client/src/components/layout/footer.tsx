@@ -10,6 +10,11 @@ const Footer: React.FC = () => {
           <div className="mb-4 md:mb-0">
             <Logo />
             <p className="text-sm text-gray-500 mt-2">© 2023 키워드 스카우터. All rights reserved.</p>
+            <div className="mt-4 text-sm text-gray-500 flex flex-wrap gap-4">
+              <Link href="/guide" className="hover:text-primary">가이드</Link>
+              <Link href="/help" className="hover:text-primary">도움말</Link>
+              <Link href="/theme-settings" className="hover:text-primary">테마 설정</Link>
+            </div>
           </div>
           <div className="flex space-x-4">
             <a href="#" className="text-gray-500 hover:text-primary">
