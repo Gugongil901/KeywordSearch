@@ -396,6 +396,17 @@ export function CompetitorMonitoringContent({
       
       setMonitoringResult(data);
       
+      // 만약 결과에 데이터가 있고 선택된 경쟁사가 없다면 첫 번째 경쟁사를 자동으로 선택
+      if (data.changesDetected && Object.keys(data.changesDetected).length > 0) {
+        const availableCompetitors = Object.keys(data.changesDetected);
+        if (availableCompetitors.length > 0) {
+          // 이미 선택된 경쟁사가 결과에 포함되지 않은 경우에도 새로운 첫 번째 경쟁사로 설정
+          if (!selectedCompetitor || !availableCompetitors.includes(selectedCompetitor)) {
+            setSelectedCompetitor(availableCompetitors[0]);
+          }
+        }
+      }
+      
       // 경쟁사 인사이트 로드
       loadCompetitorInsights();
       
