@@ -11,7 +11,7 @@ import KeywordDetail from "@/pages/keyword-detail";
 import KeywordSearch from "@/pages/keyword-search";
 import TrackRanking from "@/pages/track-ranking";
 import KeywordInsights from "@/pages/keyword-insights";
-import CompetitorMonitoring from "@/pages/competitor-monitoring";
+import CompetitorMonitoring from "@/pages/competitor-monitoring-new";
 import TestComponent from "@/components/test/TestComponent";
 
 function Router() {
