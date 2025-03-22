@@ -893,11 +893,11 @@ export function CompetitorMonitoringContent({
                       </CardHeader>
                       <CardContent className="py-2">
                         <div className="space-y-2">
-                          {/* 선택된 경쟁사 목록에서 표시할 경쟁사 - api 응답 기준이 아니라 사용자가 선택한 경쟁사 기준 */}
-                          {competitors.map((competitorId) => {
+                          {/* 경쟁사 데이터 표시 */}
+                          {Object.keys(monitoringResult.changesDetected || {}).map((competitorId) => {
                             const brand = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitorId);
-                            // monitoringResult에 해당 경쟁사 데이터가 있는지 확인
-                            const competitorData = monitoringResult.changesDetected && monitoringResult.changesDetected[competitorId];
+                            // 해당 경쟁사 데이터 가져오기
+                            const competitorData = monitoringResult.changesDetected[competitorId];
                             
                             // 변경사항 있는지 확인 (안전하게 null 체크)
                             const hasChanges = competitorData && (
