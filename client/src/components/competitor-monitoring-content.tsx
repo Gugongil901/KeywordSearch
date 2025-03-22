@@ -485,6 +485,18 @@ export function CompetitorMonitoringContent({
       const data = await response.json();
       
       if (data.error) {
+        // 설정을 찾을 수 없는 경우 사용자에게 알림 메시지 표시
+        if (data.error.includes('모니터링 설정을 찾을 수 없습니다')) {
+          toast({
+            title: "모니터링 설정 필요",
+            description: `"${keyword}" 키워드에 대한 모니터링 설정이 필요합니다. 설정 버튼을 클릭하여 모니터링을 구성하세요.`,
+            variant: "default",
+          });
+          console.warn(`변경사항 확인 오류: ${data.error}`);
+          setConfigOpen(true); // 설정 다이얼로그 자동 표시
+          setLoading(false);
+          return;
+        }
         throw new Error(data.error);
       }
       
