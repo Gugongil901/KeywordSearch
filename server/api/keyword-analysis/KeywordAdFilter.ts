@@ -26,6 +26,24 @@ export class KeywordAdFilter {
     this.accessLicense = process.env.NAVER_AD_ACCESS_LICENSE || '01000000005a79e0d0ffff30be92041e87dd2444c689e1209efbe2f9ea58fd3a3ae67ee01e';
     this.secretKey = process.env.NAVER_AD_SECRET_KEY || 'AQAAAABaeeDQ//8wvpIEHofdJETGcg3aHhG5YRGgFHPnSsNISw==';
   }
+  
+  /**
+   * 자주 검색되는 건강보조제 키워드 목록 반환
+   */
+  async getKnownKeywords(): Promise<string[]> {
+    // 건강보조제 관련 주요 키워드 목록
+    const healthSupplementKeywords = [
+      "비타민", "종합비타민", "멀티비타민", "마그네슘", "철분제", 
+      "프로바이오틱스", "유산균", "루테인", "비타민D", "비타민C", 
+      "오메가3", "밀크씨슬", "EPA", "DHA", "글루코사민", 
+      "코큐텐", "콜라겐", "보조제", "건강기능식품", "영양제",
+      "면역기능", "피로회복", "눈건강", "관절건강", "혈행개선",
+      "장건강", "간건강", "칼슘", "아연", "루테인지아잔틴"
+    ];
+    
+    logger.info(`[KeywordAdFilter] ${healthSupplementKeywords.length}개의 건강보조제 키워드 반환`);
+    return healthSupplementKeywords;
+  }
 
   /**
    * 네이버 검색광고 API 서명 헤더 생성
@@ -133,6 +151,8 @@ export class KeywordAdFilter {
 
 // 싱글톤 인스턴스
 let keywordAdFilter: KeywordAdFilter | null = null;
+
+
 
 /**
  * 키워드 광고 필터 인스턴스 가져오기

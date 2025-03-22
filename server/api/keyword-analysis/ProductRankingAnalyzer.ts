@@ -33,6 +33,31 @@ export class ProductRankingAnalyzer {
     this.clientId = process.env.NAVER_CLIENT_ID || 'ErTaCUGQWfhKvcEnftat';
     this.clientSecret = process.env.NAVER_CLIENT_SECRET || 'Xoq9VSewrv';
   }
+  
+  /**
+   * 상품 순위 분석에 유용한 건강보조제 브랜드 관련 키워드 목록 반환
+   */
+  async getKnownKeywords(): Promise<string[]> {
+    // 인기 건강보조제 브랜드와 제품 키워드 목록
+    const brandKeywords = [
+      // 브랜드별 키워드
+      "닥터린", "내츄럴플러스", "에스더몰", "안국건강", "고려은단",
+      "뉴트리원", "종근당건강", "GNM 자연의품격", "뉴트리데이", "주영엔에스",
+      "한미양행", "유한양행",
+      
+      // 브랜드+제품 조합 키워드
+      "닥터린 비타민D", "고려은단 비타민C", "종근당건강 밀크씨슬", 
+      "GNM 루테인", "뉴트리원 오메가3", "안국건강 루테인",
+      
+      // 일반 제품 키워드
+      "종합비타민", "프리미엄 종합비타민", "여성 종합비타민", "남성 종합비타민",
+      "프로바이오틱스 유산균", "프리미엄 유산균", "어린이 유산균",
+      "루테인 지아잔틴", "눈건강 루테인", "칼슘마그네슘 아연"
+    ];
+    
+    logger.info(`[ProductRankingAnalyzer] ${brandKeywords.length}개의 건강보조제 브랜드 관련 키워드 반환`);
+    return brandKeywords;
+  }
 
   /**
    * 네이버 쇼핑 검색 결과에서 상품 순위 확인

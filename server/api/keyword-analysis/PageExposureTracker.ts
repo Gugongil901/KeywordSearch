@@ -23,6 +23,23 @@ export class PageExposureTracker {
     this.clientId = process.env.NAVER_CLIENT_ID || 'ErTaCUGQWfhKvcEnftat';
     this.clientSecret = process.env.NAVER_CLIENT_SECRET || 'Xoq9VSewrv';
   }
+  
+  /**
+   * 페이지 노출 추적에 유용한 인기 건강보조제 키워드 목록 반환
+   */
+  async getKnownKeywords(): Promise<string[]> {
+    // 웹페이지 노출 확인에 유용한 인기 키워드 목록
+    const popularKeywords = [
+      "건강기능식품", "건강식품", "영양제", "비타민", "건강보조식품",
+      "유산균", "프로바이오틱스", "면역력", "관절", "눈건강",
+      "장건강", "피로회복", "항산화", "혈행개선", "혈당조절",
+      "체지방감소", "다이어트보조제", "콜레스테롤", "간건강", "수면건강",
+      "스트레스완화", "갱년기", "탈모", "기억력", "임산부영양제"
+    ];
+    
+    logger.info(`[PageExposureTracker] ${popularKeywords.length}개의 인기 건강 키워드 반환`);
+    return popularKeywords;
+  }
 
   /**
    * 네이버 검색 API를 통해 특정 키워드 검색 결과 가져오기

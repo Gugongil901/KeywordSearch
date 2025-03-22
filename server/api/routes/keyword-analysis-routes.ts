@@ -201,6 +201,117 @@ router.post('/best-keywords', async (req: Request, res: Response) => {
 });
 
 /**
+ * 광고 키워드 추천 키워드 목록 가져오기
+ */
+router.get('/ad-keywords', async (_req: Request, res: Response) => {
+  try {
+    const keywords = await keywordAdFilter.getKnownKeywords();
+    
+    res.json({
+      success: true,
+      data: {
+        keywords,
+        count: keywords.length,
+        category: '건강보조제',
+        timestamp: new Date()
+      }
+    });
+  } catch (error: any) {
+    logger.error(`[API] 광고 키워드 목록 조회 실패: ${error.message}`);
+    res.status(500).json({ 
+      success: false, 
+      error: '광고 키워드 목록 조회 중 오류가 발생했습니다.' 
+    });
+  }
+});
+
+/**
+ * 페이지 노출 확인 키워드 목록 가져오기
+ */
+router.get('/page-keywords', async (_req: Request, res: Response) => {
+  try {
+    const keywords = await pageExposureTracker.getKnownKeywords();
+    
+    res.json({
+      success: true,
+      data: {
+        keywords,
+        count: keywords.length,
+        category: '인기 건강 키워드',
+        timestamp: new Date()
+      }
+    });
+  } catch (error: any) {
+    logger.error(`[API] 페이지 노출 키워드 목록 조회 실패: ${error.message}`);
+    res.status(500).json({ 
+      success: false, 
+      error: '페이지 노출 키워드 목록 조회 중 오류가 발생했습니다.' 
+    });
+  }
+});
+
+/**
+ * 상품 순위 분석 키워드 목록 가져오기
+ */
+router.get('/product-keywords', async (_req: Request, res: Response) => {
+  try {
+    const keywords = await productRankingAnalyzer.getKnownKeywords();
+    
+    res.json({
+      success: true,
+      data: {
+        keywords,
+        count: keywords.length,
+        category: '건강보조제 브랜드',
+        timestamp: new Date()
+      }
+    });
+  } catch (error: any) {
+    logger.error(`[API] 상품 순위 키워드 목록 조회 실패: ${error.message}`);
+    res.status(500).json({ 
+      success: false, 
+      error: '상품 순위 키워드 목록 조회 중 오류가 발생했습니다.' 
+    });
+  }
+});
+
+/**
+ * 모든 키워드 목록 통합 조회
+ */
+router.get('/all-keywords', async (_req: Request, res: Response) => {
+  try {
+    const [adKeywords, pageKeywords, productKeywords] = await Promise.all([
+      keywordAdFilter.getKnownKeywords(),
+      pageExposureTracker.getKnownKeywords(),
+      productRankingAnalyzer.getKnownKeywords()
+    ]);
+    
+    // 중복 제거를 위한 Set 사용
+    const allKeywords = [...new Set([...adKeywords, ...pageKeywords, ...productKeywords])];
+    
+    res.json({
+      success: true,
+      data: {
+        allKeywords,
+        count: allKeywords.length,
+        categories: {
+          adKeywords: adKeywords.length,
+          pageKeywords: pageKeywords.length,
+          productKeywords: productKeywords.length
+        },
+        timestamp: new Date()
+      }
+    });
+  } catch (error: any) {
+    logger.error(`[API] 전체 키워드 목록 조회 실패: ${error.message}`);
+    res.status(500).json({ 
+      success: false, 
+      error: '전체 키워드 목록 조회 중 오류가 발생했습니다.' 
+    });
+  }
+});
+
+/**
  * 키워드 분석 상태 확인 API
  */
 router.get('/status', (_req: Request, res: Response) => {
