@@ -24,7 +24,7 @@ const NAVER_DATALAB_CATEGORY_API = "https://openapi.naver.com/v1/datalab/shoppin
 // 쇼핑인사이트 키워드 트렌드 조회 API (카테고리별 키워드 트렌드)
 // 공식 URL: https://openapi.naver.com/v1/datalab/shopping/category/keywords
 // 2025년 3월 기준 최신 엔드포인트
-const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/sshopping/category/keywords";
+const NAVER_DATALAB_KEYWORD_API = "https://openapi.naver.com/v1/datalab/shopping/category/keywords";
 
 // 쇼핑인사이트 인기검색어 API (실시간 인기 키워드)
 // 2025년 3월 네이버 API 문서 기준에 따르면 올바른 엔드포인트는 아래와 같으나, 변경될 수 있음
@@ -90,6 +90,24 @@ export function setupNaverAPI() {
 // Search keywords in Naver Shopping
 export async function searchKeyword(keyword: string): Promise<KeywordSearchResponse> {
   try {
+    // 한글 인코딩 문제 감지 및 처리
+    const isEncoded = /^[a-zA-Z0-9\s._\-:/]*$/.test(keyword) && /[\uAC00-\uD7A3]/.test(decodeURIComponent(keyword));
+    if (isEncoded) {
+      console.log(`⚠️ 이미 인코딩된 키워드 감지: "${keyword}"`);
+      keyword = decodeURIComponent(keyword);
+      console.log(`🔄 디코딩 후 키워드: "${keyword}"`);
+    }
+    
+    // 깨진 한글 문자 감지
+    if (/Ã«|Ã¬|Â´|Ã­|Â¤|¹|¯|¼/.test(keyword)) {
+      console.log(`⚠️ 인코딩이 손상된 검색어 감지: "${keyword}"`);
+      // 원래 UTF-8 문자로 변환 시도
+      const cleanKeyword = keyword.replace(/[^a-zA-Z0-9가-힣\s]/g, '');
+      console.log(`⚠️ 깨진 문자 제거 시도: "${cleanKeyword}"`);
+      keyword = cleanKeyword;
+    }
+    
+    console.log(`키워드 검색 요청: "${keyword}" (원본: "${keyword}")`);
     console.log(`🔍 네이버 쇼핑 검색 API 요청: "${keyword}"`);
 
     // Get search results
