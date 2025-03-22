@@ -147,6 +147,9 @@ export function PriceChangeList({ changes, competitor }: { changes: PriceChange[
 export function RankChangeList({ changes, competitor }: { changes: RankChange[], competitor: string }) {
   const [sortBy, setSortBy] = useState<string>("change-desc");
   
+  // 경쟁사 ID에서 한글 이름으로 변환
+  const brandName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor)?.name || competitor;
+  
   // 변경사항이 없을 때 메시지 표시
   if (changes.length === 0) {
     return (
@@ -208,7 +211,7 @@ export function RankChangeList({ changes, competitor }: { changes: RankChange[],
           <RankChangeCard 
             key={`${change.product.productId}-rank-${index}`} 
             change={change} 
-            brandName={competitor}
+            brandName={brandName}
             brandId={competitor.toLowerCase().replace(/\s+/g, '')}
           />
         ))}
@@ -221,6 +224,9 @@ export function RankChangeList({ changes, competitor }: { changes: RankChange[],
 // 리뷰 변경 목록 컴포넌트
 export function ReviewChangeList({ changes, competitor }: { changes: ReviewChange[], competitor: string }) {
   const [sortBy, setSortBy] = useState<string>("percent-desc");
+  
+  // 경쟁사 ID에서 한글 이름으로 변환
+  const brandName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor)?.name || competitor;
   
   // 변경사항이 없을 때 메시지 표시
   if (changes.length === 0) {
@@ -283,7 +289,7 @@ export function ReviewChangeList({ changes, competitor }: { changes: ReviewChang
           <ReviewChangeCard 
             key={`${change.product.productId}-review-${index}`} 
             change={change} 
-            brandName={competitor}
+            brandName={brandName}
             brandId={competitor.toLowerCase().replace(/\s+/g, '')}
           />
         ))}
@@ -296,6 +302,9 @@ export function ReviewChangeList({ changes, competitor }: { changes: ReviewChang
 // 신제품 목록 컴포넌트
 export function NewProductList({ changes, competitor }: { changes: NewProductAlert[], competitor: string }) {
   const [sortBy, setSortBy] = useState<string>("price-desc");
+  
+  // 경쟁사 ID에서 한글 이름으로 변환
+  const brandName = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor)?.name || competitor;
   
   // 변경사항이 없을 때 메시지 표시
   if (changes.length === 0) {
@@ -364,7 +373,7 @@ export function NewProductList({ changes, competitor }: { changes: NewProductAle
           <NewProductCard 
             key={`${alert.product.productId}-new-${index}`} 
             item={alert} 
-            brandName={competitor}
+            brandName={brandName}
             brandId={competitor.toLowerCase().replace(/\s+/g, '')}
           />
         ))}
