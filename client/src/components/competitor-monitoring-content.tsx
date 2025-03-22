@@ -57,7 +57,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { AlertCircle, ArrowDown, ArrowUp, Info, Loader2, RefreshCw, Settings, ShoppingBag, Star, Trash } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUp, Info, Loader2, RefreshCw, Settings, ShoppingBag, Star, Trash, Clock, LineChart, Lightbulb } from "lucide-react";
 import { SiNaver } from "react-icons/si";
 
 // 건강기능식품 브랜드 상수
