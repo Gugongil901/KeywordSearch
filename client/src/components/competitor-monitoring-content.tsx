@@ -17,6 +17,9 @@ import { StrengthWeaknessChart } from "@/components/charts/strength-weakness-rad
 import { CompetitorComparisonChart } from "@/components/charts/competitor-comparison-chart";
 // 색상 팔레트 선택기
 import { ColorPaletteSelector, COLOR_PALETTES } from "@/components/ui/color-palette-selector";
+// 정렬 선택기
+import { SortSelect } from "@/components/ui/sort-select";
+import { ArrowUpDown } from "lucide-react";
 // 공통 상수 임포트
 import { DEFAULT_PRODUCT_IMAGES } from "@/constants/images";
 
@@ -1373,11 +1376,53 @@ export function CompetitorMonitoringContent({
 function renderPriceChanges(changes: PriceChange[], competitor: string) {
   if (changes.length === 0) return null;
   
+  const [sortBy, setSortBy] = useState<string>("percent-desc");
+  
+  const sortedChanges = [...changes].sort((a, b) => {
+    switch (sortBy) {
+      case "percent-desc":
+        return b.changePercent - a.changePercent;
+      case "percent-asc":
+        return a.changePercent - b.changePercent;
+      case "price-desc":
+        return b.newPrice - a.newPrice;
+      case "price-asc":
+        return a.newPrice - b.newPrice;
+      case "name-asc":
+        return a.product.name.localeCompare(b.product.name);
+      case "name-desc":
+        return b.product.name.localeCompare(a.product.name);
+      default:
+        return b.changePercent - a.changePercent;
+    }
+  });
+  
+  const sortOptions = [
+    { value: "percent-desc", label: "변화율 ↓" },
+    { value: "percent-asc", label: "변화율 ↑" },
+    { value: "price-desc", label: "가격 ↓" },
+    { value: "price-asc", label: "가격 ↑" },
+    { value: "name-asc", label: "이름 ↑" },
+    { value: "name-desc", label: "이름 ↓" }
+  ];
+  
   return (
     <div>
-      <h4 className="text-sm font-medium mb-2">가격 변경 ({changes.length}개)</h4>
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-sm font-medium">가격 변경 ({changes.length}개)</h4>
+        <div className="flex items-center">
+          <ArrowUpDown className="h-4 w-4 mr-1 text-gray-500" />
+          <SortSelect
+            value={sortBy}
+            onChange={setSortBy}
+            options={sortOptions}
+            placeholder="정렬"
+            className="h-7 ml-1"
+          />
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {changes.map((change, index) => (
+        {sortedChanges.map((change, index) => (
           <PriceChangeCard 
             key={`${change.product.productId}-price-${index}`} 
             change={change} 
@@ -1394,11 +1439,53 @@ function renderPriceChanges(changes: PriceChange[], competitor: string) {
 function renderRankChanges(changes: RankChange[], competitor: string) {
   if (changes.length === 0) return null;
   
+  const [sortBy, setSortBy] = useState<string>("change-desc");
+  
+  const sortedChanges = [...changes].sort((a, b) => {
+    switch (sortBy) {
+      case "change-desc":
+        return b.change - a.change;
+      case "change-asc":
+        return a.change - b.change;
+      case "rank-desc":
+        return a.newRank - b.newRank; // 낮은 순위(1위)가 더 높게 표시
+      case "rank-asc":
+        return b.newRank - a.newRank; // 높은 순위(100위)가 더 높게 표시
+      case "name-asc":
+        return a.product.name.localeCompare(b.product.name);
+      case "name-desc":
+        return b.product.name.localeCompare(a.product.name);
+      default:
+        return b.change - a.change;
+    }
+  });
+  
+  const sortOptions = [
+    { value: "change-desc", label: "순위 변화 ↓" },
+    { value: "change-asc", label: "순위 변화 ↑" },
+    { value: "rank-desc", label: "현재 순위 ↑" },
+    { value: "rank-asc", label: "현재 순위 ↓" },
+    { value: "name-asc", label: "이름 ↑" },
+    { value: "name-desc", label: "이름 ↓" }
+  ];
+  
   return (
     <div>
-      <h4 className="text-sm font-medium mb-2">순위 변경 ({changes.length}개)</h4>
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-sm font-medium">순위 변경 ({changes.length}개)</h4>
+        <div className="flex items-center">
+          <ArrowUpDown className="h-4 w-4 mr-1 text-gray-500" />
+          <SortSelect
+            value={sortBy}
+            onChange={setSortBy}
+            options={sortOptions}
+            placeholder="정렬"
+            className="h-7 ml-1"
+          />
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {changes.map((change, index) => (
+        {sortedChanges.map((change, index) => (
           <RankChangeCard 
             key={`${change.product.productId}-rank-${index}`} 
             change={change} 
@@ -1415,11 +1502,53 @@ function renderRankChanges(changes: RankChange[], competitor: string) {
 function renderReviewChanges(changes: ReviewChange[], competitor: string) {
   if (changes.length === 0) return null;
   
+  const [sortBy, setSortBy] = useState<string>("percent-desc");
+  
+  const sortedChanges = [...changes].sort((a, b) => {
+    switch (sortBy) {
+      case "percent-desc":
+        return b.changePercent - a.changePercent;
+      case "percent-asc":
+        return a.changePercent - b.changePercent;
+      case "reviews-desc":
+        return b.newReviews - a.newReviews;
+      case "reviews-asc":
+        return a.newReviews - b.newReviews;
+      case "name-asc":
+        return a.product.name.localeCompare(b.product.name);
+      case "name-desc":
+        return b.product.name.localeCompare(a.product.name);
+      default:
+        return b.changePercent - a.changePercent;
+    }
+  });
+  
+  const sortOptions = [
+    { value: "percent-desc", label: "변화율 ↓" },
+    { value: "percent-asc", label: "변화율 ↑" },
+    { value: "reviews-desc", label: "리뷰 수 ↓" },
+    { value: "reviews-asc", label: "리뷰 수 ↑" },
+    { value: "name-asc", label: "이름 ↑" },
+    { value: "name-desc", label: "이름 ↓" }
+  ];
+  
   return (
     <div>
-      <h4 className="text-sm font-medium mb-2">리뷰 변경 ({changes.length}개)</h4>
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="text-sm font-medium">리뷰 변경 ({changes.length}개)</h4>
+        <div className="flex items-center">
+          <ArrowUpDown className="h-4 w-4 mr-1 text-gray-500" />
+          <SortSelect
+            value={sortBy}
+            onChange={setSortBy}
+            options={sortOptions}
+            placeholder="정렬"
+            className="h-7 ml-1"
+          />
+        </div>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {changes.map((change, index) => (
+        {sortedChanges.map((change, index) => (
           <ReviewChangeCard 
             key={`${change.product.productId}-review-${index}`} 
             change={change} 
