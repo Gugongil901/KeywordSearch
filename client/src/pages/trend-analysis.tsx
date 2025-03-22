@@ -59,13 +59,12 @@ const TrendAnalysis: React.FC = () => {
     setCurrentKeyword(keyword);
     setSearchTerm(keyword);
     fetchKeywordData(keyword);
-    fetchKeywordAnalysis(keyword);
   };
 
   const handleSearch = () => {
     if (searchTerm.trim()) {
+      // 검색 데이터를 가져온 후 분석 데이터에도 적용
       fetchKeywordData(searchTerm.trim());
-      fetchKeywordAnalysis(searchTerm.trim());
     }
   };
 
@@ -95,8 +94,37 @@ const TrendAnalysis: React.FC = () => {
       // 검색 결과가 올바르게 로드되었는지 로그로 확인
       if (data && data.products && data.products.length > 0) {
         console.log(`검색 결과: ${data.products.length}개 상품 로드됨`);
+        
+        // 검색 데이터로 분석 데이터 만들기
+        const analysisData = {
+          keyword: data.keyword,
+          monthlySearches: data.searchCount || 0,
+          pcRatio: data.pcSearchRatio || 0,
+          mobileRatio: data.mobileSearchRatio || 0,
+          productCount: data.productCount || 0,
+          averagePrice: data.averagePrice || 0,
+          totalSales: data.totalSales || 0,
+          products: data.products || []
+        };
+        
+        // 분석 데이터 설정
+        setAnalysisData(analysisData);
+        
+        // 로컬 스토리지에 저장
+        localStorage.setItem('currentKeywordAnalysis', JSON.stringify(analysisData));
+        localStorage.setItem('currentKeyword', keyword);
+        
+        toast({
+          title: "검색 완료",
+          description: `"${keyword}" 키워드 검색이 완료되었습니다.`,
+        });
       } else {
         console.log("검색 결과: 상품 없음");
+        toast({
+          title: "검색 결과 없음",
+          description: `"${keyword}" 키워드에 대한 상품 정보를 찾을 수 없습니다.`,
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("키워드 데이터 가져오기 오류:", error);
