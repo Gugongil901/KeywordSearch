@@ -1123,7 +1123,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'niche-keywords' && renderResults()}
+          {searchResult && searchResult.type === 'niche-keywords' ? renderResults() : null}
         </TabsContent>
       </Tabs>
     </div>
