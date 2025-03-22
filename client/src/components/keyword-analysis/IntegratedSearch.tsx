@@ -202,13 +202,39 @@ export default function IntegratedSearch() {
           break;
           
         case 'niche-keywords':
-          endpoint = '/api/niche-keywords/recommend';
-          requestData = { };
-          apiMethod = 'get';
+          // 사용자가 입력한 키워드가 있으면 검색하고, 없으면 추천 사용
+          if (keywordArray.length === 0) {
+            endpoint = '/api/niche-keywords/recommend';
+            requestData = { };
+            apiMethod = 'get';
+          } else {
+            endpoint = '/api/niche-keywords/find';
+            // 서버 API 형식에 맞춰 데이터 변환
+            const keywordDataList = keywordArray.map(keyword => ({
+              keyword,
+              searchVolume: Math.floor(Math.random() * 900) + 100, // 임시 데이터 (실제로는 API에서 가져와야 함)
+              competition: Math.random() * 0.5,
+              growthRate: Math.random() * 2 + 0.5,
+              commercialIntent: Math.random(),
+              categoryRelevance: 0.8,
+              seasonality: Math.random() < 0.3
+            }));
+            
+            requestData = { 
+              keywordDataList,
+              criteria: {
+                minSearchVolume: 100,
+                maxCompetition: 0.3,
+                minGrowthRate: 1.2
+              }
+            };
+            apiMethod = 'post';
+          }
           break;
       }
       
       console.log(`[검색 요청] 엔드포인트: ${endpoint}, 키워드: ${keywordArray.join(', ')}`);
+      console.log(`[검색 요청] 요청 데이터:`, requestData);
       
       const { data } = await axios({
         method: apiMethod as any,
@@ -216,12 +242,17 @@ export default function IntegratedSearch() {
         data: requestData
       });
       
+      console.log(`[검색 응답] 상태:`, data.success ? '성공' : '실패', '데이터:', data);
+      
       if (data.success) {
-        setSearchResult({
+        // 검색 결과 저장 (현재 탭 타입으로 설정)
+        const newResult = {
           type: searchTab as any,
           data: data.data,
           timestamp: new Date().toISOString()
-        });
+        };
+        console.log(`[검색 결과 저장] 탭: ${searchTab}, 데이터:`, newResult);
+        setSearchResult(newResult);
         
         toast({
           title: "검색 성공",
