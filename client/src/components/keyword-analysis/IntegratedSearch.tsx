@@ -982,7 +982,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'product-ranking' ? renderResults() : null}
+          {searchResult?.type === 'product-ranking' && renderResults()}
         </TabsContent>
         
         <TabsContent value="best-keywords" className="space-y-4 pt-4">
@@ -1078,7 +1078,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'best-keywords' ? renderResults() : null}
+          {searchResult?.type === 'best-keywords' && renderResults()}
         </TabsContent>
         
         <TabsContent value="niche-keywords" className="space-y-4 pt-4">
@@ -1154,7 +1154,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'niche-keywords' ? renderResults() : null}
+          {searchResult?.type === 'niche-keywords' && renderResults()}
         </TabsContent>
       </Tabs>
     </div>
