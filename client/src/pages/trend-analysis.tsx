@@ -198,11 +198,11 @@ const TrendAnalysis: React.FC = () => {
   const getChangeIcon = (change: string) => {
     switch (change) {
       case "up":
-        return <span className="text-green-600">▲</span>;
+        return <span className="text-blue-600">▲</span>;
       case "down":
-        return <span className="text-red-600">▼</span>;
+        return <span className="text-blue-600">▼</span>;
       default:
-        return <span className="text-gray-500">-</span>;
+        return <span className="text-blue-400">-</span>;
     }
   };
 
@@ -214,18 +214,18 @@ const TrendAnalysis: React.FC = () => {
           
           <div className="flex flex-wrap gap-2 mb-6">
             <Button
-              variant={trendType === "daily" ? "default" : "outline"}
+              variant="outline"
               size="sm"
               onClick={() => setTrendType("daily")}
-              className="rounded-full"
+              className={`rounded-full ${trendType === "daily" ? "bg-blue-600 text-white hover:bg-blue-700" : "hover:bg-blue-100 hover:text-blue-600"}`}
             >
               일간 트렌드
             </Button>
             <Button
-              variant={trendType === "weekly" ? "default" : "outline"}
+              variant="outline"
               size="sm"
               onClick={() => setTrendType("weekly")}
-              className="rounded-full"
+              className={`rounded-full ${trendType === "weekly" ? "bg-blue-600 text-white hover:bg-blue-700" : "hover:bg-blue-100 hover:text-blue-600"}`}
             >
               주간 트렌드
             </Button>
@@ -243,7 +243,7 @@ const TrendAnalysis: React.FC = () => {
                   onKeyDown={handleKeyDown}
                 />
                 <Button
-                  className="bg-primary text-white px-4 py-2 rounded-none font-medium hover:bg-primary/90"
+                  className="bg-blue-600 text-white px-4 py-2 rounded-none font-medium hover:bg-blue-700"
                   onClick={handleSearch}
                 >
                   검색
@@ -269,14 +269,14 @@ const TrendAnalysis: React.FC = () => {
                       trendData[trendType].map((item: any, index: number) => (
                         <li
                           key={index}
-                          className="py-2 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                          className={`py-2 flex items-center justify-between cursor-pointer hover:bg-gray-50 ${currentKeyword === item.keyword ? 'bg-blue-50' : ''}`}
                           onClick={() => handleKeywordClick(item.keyword)}
                         >
                           <div className="flex items-center">
                             <span className="w-6 text-center font-medium text-gray-500">
                               {item.rank}
                             </span>
-                            <span className="ml-2">{item.keyword}</span>
+                            <span className={`ml-2 ${currentKeyword === item.keyword ? 'font-medium text-blue-600' : ''}`}>{item.keyword}</span>
                           </div>
                           {getChangeIcon(item.change)}
                         </li>
@@ -320,7 +320,7 @@ const TrendAnalysis: React.FC = () => {
                             </div>
                             <div className="bg-gray-50 p-4 rounded-lg">
                               <p className="text-sm text-gray-500 mb-1">경쟁 강도</p>
-                              <p className="text-xl font-bold text-red-600">
+                              <p className="text-xl font-bold text-blue-600">
                                 매우 높음
                               </p>
                             </div>
@@ -401,7 +401,7 @@ const TrendAnalysis: React.FC = () => {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      className="lucide lucide-search mx-auto mb-4 text-gray-400"
+                      className="lucide lucide-search mx-auto mb-4 text-blue-600"
                     >
                       <circle cx="11" cy="11" r="8" />
                       <path d="m21 21-4.3-4.3" />

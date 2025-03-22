@@ -756,7 +756,7 @@ export default function IntegratedSearch() {
                 className="self-start"
                 onClick={() => handleUseDefaultKeywords()}
               >
-                <SearchIcon className="h-4 w-4 mr-2" />
+                <SearchIcon className="h-4 w-4 mr-2 text-blue-600" />
                 기본 키워드로 검색하기
               </Button>
             </div>

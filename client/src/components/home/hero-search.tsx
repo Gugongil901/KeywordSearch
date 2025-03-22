@@ -148,7 +148,7 @@ const HeroSearch: React.FC<HeroSearchProps> = ({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="lucide lucide-search text-gray-500"
+                    className="lucide lucide-search text-blue-600"
                   >
                     <circle cx="11" cy="11" r="8" />
                     <path d="m21 21-4.3-4.3" />
