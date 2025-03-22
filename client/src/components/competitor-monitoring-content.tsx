@@ -12,8 +12,9 @@ import { ReviewChangeCard } from "@/components/review-change-card";
 import { NewProductCard } from "@/components/new-product-card";
 import { ProductCard } from "@/components/product-card";
 import { formatNumber, formatDate, formatPercent, getChangeColorClass } from "@/utils/format";
-// 강점/약점 레이더 차트 컴포넌트 임포트
+// 차트 컴포넌트 임포트
 import { StrengthWeaknessChart } from "@/components/charts/strength-weakness-radar";
+import { CompetitorComparisonChart } from "@/components/charts/competitor-comparison-chart";
 // 공통 상수 임포트
 import { DEFAULT_PRODUCT_IMAGES } from "@/constants/images";
 
@@ -992,6 +993,18 @@ export function CompetitorMonitoringContent({
               </TabsContent>
               
               <TabsContent value="insights">
+                {/* 경쟁사 비교 차트 섹션 */}
+                <div className="mb-4">
+                  <CompetitorComparisonChart
+                    insights={competitorInsights}
+                    competitors={competitors}
+                    chartType="bar"
+                    metric="marketShare"
+                    title="경쟁사 시장 점유율 비교"
+                    description="선택된 경쟁사들의 시장 점유율을 비교합니다."
+                  />
+                </div>
+                
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                   <div className="lg:col-span-1">
                     <Card>
