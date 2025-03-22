@@ -1,0 +1,33 @@
+{
+  "request": {
+    "startDate": "2025-02-20",
+    "endDate": "2025-03-22",
+    "timeUnit": "date",
+    "category": "50000000",
+    "keyword": [
+      {
+        "name": "스마트폰",
+        "param": [
+          "스마트폰"
+        ]
+      }
+    ],
+    "device": "",
+    "gender": "",
+    "ages": []
+  },
+  "response": {
+    "startDate": "2025-02-20",
+    "endDate": "2025-03-22",
+    "timeUnit": "date",
+    "results": [
+      {
+        "title": "스마트폰",
+        "keyword": [
+          "스마트폰"
+        ],
+        "data": []
+      }
+    ]
+  }
+}

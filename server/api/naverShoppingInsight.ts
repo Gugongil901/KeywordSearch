@@ -54,11 +54,12 @@ export async function fetchShoppingCategoryKeywords(categoryId: string, startDat
     
     // 네이버 API 문서에 맞게 요청 형식 업데이트
     // 쇼핑인사이트 카테고리별 인기 검색어 API 요청 형식
+    // 테스트 결과에 따라 category는 반드시 문자열로 전달해야 함
     const requestBody = {
       startDate: startDate,
       endDate: endDate,
       timeUnit: 'date',
-      category: categoryId, // 카테고리 ID를 문자열로 전달 (API 문서 형식)
+      category: categoryId.toString(), // 카테고리 ID를 문자열로 전달 (API 문서 형식)
       keyword: [ // 필수이지만 전체 키워드를 가져오기 위한 더미 데이터
         {"name": "전체", "param": [""]} 
       ],
@@ -112,7 +113,7 @@ export async function fetchShoppingCategoryKeywords(categoryId: string, startDat
         startDate: startDate,
         endDate: endDate,
         timeUnit: 'date',
-        category: categoryId, // 문자열 형식
+        category: categoryId.toString(), // 문자열 형식
         keyword: [
           {"name": `카테고리_${categoryId}`, "param": ["인기검색어"]},
           {"name": `인기키워드_${categoryId}`, "param": ["트렌드"]}
