@@ -353,7 +353,7 @@ export function CompetitorMonitoringContent({
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${window.location.origin}/api/v1/monitoring/check/${encodeURIComponent(keyword)}`, {
+      const response = await fetch(`${window.location.origin}/api/monitoring/check/${encodeURIComponent(keyword)}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
