@@ -89,6 +89,14 @@ interface NicheKeywordResult {
     nicheScore: number;
     potential: string;
     recommendation: string;
+    competitionLevel?: string;
+    recommendedChannels?: string[];
+    opportunityScore?: number;
+    profitPotential?: number;
+    difficultyLevel?: string;
+    categoryRelevance?: number;
+    commercialIntent?: number;
+    seasonality?: number;
   }[];
   nicheKeywordCount: number;
   nicheRatio: string;

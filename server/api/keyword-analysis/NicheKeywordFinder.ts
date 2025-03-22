@@ -204,7 +204,8 @@ export function findNicheKeywords(
       };
     }).sort((a, b) => b.nicheScore - a.nicheScore); // 니치 점수 기준 내림차순 정렬
   } catch (error) {
-    logger.error('니치 키워드 분석 중 오류:', error);
+    logger.error('니치 키워드 분석 중 오류:');
+    console.error(error);
     return [];
   }
 }
