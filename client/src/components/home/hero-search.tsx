@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -29,12 +29,59 @@ const HeroSearch: React.FC<HeroSearchProps> = ({
   selectedTrendType,
   onTrendTypeChange
 }) => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [_, navigate] = useLocation();
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [searchResult, setSearchResult] = useState<any>(null);
 
-  const handleSearch = () => {
-    if (searchTerm.trim()) {
-      navigate(`/keyword?query=${encodeURIComponent(searchTerm.trim())}`);
+  // 키워드 분석 직접 수행
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) {
+      toast({
+        title: "키워드를 입력해주세요",
+        description: "분석할 키워드를 입력해야 합니다.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSearching(true);
+    
+    try {
+      // 키워드 분석 API 호출
+      const response = await fetch(`/api/keyword/analysis?keyword=${encodeURIComponent(searchTerm.trim())}`);
+      
+      if (!response.ok) {
+        throw new Error("키워드 분석 중 오류가 발생했습니다.");
+      }
+      
+      const data = await response.json();
+      setSearchResult(data);
+
+      // 키워드 분석 컴포넌트에 검색결과 전달을 위해 로컬 스토리지 사용
+      localStorage.setItem('currentKeywordAnalysis', JSON.stringify(data));
+      localStorage.setItem('currentKeyword', searchTerm.trim());
+      
+      // 분석 탭으로 스크롤 이동
+      const analysisElement = document.getElementById('keyword-analysis-section');
+      if (analysisElement) {
+        analysisElement.scrollIntoView({ behavior: 'smooth' });
+      }
+      
+      toast({
+        title: "분석 완료",
+        description: `"${searchTerm.trim()}" 키워드 분석이 완료되었습니다.`,
+      });
+      
+    } catch (error) {
+      console.error("키워드 검색 오류:", error);
+      toast({
+        title: "검색 오류",
+        description: "키워드 분석 중 오류가 발생했습니다. 다시 시도해주세요.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -59,10 +106,11 @@ const HeroSearch: React.FC<HeroSearchProps> = ({
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="lucide lucide-line-chart inline-block mr-2 text-primary"
+              className="lucide lucide-bar-chart-2 inline-block mr-2 text-primary"
             >
-              <path d="M3 3v18h18" />
-              <path d="m19 9-5 5-4-4-3 3" />
+              <line x1="18" x2="18" y1="20" y2="10" />
+              <line x1="12" x2="12" y1="20" y2="4" />
+              <line x1="6" x2="6" y1="20" y2="14" />
             </svg>
             셀러를 위한 모든 데이터 분석
           </h1>
@@ -89,7 +137,7 @@ const HeroSearch: React.FC<HeroSearchProps> = ({
                 </div>
                 <Input
                   type="text"
-                  placeholder="상품을 검색해보세요"
+                  placeholder="상품명 검색(예: 오메가3, 루테인, 콘드로이친)"
                   className="flex-grow py-3 px-2 outline-none border-none shadow-none text-gray-900"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -98,37 +146,30 @@ const HeroSearch: React.FC<HeroSearchProps> = ({
                 <Button
                   className="bg-primary text-white px-5 py-3 rounded-none font-medium hover:bg-primary/90"
                   onClick={handleSearch}
+                  disabled={isSearching}
                 >
-                  검색
+                  {isSearching ? "분석중..." : "검색"}
                 </Button>
               </div>
             </div>
 
-            {/* Trend Buttons */}
-            <div className="flex mt-4 justify-center space-x-4">
-              <button
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  selectedTrendType === "daily"
-                    ? "bg-white shadow-sm text-primary border border-gray-200"
-                    : "bg-gray-50 text-gray-900"
-                }`}
-                onClick={() => onTrendTypeChange("daily")}
-              >
-                일간 트렌드
-              </button>
-              <button
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  selectedTrendType === "weekly"
-                    ? "bg-white shadow-sm text-primary border border-gray-200"
-                    : "bg-gray-50 text-gray-900"
-                }`}
-                onClick={() => onTrendTypeChange("weekly")}
-              >
-                주간 트렌드
-              </button>
+            {/* 인기 키워드 */}
+            <div className="flex flex-wrap mt-4 justify-center gap-2">
+              {["비타민", "루테인", "오메가3", "유산균", "종합비타민", "칼슘", "마그네슘"].map((keyword) => (
+                <span
+                  key={keyword}
+                  className="px-3 py-1 rounded-full text-xs cursor-pointer bg-white text-gray-900 hover:bg-primary hover:text-white transition"
+                  onClick={() => {
+                    setSearchTerm(keyword);
+                    setTimeout(handleSearch, 100);
+                  }}
+                >
+                  {keyword}
+                </span>
+              ))}
             </div>
 
-            {/* Category Filters */}
+            {/* 상품 카테고리 */}
             <div className="flex flex-wrap mt-4 justify-center gap-2">
               {categories.map((cat) => (
                 <span

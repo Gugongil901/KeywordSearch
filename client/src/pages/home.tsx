@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import HeroSearch from "@/components/home/hero-search";
-import KeywordTrends from "@/components/home/keyword-trends";
 import CategoryKeywords from "@/components/home/sales-ranking";
 import KeywordAnalysis from "@/components/home/keyword-analysis";
 import ProductRanking from "@/components/home/product-ranking";
@@ -60,7 +59,9 @@ const Home: React.FC = () => {
 
       <section className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <KeywordAnalysis />
+          <div id="keyword-analysis-section">
+            <KeywordAnalysis />
+          </div>
         </div>
       </section>
 

@@ -34,10 +34,26 @@ ChartJS.register(
 
 const KeywordAnalysis: React.FC = () => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("analysis");
+  const [activeTab, setActiveTab] = useState("trending");
   const [keyword, setKeyword] = useState<string>("");
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const [searchResult, setSearchResult] = useState<any>(null);
+  
+  // localStorage에서 검색 결과 가져오기
+  useEffect(() => {
+    try {
+      const savedAnalysis = localStorage.getItem('currentKeywordAnalysis');
+      const savedKeyword = localStorage.getItem('currentKeyword');
+      
+      if (savedAnalysis && savedKeyword) {
+        setSearchResult(JSON.parse(savedAnalysis));
+        setKeyword(savedKeyword);
+        setActiveTab("analysis");
+      }
+    } catch (error) {
+      console.error("로컬 스토리지 데이터 로드 오류:", error);
+    }
+  }, []);
 
   // 키워드 검색 요청 처리
   const handleKeywordSearch = async (event?: React.FormEvent) => {
