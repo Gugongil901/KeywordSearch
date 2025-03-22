@@ -6,12 +6,10 @@
 // 제품 이미지 컴포넌트 임포트
 import { ProductImage } from "@/components/ui/product-image";
 import { CompetitorProductImage } from "@/components/competitor-product-image-new";
-import { PriceChangeCard } from "@/components/price-change-card";
-import { RankChangeCard } from "@/components/rank-change-card";
-import { ReviewChangeCard } from "@/components/review-change-card";
-import { NewProductCard } from "@/components/new-product-card";
 import { ProductCard } from "@/components/product-card";
 import { formatNumber, formatDate, formatPercent, getChangeColorClass } from "@/utils/format";
+// 제품 목록 컴포넌트 임포트
+import { PriceChangeList, RankChangeList, ReviewChangeList, NewProductList } from "@/components/competitor-product-lists";
 // 강점/약점 레이더 차트 컴포넌트 임포트
 import { StrengthWeaknessChart } from "@/components/charts/strength-weakness-radar";
 // 공통 상수 임포트
@@ -786,96 +784,8 @@ export default function CompetitorMonitoring() {
   };
   
   // 가격 변화 랜더링
-  const renderPriceChanges = (changes: PriceChange[], competitor: string) => {
-    if (changes.length === 0) return null;
-    
-    const brandInfo = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor);
-    const brandName = brandInfo ? brandInfo.name : competitor;
-    
-    return (
-      <div className="space-y-3 mb-4">
-        <h4 className="font-medium text-sm">가격 변동</h4>
-        {changes.map((change, index) => (
-          <PriceChangeCard 
-            key={`price-${index}-${change.product.productId}`}
-            change={change}
-            brandName={brandName}
-            brandId={competitor}
-            className="mb-2"
-          />
-        ))}
-      </div>
-    );
-  };
-  
-  // 순위 변화 랜더링
-  const renderRankChanges = (changes: RankChange[], competitor: string) => {
-    if (changes.length === 0) return null;
-    
-    const brandInfo = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor);
-    const brandName = brandInfo ? brandInfo.name : competitor;
-    
-    return (
-      <div className="space-y-3 mb-4">
-        <h4 className="font-medium text-sm">순위 변동</h4>
-        {changes.map((change, index) => (
-          <RankChangeCard 
-            key={`rank-${index}-${change.product.productId}`}
-            change={change}
-            brandName={brandName}
-            brandId={competitor}
-            className="mb-2"
-          />
-        ))}
-      </div>
-    );
-  };
-  
-  // 리뷰 변화 랜더링
-  const renderReviewChanges = (changes: ReviewChange[], competitor: string) => {
-    if (changes.length === 0) return null;
-    
-    const brandInfo = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor);
-    const brandName = brandInfo ? brandInfo.name : competitor;
-    
-    return (
-      <div className="space-y-3 mb-4">
-        <h4 className="font-medium text-sm">리뷰 변동</h4>
-        {changes.map((change, index) => (
-          <ReviewChangeCard 
-            key={`review-${index}-${change.product.productId}`}
-            change={change}
-            brandName={brandName}
-            brandId={competitor}
-            className="mb-2"
-          />
-        ))}
-      </div>
-    );
-  };
-  
-  // 새 제품 알림 랜더링
-  const renderNewProducts = (products: NewProductAlert[], competitor: string) => {
-    if (products.length === 0) return null;
-    
-    const brandInfo = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitor);
-    const brandName = brandInfo ? brandInfo.name : competitor;
-    
-    return (
-      <div className="space-y-3 mb-4">
-        <h4 className="font-medium text-sm">신규 제품</h4>
-        {products.map((item, index) => (
-          <NewProductCard 
-            key={`new-${index}-${item.product.productId}`}
-            item={item}
-            brandName={brandName}
-            brandId={competitor}
-            className="mb-2"
-          />
-        ))}
-      </div>
-    );
-  };
+  // 렌더링 함수들은 별도의 컴포넌트 파일로 이동했습니다.
+  // PriceChangeList, RankChangeList, ReviewChangeList, NewProductList 컴포넌트를 사용합니다.
   
   // UI 렌더링
   return (
@@ -1116,10 +1026,10 @@ export default function CompetitorMonitoring() {
                       <CardContent className="p-4 pt-2">
                         {hasChanges ? (
                           <div className="space-y-3">
-                            {renderPriceChanges(changes.priceChanges, competitor)}
-                            {renderRankChanges(changes.rankChanges, competitor)}
-                            {renderReviewChanges(changes.reviewChanges, competitor)}
-                            {renderNewProducts(changes.newProducts, competitor)}
+                            <PriceChangeList changes={changes.priceChanges} competitor={competitor} />
+                            <RankChangeList changes={changes.rankChanges} competitor={competitor} />
+                            <ReviewChangeList changes={changes.reviewChanges} competitor={competitor} />
+                            <NewProductList changes={changes.newProducts} competitor={competitor} />
                           </div>
                         ) : (
                           <div className="py-4 text-center text-gray-500">
