@@ -18,6 +18,7 @@ import TrendAnalysis from "@/pages/trend-analysis";
 import AdvancedAnalysis from "@/pages/advanced-analysis";
 import HealthSupplement from "@/pages/health-supplement";
 import ThemeSettings from "@/pages/theme-settings";
+import ThemeCustomizationPage from "@/pages/ThemeCustomizationPage";
 import TestComponent from "@/components/test/TestComponent";
 
 function Router() {
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/advanced-analysis" component={AdvancedAnalysis} />
       <Route path="/health-supplement" component={HealthSupplement} />
       <Route path="/theme-settings" component={ThemeSettings} />
+      <Route path="/theme-customization" component={ThemeCustomizationPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -41,10 +43,38 @@ function Router() {
 function App() {
   // 앱 로드 시 저장된 테마 적용
   useEffect(() => {
+    // 기존 컬러 팔레트 적용
     const savedPaletteId = getPaletteFromLocalStorage();
     const fullPalette = getFullPaletteById(savedPaletteId);
     applyPaletteToDocument(fullPalette);
-    console.log('앱 시작 시 테마 적용:', fullPalette.name);
+    console.log('로컬 스토리지에서 색상 팔레트 불러옴:', savedPaletteId);
+    
+    // 테마 커스터마이징 위자드에서 저장한 테마 적용
+    try {
+      const savedCustomTheme = localStorage.getItem('app-theme');
+      if (savedCustomTheme) {
+        const themeOptions = JSON.parse(savedCustomTheme);
+        
+        // 테마 속성 적용
+        document.documentElement.setAttribute('data-theme-variant', themeOptions.variant);
+        document.documentElement.style.setProperty('--primary', themeOptions.primary);
+        
+        // 라이트/다크 모드 적용
+        if (themeOptions.appearance === 'system') {
+          const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.toggle('dark', isDarkMode);
+        } else {
+          document.documentElement.classList.toggle('dark', themeOptions.appearance === 'dark');
+        }
+        
+        // 테두리 둥글기 적용
+        document.documentElement.style.setProperty('--radius', `${themeOptions.radius}rem`);
+        
+        console.log('로컬 스토리지에서 커스텀 테마 적용됨');
+      }
+    } catch (error) {
+      console.error('커스텀 테마 로드 오류:', error);
+    }
   }, []);
 
   return (
