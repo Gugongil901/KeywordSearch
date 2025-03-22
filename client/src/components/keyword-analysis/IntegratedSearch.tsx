@@ -677,6 +677,8 @@ export default function IntegratedSearch() {
   const renderResults = () => {
     if (!searchResult) return null;
     
+    console.log("렌더링 결과 타입:", searchResult.type, "데이터:", searchResult.data);
+    
     switch (searchResult.type) {
       case 'ad-keywords':
         return renderAdKeywordResults(searchResult.data);
@@ -801,7 +803,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'ad-keywords' && renderResults()}
+          {searchResult && searchResult.type === 'ad-keywords' ? renderResults() : null}
         </TabsContent>
         
         <TabsContent value="page-exposure" className="space-y-4 pt-4">
@@ -875,7 +877,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'page-exposure' && renderResults()}
+          {searchResult && searchResult.type === 'page-exposure' ? renderResults() : null}
         </TabsContent>
         
         <TabsContent value="product-ranking" className="space-y-4 pt-4">
@@ -949,7 +951,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'product-ranking' && renderResults()}
+          {searchResult && searchResult.type === 'product-ranking' ? renderResults() : null}
         </TabsContent>
         
         <TabsContent value="best-keywords" className="space-y-4 pt-4">
@@ -1045,7 +1047,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult && searchResult.type === 'best-keywords' && renderResults()}
+          {searchResult && searchResult.type === 'best-keywords' ? renderResults() : null}
         </TabsContent>
         
         <TabsContent value="niche-keywords" className="space-y-4 pt-4">
