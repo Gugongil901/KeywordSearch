@@ -237,7 +237,7 @@ export function CompetitorMonitoringContent({
   onCompetitorsChange 
 }: CompetitorMonitoringContentProps) {
   // 상태 관리
-  const [competitors, setCompetitors] = useState<string[]>(['drlin', 'naturalplus', 'anguk', 'koryo']);
+  const [competitors, setCompetitors] = useState<string[]>(['drlin', 'naturalplus', 'esthermall', 'anguk', 'koreaeundan', 'nutrione', 'ckdhc', 'gnm', 'nutriday', 'jyns', 'hanmi', 'yuhan']);
   const [monitoringFrequency, setMonitoringFrequency] = useState<'daily' | 'weekly'>('weekly');
   const [alertThresholds, setAlertThresholds] = useState({
     priceChangePercent: 5,
