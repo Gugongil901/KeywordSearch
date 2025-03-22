@@ -223,6 +223,34 @@ export class DatabaseConnector {
   getCompetitorBaseline(keyword: string): Record<string, CompetitorProduct[]> | undefined {
     return this.competitorBaselines.get(keyword);
   }
+
+  /**
+   * 연관 키워드 조회
+   * @param keyword 키워드
+   * @param limit 최대 개수
+   * @returns 연관 키워드 목록
+   */
+  getRelatedKeywords(keyword: string, limit: number = 10): any[] {
+    // 저장된 연관 키워드 데이터 확인
+    const relatedKeywords: any[] = [];
+    
+    // 데이터베이스에서 연관 키워드 검색
+    for (const [key, value] of this.keywordData.entries()) {
+      if (key.startsWith(`related_keyword_`) && (key.includes(keyword) || value?.keyword?.includes(keyword))) {
+        relatedKeywords.push(value);
+      }
+    }
+    
+    // 결과가 없으면 빈 배열 반환
+    if (relatedKeywords.length === 0) {
+      return [];
+    }
+    
+    // 검색량 기준으로 정렬하고 제한된 개수만 반환
+    return relatedKeywords
+      .sort((a, b) => (b.searchVolume || 0) - (a.searchVolume || 0))
+      .slice(0, limit);
+  }
 }
 
 // 싱글톤 인스턴스

@@ -333,9 +333,23 @@ export class KeywordAnalysisSystem {
   }
 
   /**
-   * 시스템 상태 확인
-   * @returns 시스템 상태 정보
+   * 연관 키워드 조회 메서드
+   * @param keyword 키워드
+   * @param limit 최대 개수
+   * @returns 연관 키워드 목록
    */
+  public getRelatedKeywords(keyword: string, limit: number = 10): any[] {
+    // 데이터베이스에서 연관 키워드 검색
+    const relatedKeywords = this.db.getRelatedKeywords(keyword, limit);
+    
+    // 결과가 없으면 샘플 데이터 생성
+    if (!relatedKeywords || relatedKeywords.length === 0) {
+      return this.generateSampleRelatedKeywords(keyword).slice(0, limit);
+    }
+    
+    return relatedKeywords;
+  }
+
   getSystemStatus(): any {
     const apiKeys = this.config.api_keys;
     
