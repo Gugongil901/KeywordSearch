@@ -80,6 +80,7 @@ const HEALTH_SUPPLEMENT_BRANDS = [
 
 // 브랜드 공식 스토어 URL
 const BRAND_STORE_URLS = {
+  // ID 기반 URL
   'drlin': 'https://smartstore.naver.com/drlin',
   'naturalplus': 'https://smartstore.naver.com/enatural', 
   'esthermall': 'https://smartstore.naver.com/esthermall',
@@ -91,7 +92,22 @@ const BRAND_STORE_URLS = {
   'nutriday': 'https://smartstore.naver.com/nutriday',
   'jyns': 'https://smartstore.naver.com/jooyoung-ns',
   'hanmi': 'https://smartstore.naver.com/hanmibiologics',
-  'yuhan': 'https://smartstore.naver.com/yuhan'
+  'yuhan': 'https://smartstore.naver.com/yuhan',
+  
+  // 이름 기반 URL (API 응답 ID와 매핑)
+  '닥터린': 'https://smartstore.naver.com/drlin',
+  '바디닥터': 'https://smartstore.naver.com/bodydoctor',
+  '내츄럴플러스': 'https://smartstore.naver.com/enatural',
+  '에스더몰': 'https://smartstore.naver.com/esthermall',
+  '안국건강': 'https://smartstore.naver.com/anguk',
+  '고려은단': 'https://smartstore.naver.com/eundan',
+  '뉴트리원': 'https://smartstore.naver.com/nutrione',
+  '종근당건강': 'https://smartstore.naver.com/ckdhc',
+  'GNM 자연의품격': 'https://smartstore.naver.com/natureofpurety',
+  '뉴트리데이': 'https://smartstore.naver.com/nutriday',
+  '주영엔에스': 'https://smartstore.naver.com/jooyoung-ns',
+  '한미양행': 'https://smartstore.naver.com/hanmibiologics',
+  '유한양행': 'https://smartstore.naver.com/yuhan'
 };
 
 // 브랜드별 대표 제품 이미지
@@ -992,7 +1008,7 @@ export function CompetitorMonitoringContent({
                                 <CheckCircle className="w-12 h-12 text-green-500 mb-3" />
                                 <h3 className="text-lg font-medium mb-1">변경사항이 없습니다</h3>
                                 <p className="text-gray-500 max-w-md">
-                                  현재 <strong>{HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name}</strong>에 대한 
+                                  현재 <strong>{HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor || b.name === selectedCompetitor)?.name || selectedCompetitor}</strong>에 대한 
                                   가격, 순위, 리뷰, 신제품 변경사항이 감지되지 않았습니다. 다음 확인 시에 다시 검사합니다.
                                 </p>
                               </div>
@@ -1147,7 +1163,7 @@ export function CompetitorMonitoringContent({
                       <div className="flex flex-col items-center justify-center p-8 h-full">
                         <Loader2 className="h-12 w-12 text-gray-300 mb-2 animate-spin" />
                         <p className="text-gray-500 text-center">
-                          {HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor)?.name || selectedCompetitor} 인사이트 로딩 중...
+                          {HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === selectedCompetitor || b.name === selectedCompetitor)?.name || selectedCompetitor} 인사이트 로딩 중...
                         </p>
                       </div>
                     ) : (
