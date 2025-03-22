@@ -7,10 +7,10 @@ import CompetitorMonitoringContent from '../components/competitor-monitoring-con
 
 export default function CompetitorMonitoring() {
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
-      <div className="container mx-auto p-4">
+    <div className="min-h-screen bg-gray-50 pb-8">
+      <div className="container mx-auto px-4 py-3">
         <h2 className="text-xl font-semibold mb-3">경쟁사 모니터링</h2>
-        <div className="bg-white rounded-lg shadow p-3">
+        <div className="bg-white rounded-lg shadow-sm p-3 border border-gray-100">
           <CompetitorMonitoringContent />
         </div>
       </div>
