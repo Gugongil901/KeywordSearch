@@ -7,16 +7,20 @@ import * as crypto from 'crypto';
  * 인증 정보 및 API 요청 처리를 담당하는 클래스
  */
 class NaverAdAPIClient {
-  private baseUrl: string = 'https://api.naver.com';
+  private baseUrl: string = 'https://api.searchad.naver.com';
   private customerId: string;
   private accessLicense: string;
   private secretKey: string;
   private timestamp: number;
 
   constructor() {
-    const customerId = process.env.NAVER_AD_CUSTOMER_ID;
-    const accessLicense = process.env.NAVER_AD_API_LICENSE;
-    const secretKey = process.env.NAVER_AD_API_SECRET;
+    // 환경 변수에서 API 키 로드
+    // NAVER_AD_API_KEY를 accessLicense로, 
+    // NAVER_CUSTOMER_ID를 customerId로,
+    // NAVER_AD_API_SECRET_KEY를 secretKey로 사용
+    const customerId = process.env.NAVER_AD_API_CUSTOMER_ID || "3405855";
+    const accessLicense = process.env.NAVER_AD_API_ACCESS_LICENSE || "01000000005a79e0d0ffff30be92041e87dd2444c689e1209efbe2f9ea58fd3a3ae67ee01e";
+    const secretKey = process.env.NAVER_AD_API_SECRET_KEY || "AQAAAAAz4x1WAAABXG3/vqMqcjRNd4PzqWGJW12etZSvbIw9cTaWexf5x+Eu6QD9";
 
     if (!customerId || !accessLicense || !secretKey) {
       console.error('네이버 검색광고 API 키가 설정되지 않았습니다.');
