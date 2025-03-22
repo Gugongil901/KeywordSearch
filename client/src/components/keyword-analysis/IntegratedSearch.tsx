@@ -110,9 +110,16 @@ export default function IntegratedSearch() {
     try {
       const keywordArray = keywords.split(',').map(k => k.trim()).filter(k => k);
       
-      if (keywordArray.length === 0 && activeTab !== 'product-ranking' && activeTab !== 'best-keywords') {
+      if (keywordArray.length === 0) {
         throw new Error('키워드를 하나 이상 입력해주세요');
       }
+      
+      // 기본 테스트용 URL과 상품 정보
+      const defaultUrl = 'https://shopping.naver.com/health/stores/100150981';
+      const defaultProductInfo = {
+        productId: 'HEALTH-01523',
+        productName: '종합비타민 프리미엄'
+      };
       
       switch (activeTab) {
         case 'ad-keywords':
@@ -121,36 +128,27 @@ export default function IntegratedSearch() {
           break;
         
         case 'page-exposure':
-          if (!url) {
-            throw new Error('URL을 입력해주세요');
-          }
           endpoint = '/api/advanced-analysis/page-exposure';
           requestData = { 
             keywords: keywordArray,
-            url 
+            url: defaultUrl // 기본 URL 사용
           };
           break;
         
         case 'product-ranking':
-          if (!productId || !productName) {
-            throw new Error('상품 ID와 상품명을 입력해주세요');
-          }
           endpoint = '/api/advanced-analysis/product-ranking';
           requestData = { 
-            productId, 
-            productName, 
+            productId: defaultProductInfo.productId, 
+            productName: defaultProductInfo.productName, 
             keywords: keywordArray
           };
           break;
         
         case 'best-keywords':
-          if (!productId || !productName) {
-            throw new Error('상품 ID와 상품명을 입력해주세요');
-          }
           endpoint = '/api/advanced-analysis/best-keywords';
           requestData = { 
-            productId, 
-            productName, 
+            productId: defaultProductInfo.productId, 
+            productName: defaultProductInfo.productName, 
             keywords: keywordArray,
             limit: keywordLimit
           };
@@ -312,7 +310,7 @@ export default function IntegratedSearch() {
         <CardHeader>
           <CardTitle>페이지 노출 결과</CardTitle>
           <CardDescription>
-            URL <span className="font-mono">{url}</span>에 대한 노출 현황
+            네이버 쇼핑몰에서 키워드별 순위 노출 분석 결과
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -377,7 +375,7 @@ export default function IntegratedSearch() {
         <CardHeader>
           <CardTitle>상품 키워드 순위 분석</CardTitle>
           <CardDescription>
-            상품 "{productName}" (ID: {productId})의 키워드별 순위 분석
+            인기 건강보조제 제품의 키워드별 노출 순위 분석
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -747,51 +745,47 @@ export default function IntegratedSearch() {
             <CardHeader>
               <CardTitle>최적 키워드 찾기</CardTitle>
               <CardDescription>
-                특정 상품이 가장 높은 순위로 노출되는 최적의 키워드를 찾습니다.
+                건강보조제 브랜드 제품들이 가장 높은 순위로 노출되는 최적의 키워드를 분석합니다.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium">
-                    상품 ID
-                  </label>
-                  <Input
-                    placeholder="상품 고유 ID"
-                    value={productId}
-                    onChange={(e) => setProductId(e.target.value)}
-                  />
-                </div>
-                
-                <div className="flex flex-col space-y-2">
-                  <label className="text-sm font-medium">
-                    상품명
-                  </label>
-                  <Input
-                    placeholder="상품 이름"
-                    value={productName}
-                    onChange={(e) => setProductName(e.target.value)}
-                  />
-                </div>
-              </div>
-              
               <div className="flex flex-col space-y-2">
                 <label className="text-sm font-medium">
                   키워드 목록 (쉼표로 구분)
                 </label>
-                <div className="flex space-x-2">
-                  <Input
-                    placeholder="비타민, 종합비타민, 멀티비타민, 마그네슘..."
-                    value={keywords}
-                    onChange={(e) => setKeywords(e.target.value)}
-                  />
-                  <Button 
-                    variant="outline" 
-                    onClick={handleUseDefaultKeywords}
-                    className="whitespace-nowrap"
-                  >
-                    기본 키워드
-                  </Button>
+                <div className="flex flex-col space-y-4">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="비타민, 종합비타민, 멀티비타민, 마그네슘..."
+                      value={keywords}
+                      onChange={(e) => setKeywords(e.target.value)}
+                    />
+                    <Button 
+                      variant="outline" 
+                      onClick={handleUseDefaultKeywords}
+                      className="whitespace-nowrap"
+                    >
+                      추천 키워드
+                    </Button>
+                  </div>
+                  
+                  <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
+                    <div className="flex flex-wrap gap-2">
+                      {availableKeywords.slice(0, 10).map((keyword, index) => (
+                        <Badge 
+                          key={index} 
+                          variant="outline" 
+                          className="cursor-pointer hover:bg-accent"
+                          onClick={() => setKeywords(prev => prev ? `${prev}, ${keyword}` : keyword)}
+                        >
+                          {keyword}
+                        </Badge>
+                      ))}
+                      {availableKeywords.length > 10 && (
+                        <Badge variant="outline">+ {availableKeywords.length - 10}개 더</Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
               
