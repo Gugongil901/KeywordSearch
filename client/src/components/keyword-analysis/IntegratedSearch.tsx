@@ -835,7 +835,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'ad-keywords' && renderResults()}
+          {searchResult?.type === 'ad-keywords' && renderAdKeywordResults(searchResult.data)}
         </TabsContent>
         
         <TabsContent value="page-exposure" className="space-y-4 pt-4">
@@ -909,7 +909,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'page-exposure' && renderResults()}
+          {searchResult?.type === 'page-exposure' && renderPageExposureResults(searchResult.data)}
         </TabsContent>
         
         <TabsContent value="product-ranking" className="space-y-4 pt-4">
@@ -983,7 +983,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'product-ranking' && renderResults()}
+          {searchResult?.type === 'product-ranking' && renderProductRankingResults(searchResult.data)}
         </TabsContent>
         
         <TabsContent value="best-keywords" className="space-y-4 pt-4">
@@ -1079,7 +1079,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'best-keywords' && renderResults()}
+          {searchResult?.type === 'best-keywords' && renderBestKeywordsResults(searchResult.data)}
         </TabsContent>
         
         <TabsContent value="niche-keywords" className="space-y-4 pt-4">
@@ -1155,7 +1155,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'niche-keywords' && renderResults()}
+          {searchResult?.type === 'niche-keywords' && renderNicheKeywordResults(searchResult.data)}
         </TabsContent>
       </Tabs>
     </div>
