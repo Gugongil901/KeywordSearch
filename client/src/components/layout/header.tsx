@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import Logo from "@/components/ui/logo";
 import { Button } from "@/components/ui/button";
+import { PopoverColorSelector } from "@/components/theme/ColorPaletteSelector";
 
 const Header = () => {
   const [location] = useLocation();
@@ -48,6 +49,7 @@ const Header = () => {
           <Link href="/guide" className="text-gray-900 hover:text-primary text-sm">
             가이드
           </Link>
+          <PopoverColorSelector />
           <Button className="bg-primary text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-primary/90">로그인</Button>
         </div>
       </div>

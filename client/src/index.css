@@ -2,6 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* 기본 테마 색상 (파란색 테마) */
+  --color-primary: #1E40AF;
+  --color-secondary: #3B82F6;
+  --color-accent: #60A5FA;
+  --color-background: #F0F9FF;
+  --color-foreground: #0F172A;
+  --theme-mode: light;
+}
+
+/* 다크 테마 클래스 */
+.dark-theme {
+  --color-background: #1E293B;
+  --color-foreground: #F8FAFC;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -9,5 +25,52 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  :root {
+    --background: var(--color-background);
+    --foreground: var(--color-foreground);
+    --card: var(--color-background);
+    --card-foreground: var(--color-foreground);
+    --popover: var(--color-background);
+    --popover-foreground: var(--color-foreground);
+    --primary: var(--color-primary);
+    --primary-foreground: 210 40% 98%;
+    --secondary: var(--color-secondary);
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: var(--color-accent);
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: var(--color-primary);
+    --radius: 0.5rem;
+  }
+
+  .dark-theme {
+    --background: var(--color-background);
+    --foreground: var(--color-foreground);
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: var(--color-primary);
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: var(--color-secondary);
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: var(--color-accent);
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: var(--color-primary);
   }
 }
