@@ -880,6 +880,9 @@ export function CompetitorMonitoringContent({
     );
   };
   
+  // 상태 추가
+  const [showOnlyChanges, setShowOnlyChanges] = useState(false);
+  
   // 헤더 섹션 렌더링
   const renderHeader = () => {
     return (
@@ -887,6 +890,16 @@ export function CompetitorMonitoringContent({
         <div>
           <h3 className="text-xl font-semibold mb-1">경쟁사 모니터링</h3>
           <p className="text-sm text-gray-500">경쟁사 제품의 가격, 순위, 리뷰 변화를 지속적으로 모니터링합니다.</p>
+        </div>
+        <div className="flex items-center space-x-2 mt-2 md:mt-0">
+          <Switch
+            id="show-only-changes"
+            checked={showOnlyChanges}
+            onCheckedChange={setShowOnlyChanges}
+          />
+          <Label htmlFor="show-only-changes" className="text-sm font-normal">
+            변경사항 있는 경쟁사만 표시
+          </Label>
         </div>
       </div>
     );
@@ -961,7 +974,19 @@ export function CompetitorMonitoringContent({
                       <CardContent className="py-2">
                         <div className="space-y-2">
                           {/* 경쟁사 데이터 표시 - 모든 모니터링 중인 경쟁사 표시 */}
-                          {competitors.map((competitorId) => {
+                          {competitors.filter(competitorId => {
+                            if (!showOnlyChanges) return true;
+                            
+                            const competitorData = monitoringResult.changesDetected?.[competitorId];
+                            if (!competitorData) return false;
+                            
+                            return (
+                              (competitorData.priceChanges && competitorData.priceChanges.length > 0) || 
+                              (competitorData.newProducts && competitorData.newProducts.length > 0) || 
+                              (competitorData.rankChanges && competitorData.rankChanges.length > 0) || 
+                              (competitorData.reviewChanges && competitorData.reviewChanges.length > 0)
+                            );
+                          }).map((competitorId) => {
                             // 경쟁사 ID로 브랜드 찾기
                             const brand = HEALTH_SUPPLEMENT_BRANDS.find(
                               b => b.id === competitorId
@@ -975,6 +1000,7 @@ export function CompetitorMonitoringContent({
                               (competitorData.newProducts && competitorData.newProducts.length > 0) || 
                               (competitorData.rankChanges && competitorData.rankChanges.length > 0) || 
                               (competitorData.reviewChanges && competitorData.reviewChanges.length > 0)
+                            );iewChanges && competitorData.reviewChanges.length > 0)
                             );
                               
                             return (

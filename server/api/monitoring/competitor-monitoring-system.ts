@@ -207,7 +207,7 @@ export class CompetitorMonitoringSystem {
     baselineData: Record<string, CompetitorProduct[]>,
     currentData: Record<string, CompetitorProduct[]>,
     thresholds: MonitoringThresholds,
-    showAllCompetitors: boolean = false
+    showAllCompetitors: boolean = true  // 기본값을 true로 변경하여 모든 경쟁사 표시
   ): Record<string, CompetitorChanges> {
     const changes: Record<string, CompetitorChanges> = {};
     
@@ -292,6 +292,7 @@ export class CompetitorMonitoringSystem {
         }
       }
       
+      // 모든 경쟁사의 변경사항을 기록 (변경사항이 없어도 포함)
       changes[competitor] = competitorChanges;
     }
     
@@ -308,7 +309,6 @@ export class CompetitorMonitoringSystem {
           };
         }
       }
-    }
     
     return changes;
   }
