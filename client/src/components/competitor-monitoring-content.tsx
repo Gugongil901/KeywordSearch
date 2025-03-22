@@ -264,6 +264,18 @@ export function CompetitorMonitoringContent({
   
   // 컴포넌트 마운트 시 초기 데이터 로드
   useEffect(() => {
+    // 로컬 스토리지에서 저장된 인사이트 데이터 불러오기 시도
+    try {
+      const savedInsights = localStorage.getItem('competitorInsights');
+      if (savedInsights) {
+        const parsedInsights = JSON.parse(savedInsights);
+        setCompetitorInsights(parsedInsights);
+        console.log('로컬 스토리지에서 인사이트 데이터 불러옴');
+      }
+    } catch (err) {
+      console.warn('로컬 스토리지에서 데이터 불러오기 실패:', err);
+    }
+    
     // 키워드와 경쟁사가 있으면 자동으로 변경사항 확인
     if (keyword && competitors.length > 0) {
       checkChanges();
@@ -272,7 +284,7 @@ export function CompetitorMonitoringContent({
       loadCompetitorInsights();
       
       // 경쟁사 데이터를 가져온 후, 첫 번째 경쟁사가 선택되도록 설정
-      if (monitoringResult && Object.keys(monitoringResult.changesDetected).length > 0) {
+      if (monitoringResult && monitoringResult.changesDetected && Object.keys(monitoringResult.changesDetected).length > 0) {
         // 결과에서 사용 가능한 첫 번째 경쟁사 ID 가져오기
         const availableCompetitors = Object.keys(monitoringResult.changesDetected);
         if (availableCompetitors.length > 0 && !selectedCompetitor) {
@@ -473,7 +485,22 @@ export function CompetitorMonitoringContent({
         localInsights[brand.id] = dummyInsight;
       }
       
-      setCompetitorInsights(localInsights);
+      // 기존 인사이트와 병합하여 값이 사라지지 않도록 함
+      setCompetitorInsights(prevInsights => {
+        // 기존 데이터가 있으면 기존 데이터와 새 데이터를 병합
+        if (Object.keys(prevInsights).length > 0) {
+          return { ...prevInsights, ...localInsights };
+        }
+        // 기존 데이터가 없으면 새 데이터만 사용
+        return localInsights;
+      });
+      
+      // 로컬 스토리지에 인사이트 데이터 캐싱
+      try {
+        localStorage.setItem('competitorInsights', JSON.stringify(localInsights));
+      } catch (storageErr) {
+        console.warn('로컬 스토리지 저장 실패:', storageErr);
+      }
     } catch (err) {
       console.error('경쟁사 인사이트 로드 오류:', err);
     }
@@ -808,14 +835,14 @@ export function CompetitorMonitoringContent({
                           {competitors.map((competitorId) => {
                             const brand = HEALTH_SUPPLEMENT_BRANDS.find(b => b.id === competitorId);
                             // monitoringResult에 해당 경쟁사 데이터가 있는지 확인
-                            const competitorData = monitoringResult.changesDetected[competitorId];
+                            const competitorData = monitoringResult.changesDetected && monitoringResult.changesDetected[competitorId];
                             
-                            // 변경사항 있는지 확인
+                            // 변경사항 있는지 확인 (안전하게 null 체크)
                             const hasChanges = competitorData && (
-                              competitorData.priceChanges.length > 0 || 
-                              competitorData.newProducts.length > 0 || 
-                              competitorData.rankChanges.length > 0 || 
-                              competitorData.reviewChanges.length > 0
+                              (competitorData.priceChanges && competitorData.priceChanges.length > 0) || 
+                              (competitorData.newProducts && competitorData.newProducts.length > 0) || 
+                              (competitorData.rankChanges && competitorData.rankChanges.length > 0) || 
+                              (competitorData.reviewChanges && competitorData.reviewChanges.length > 0)
                             );
                               
                             return (
@@ -838,16 +865,16 @@ export function CompetitorMonitoringContent({
                                 <div className="text-xs text-gray-500 mt-1">
                                   {hasChanges ? (
                                     <div className="flex items-center space-x-2">
-                                      {competitorData.priceChanges.length > 0 && 
+                                      {competitorData?.priceChanges?.length > 0 && 
                                         <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded-full">가격 {competitorData.priceChanges.length}</span>
                                       }
-                                      {competitorData.rankChanges.length > 0 && 
+                                      {competitorData?.rankChanges?.length > 0 && 
                                         <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 rounded-full">순위 {competitorData.rankChanges.length}</span>
                                       }
-                                      {competitorData.reviewChanges.length > 0 && 
+                                      {competitorData?.reviewChanges?.length > 0 && 
                                         <span className="px-1.5 py-0.5 bg-green-50 text-green-700 rounded-full">리뷰 {competitorData.reviewChanges.length}</span>
                                       }
-                                      {competitorData.newProducts.length > 0 && 
+                                      {competitorData?.newProducts?.length > 0 && 
                                         <span className="px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-full">신제품 {competitorData.newProducts.length}</span>
                                       }
                                     </div>
