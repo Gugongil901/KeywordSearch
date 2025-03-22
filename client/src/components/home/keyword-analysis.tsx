@@ -185,12 +185,12 @@ const KeywordAnalysis: React.FC = () => {
         <TabsContent value="trending" className="py-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* 인기 키워드 */}
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-4 flex flex-col h-[460px]">
               <h3 className="text-base font-medium mb-4 flex justify-between items-center">
-                <span>인기 키워드</span>
+                <span>일간 인기 키워드</span>
                 <span className="text-xs text-gray-500">2025.03.22 기준</span>
               </h3>
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-gray-100 flex-grow">
                 {popularKeywords.map((item, index) => (
                   <li 
                     key={index} 
@@ -206,12 +206,12 @@ const KeywordAnalysis: React.FC = () => {
             </div>
 
             {/* 카테고리별 키워드 */}
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-gray-50 rounded-lg p-4 h-[460px]">
               <h3 className="text-base font-medium mb-4 flex justify-between items-center">
                 <span>카테고리별 키워드</span>
                 <span className="text-xs text-gray-500">2025.03.22 기준</span>
               </h3>
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-gray-100 flex-grow">
                 {popularKeywords.slice(0, 5).map((item, index) => (
                   <li 
                     key={index} 
