@@ -709,7 +709,13 @@ export default function IntegratedSearch() {
   const renderResults = () => {
     if (!searchResult) return null;
     
-    console.log("렌더링 결과 타입:", searchResult.type, "데이터:", searchResult.data);
+    console.log(`[통합 렌더링 함수] 현재 탭: ${activeTab}, 결과 타입: ${searchResult.type}`);
+    
+    // 현재 활성화된 탭과 검색 결과 타입이 일치하는지 확인
+    if (activeTab !== searchResult.type) {
+      console.log(`[렌더링 경고] 활성 탭(${activeTab})과 결과 타입(${searchResult.type})이 다릅니다`);
+      return null;
+    }
     
     switch (searchResult.type) {
       case 'ad-keywords':
@@ -835,7 +841,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'ad-keywords' && renderResults()}
+          {renderResults()}
         </TabsContent>
         
         <TabsContent value="page-exposure" className="space-y-4 pt-4">
@@ -909,7 +915,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'page-exposure' && renderResults()}
+          {renderResults()}
         </TabsContent>
         
         <TabsContent value="product-ranking" className="space-y-4 pt-4">
@@ -983,7 +989,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'product-ranking' && renderResults()}
+          {renderResults()}
         </TabsContent>
         
         <TabsContent value="best-keywords" className="space-y-4 pt-4">
@@ -1079,7 +1085,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'best-keywords' && renderResults()}
+          {renderResults()}
         </TabsContent>
         
         <TabsContent value="niche-keywords" className="space-y-4 pt-4">
@@ -1155,7 +1161,7 @@ export default function IntegratedSearch() {
             </div>
           )}
           
-          {searchResult?.type === 'niche-keywords' && renderResults()}
+          {renderResults()}
         </TabsContent>
       </Tabs>
     </div>
