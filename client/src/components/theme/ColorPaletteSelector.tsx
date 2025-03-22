@@ -15,6 +15,12 @@ export type ColorPalette = {
   accent: string;
   background: string;
   foreground: string;
+  // 차트에서 사용할 색상 팔레트 추가
+  chartColors?: {
+    background: string[];
+    border: string[];
+    radar: string[];
+  };
 };
 
 const defaultPalettes: ColorPalette[] = [
@@ -26,6 +32,29 @@ const defaultPalettes: ColorPalette[] = [
     accent: '#60A5FA',
     background: '#F0F9FF',
     foreground: '#0F172A',
+    chartColors: {
+      background: [
+        'rgba(37, 99, 235, 0.5)',   // 파랑
+        'rgba(79, 70, 229, 0.5)',   // 인디고
+        'rgba(59, 130, 246, 0.5)',  // 하늘색
+        'rgba(6, 182, 212, 0.5)',   // 시안
+        'rgba(14, 165, 233, 0.5)',  // 하늘색 2
+      ],
+      border: [
+        'rgba(37, 99, 235, 0.8)',
+        'rgba(79, 70, 229, 0.8)',
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(6, 182, 212, 0.8)',
+        'rgba(14, 165, 233, 0.8)',
+      ],
+      radar: [
+        'rgba(37, 99, 235, 0.15)',
+        'rgba(79, 70, 229, 0.15)',
+        'rgba(59, 130, 246, 0.15)',
+        'rgba(6, 182, 212, 0.15)',
+        'rgba(14, 165, 233, 0.15)',
+      ]
+    }
   },
   {
     id: 'green',
@@ -35,6 +64,29 @@ const defaultPalettes: ColorPalette[] = [
     accent: '#4ADE80',
     background: '#F0FDF4',
     foreground: '#14532D',
+    chartColors: {
+      background: [
+        'rgba(21, 128, 61, 0.5)',   // 초록
+        'rgba(22, 163, 74, 0.5)',   // 연한 초록
+        'rgba(16, 185, 129, 0.5)',  // 민트
+        'rgba(5, 150, 105, 0.5)',   // 에메랄드
+        'rgba(4, 120, 87, 0.5)',    // 청록
+      ],
+      border: [
+        'rgba(21, 128, 61, 0.8)',
+        'rgba(22, 163, 74, 0.8)',
+        'rgba(16, 185, 129, 0.8)',
+        'rgba(5, 150, 105, 0.8)',
+        'rgba(4, 120, 87, 0.8)',
+      ],
+      radar: [
+        'rgba(21, 128, 61, 0.15)',
+        'rgba(22, 163, 74, 0.15)',
+        'rgba(16, 185, 129, 0.15)',
+        'rgba(5, 150, 105, 0.15)',
+        'rgba(4, 120, 87, 0.15)',
+      ]
+    }
   },
   {
     id: 'purple',
@@ -44,6 +96,29 @@ const defaultPalettes: ColorPalette[] = [
     accent: '#C084FC',
     background: '#FAF5FF',
     foreground: '#581C87',
+    chartColors: {
+      background: [
+        'rgba(126, 34, 206, 0.5)',  // 보라
+        'rgba(168, 85, 247, 0.5)',  // 연한 보라
+        'rgba(147, 51, 234, 0.5)',  // 중간 보라
+        'rgba(192, 132, 252, 0.5)', // 라벤더
+        'rgba(139, 92, 246, 0.5)',  // 블루 보라
+      ],
+      border: [
+        'rgba(126, 34, 206, 0.8)',
+        'rgba(168, 85, 247, 0.8)',
+        'rgba(147, 51, 234, 0.8)',
+        'rgba(192, 132, 252, 0.8)',
+        'rgba(139, 92, 246, 0.8)',
+      ],
+      radar: [
+        'rgba(126, 34, 206, 0.15)',
+        'rgba(168, 85, 247, 0.15)',
+        'rgba(147, 51, 234, 0.15)',
+        'rgba(192, 132, 252, 0.15)',
+        'rgba(139, 92, 246, 0.15)',
+      ]
+    }
   },
   {
     id: 'pastel',
@@ -53,6 +128,29 @@ const defaultPalettes: ColorPalette[] = [
     accent: '#FECDD3',
     background: '#FFF1F2',
     foreground: '#881337',
+    chartColors: {
+      background: [
+        'rgba(251, 113, 133, 0.4)',  // 연한 빨강
+        'rgba(253, 164, 175, 0.4)',  // 연한 핑크
+        'rgba(249, 168, 212, 0.4)',  // 라이트 핑크
+        'rgba(248, 180, 180, 0.4)',  // 연한 코랄
+        'rgba(251, 207, 232, 0.4)',  // 매우 연한 핑크
+      ],
+      border: [
+        'rgba(251, 113, 133, 0.7)',
+        'rgba(253, 164, 175, 0.7)',
+        'rgba(249, 168, 212, 0.7)',
+        'rgba(248, 180, 180, 0.7)',
+        'rgba(251, 207, 232, 0.7)',
+      ],
+      radar: [
+        'rgba(251, 113, 133, 0.15)',
+        'rgba(253, 164, 175, 0.15)',
+        'rgba(249, 168, 212, 0.15)',
+        'rgba(248, 180, 180, 0.15)',
+        'rgba(251, 207, 232, 0.15)',
+      ]
+    }
   },
   {
     id: 'dark',
@@ -62,6 +160,29 @@ const defaultPalettes: ColorPalette[] = [
     accent: '#A5B4FC',
     background: '#1E293B',
     foreground: '#F8FAFC',
+    chartColors: {
+      background: [
+        'rgba(99, 102, 241, 0.5)',   // 인디고
+        'rgba(129, 140, 248, 0.5)',  // 연한 인디고
+        'rgba(165, 180, 252, 0.5)',  // 매우 연한 인디고
+        'rgba(139, 92, 246, 0.5)',   // 보라
+        'rgba(124, 58, 237, 0.5)',   // 진한 보라
+      ],
+      border: [
+        'rgba(99, 102, 241, 0.8)',
+        'rgba(129, 140, 248, 0.8)',
+        'rgba(165, 180, 252, 0.8)',
+        'rgba(139, 92, 246, 0.8)',
+        'rgba(124, 58, 237, 0.8)',
+      ],
+      radar: [
+        'rgba(99, 102, 241, 0.2)',   // 다크모드는 약간 더 진하게
+        'rgba(129, 140, 248, 0.2)',
+        'rgba(165, 180, 252, 0.2)',
+        'rgba(139, 92, 246, 0.2)',
+        'rgba(124, 58, 237, 0.2)',
+      ]
+    }
   }
 ];
 
