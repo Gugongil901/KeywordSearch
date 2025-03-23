@@ -7,7 +7,7 @@ import * as crypto from 'crypto';
  * 인증 정보 및 API 요청 처리를 담당하는 클래스
  */
 class NaverAdAPIClient {
-  private baseUrl: string = 'https://api.searchad.naver.com';
+  private baseUrl: string = 'https://api.naver.com';
   private customerId: string;
   private accessLicense: string;
   private secretKey: string;
@@ -62,7 +62,7 @@ class NaverAdAPIClient {
     
     // HMAC-SHA256 암호화 (비밀키로 서명)
     try {
-      // 예시 코드처럼 생성
+      // 서명 생성 방식 수정 (마침표(.) 사용 확인)
       const hmac = crypto.createHmac('sha256', this.secretKey);
       hmac.update(sig);
       const signature = hmac.digest('base64');
@@ -94,17 +94,52 @@ class NaverAdAPIClient {
       
       console.log(`네이버 검색광고 API 요청: ${method} ${path}`);
       
+      // GET 요청과 POST 요청 처리를 별도로 구분
       const config = {
         method,
         url,
         headers,
-        data: method !== 'GET' ? data : undefined,
+        ...(method === 'GET' 
+          ? { params: data } // GET 요청은 params로 데이터 전달
+          : { data }         // POST 요청은 body로 데이터 전달
+        ),
+        timeout: 10000 // 10초 타임아웃 설정
       };
 
+      console.log(`API 요청 설정:`, { 
+        url, 
+        method, 
+        dataType: method === 'GET' ? 'params' : 'body',
+        dataKeys: data ? Object.keys(data) : []
+      });
+
       const response = await axios(config);
+      console.log(`API 응답 성공:`, { 
+        status: response.status, 
+        dataType: typeof response.data,
+        hasData: !!response.data
+      });
+      
       return response.data;
     } catch (error: any) {
       console.error('네이버 검색광고 API 요청 실패:', error.response?.data || error.message);
+      
+      // 상세 오류 정보 로깅
+      const errorDetails = {
+        message: error.message,
+        response: error.response ? {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data
+        } : null,
+        request: error.config ? {
+          method: error.config.method,
+          url: error.config.url
+        } : null
+      };
+      
+      console.error('API 오류 상세:', JSON.stringify(errorDetails, null, 2));
+      
       throw error;
     }
   }
@@ -116,14 +151,26 @@ class NaverAdAPIClient {
   async getRelatedKeywords(keyword: string): Promise<any> {
     try {
       const path = '/keywordstool';
+      
+      // 네이버 문서 기반으로 올바른 파라미터 형식 사용
+      // GET 요청으로 변경하고 쿼리 파라미터 수정
       const params = {
-        hintKeywords: [keyword],
+        hintKeywords: keyword,  // 문자열로 전달
         showDetail: 1
       };
       
       console.log(`키워드 도구 API 호출: 키워드="${keyword}"`);
       
-      const result = await this.makeRequest('POST', path, params);
+      // GET 요청으로 변경하여 호출
+      const result = await this.makeRequest('GET', path, params);
+      
+      // 응답 로깅
+      console.log(`키워드 도구 API 응답 구조:`, 
+        result ? 
+          `데이터 타입=${typeof result}, 키 목록=${Object.keys(result).join(',')}` : 
+          '응답 없음'
+      );
+      
       return result;
     } catch (error) {
       console.error('키워드 도구 API 호출 실패:', error);
