@@ -7,7 +7,7 @@ import * as crypto from 'crypto';
  * 인증 정보 및 API 요청 처리를 담당하는 클래스
  */
 class NaverAdAPIClient {
-  private baseUrl: string = 'https://api.naver.com';
+  private baseUrl: string = 'https://api.searchad.naver.com';
   private customerId: string;
   private accessLicense: string;
   private secretKey: string;
@@ -211,17 +211,30 @@ class NaverAdAPIClient {
    */
   async getBidRecommendation(keyword: string): Promise<any> {
     try {
-      const path = '/estimate/performance';
+      // 문서에 따라 경로 수정: 정확한 API 경로 확인
+      const path = '/ncc/estimate/performance-bulk';
+      
+      // 요청 형식 변경 - 올바른 형식으로
       const params = {
-        device: 'PC',
-        keywordplus: false,
-        key: keyword,
-        bids: [100, 300, 500, 1000, 1500, 2000, 3000, 5000]
+        items: [{
+          key: keyword,
+          device: 'PC',
+          bids: [100, 300, 500, 1000, 1500, 2000, 3000, 5000]
+        }]
       };
       
       console.log(`입찰가 추천 API 호출: 키워드="${keyword}"`);
+      console.log(`요청 데이터:`, JSON.stringify(params));
       
       const result = await this.makeRequest('POST', path, params);
+      
+      // 응답 로깅
+      console.log(`입찰가 API 응답 구조:`, 
+        result ? 
+          `데이터 타입=${typeof result}, 키 목록=${Object.keys(result).join(',')}` : 
+          '응답 없음'
+      );
+      
       return result;
     } catch (error) {
       console.error('입찰가 추천 API 호출 실패:', error);
