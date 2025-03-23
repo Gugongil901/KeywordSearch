@@ -7,7 +7,7 @@ import * as crypto from 'crypto';
  * 인증 정보 및 API 요청 처리를 담당하는 클래스
  */
 class NaverAdAPIClient {
-  private baseUrl: string = 'https://api.searchad.naver.com';
+  private baseUrl: string = 'https://api.naver.com';
   private customerId: string;
   private accessLicense: string;
   private secretKey: string;
@@ -211,16 +211,15 @@ class NaverAdAPIClient {
    */
   async getBidRecommendation(keyword: string): Promise<any> {
     try {
-      // 문서에 따라 경로 수정: 정확한 API 경로 확인
-      const path = '/ncc/estimate/performance-bulk';
+      // 샘플 코드와 일치하도록 경로 수정
+      const path = '/estimate/performance';
       
-      // 요청 형식 변경 - 올바른 형식으로
+      // 샘플 코드와 일치하도록 요청 형식 수정
       const params = {
-        items: [{
-          key: keyword,
-          device: 'PC',
-          bids: [100, 300, 500, 1000, 1500, 2000, 3000, 5000]
-        }]
+        device: 'PC',
+        keywordplus: false,
+        key: keyword,
+        bids: [100, 300, 500, 1000, 1500, 2000, 3000, 5000]
       };
       
       console.log(`입찰가 추천 API 호출: 키워드="${keyword}"`);
